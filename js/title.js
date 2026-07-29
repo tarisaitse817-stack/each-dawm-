@@ -120,9 +120,14 @@ export const TitleScreen = {
    * "设置" — 打开设置面板（Task 13 实现完整面板）
    */
   _onSettings() {
-    var settingsModal = document.getElementById('settings-modal');
-    if (settingsModal) {
-      settingsModal.classList.remove('hidden');
+    // 委托给 App 全局实例，确保 _settingsVisible 标志位正确
+    if (window.App && typeof window.App.openSettings === 'function') {
+      window.App.openSettings();
+    } else {
+      var settingsModal = document.getElementById('settings-modal');
+      if (settingsModal) {
+        settingsModal.classList.remove('hidden');
+      }
     }
   },
 

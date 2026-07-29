@@ -316,10 +316,8 @@ export const App = {
    * closeSettings — 关闭设置面板
    */
   closeSettings: function () {
-    if (!this._settingsVisible) return;
-
     var modal = document.getElementById('settings-modal');
-    if (!modal) return;
+    if (!modal || modal.classList.contains('hidden')) return;
 
     modal.classList.add('closing');
     var self = this;
@@ -735,6 +733,9 @@ export const App = {
     }
   }
 };
+
+// 暴露到全局作用域，供其他模块（如 title.js）直接调用
+window.App = App;
 
 // 应用启动
 document.addEventListener('DOMContentLoaded', function () {
