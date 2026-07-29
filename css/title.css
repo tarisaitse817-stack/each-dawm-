@@ -1,0 +1,216 @@
+/* ==========================================================================
+   光之回响 (Echoes of Light) — Title Screen Styles
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. 浮动粒子动画
+   -------------------------------------------------------------------------- */
+
+@keyframes float-particle {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translate(var(--dx), var(--dy)) scale(1.5);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.3;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   2. 环境粒子容器与样式
+   -------------------------------------------------------------------------- */
+
+#ambient-particles {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.particle-dot {
+  position: absolute;
+  border-radius: 50%;
+  animation: float-particle var(--duration, 4s) var(--delay, 0s) ease-in-out infinite;
+  box-shadow: 0 0 4px currentColor;
+  will-change: transform, opacity;
+}
+
+/* --------------------------------------------------------------------------
+   3. 标题界面
+   -------------------------------------------------------------------------- */
+
+#title-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: radial-gradient(ellipse at center, #0d1520 0%, #060a10 70%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 中央大型径向渐变光晕 */
+#title-screen::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 600px;
+  height: 600px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(79, 195, 247, 0.1) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* --------------------------------------------------------------------------
+   4. 标题内容
+   -------------------------------------------------------------------------- */
+
+.title-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1;
+}
+
+.title-logo {
+  font-family: var(--font-body);
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--color-warm-gold);
+  animation: float 4s ease-in-out infinite;
+  text-shadow:
+    0 0 40px rgba(255, 213, 79, 0.4),
+    0 0 80px rgba(255, 213, 79, 0.2);
+  user-select: none;
+}
+
+.title-subtitle {
+  font-family: var(--font-ui);
+  font-size: 1.1rem;
+  color: rgba(79, 195, 247, 0.7);
+  letter-spacing: 0.3em;
+  margin-top: 8px;
+  user-select: none;
+}
+
+/* --------------------------------------------------------------------------
+   5. 按钮容器
+   -------------------------------------------------------------------------- */
+
+.title-btn-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 48px;
+}
+
+/* --------------------------------------------------------------------------
+   6. 菜单按钮
+   -------------------------------------------------------------------------- */
+
+.title-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 200px;
+  padding: 12px 32px;
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  background: rgba(10, 13, 20, 0.6);
+  border: 1px solid rgba(79, 195, 247, 0.25);
+  color: rgba(224, 224, 224, 0.8);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: all var(--transition-normal);
+  user-select: none;
+}
+
+.title-btn:hover {
+  transform: scale(1.03);
+}
+
+/* 暖金色辉光（主要按钮 — 继续冒险） */
+.title-btn.primary {
+  border-color: rgba(255, 213, 79, 0.4);
+  color: var(--color-warm-gold);
+  box-shadow:
+    0 0 8px rgba(255, 213, 79, 0.08),
+    inset 0 0 8px rgba(255, 213, 79, 0.03);
+}
+
+.title-btn.primary:hover {
+  border-color: rgba(255, 213, 79, 0.7);
+  box-shadow:
+    0 0 20px rgba(255, 213, 79, 0.25),
+    inset 0 0 12px rgba(255, 213, 79, 0.05);
+}
+
+/* 灵火蓝辉光（次要按钮 — 新的旅程、设置） */
+.title-btn.secondary {
+  border-color: rgba(79, 195, 247, 0.3);
+  color: var(--color-spirit-blue);
+  box-shadow:
+    0 0 8px rgba(79, 195, 247, 0.08),
+    inset 0 0 8px rgba(79, 195, 247, 0.03);
+}
+
+.title-btn.secondary:hover {
+  border-color: rgba(79, 195, 247, 0.6);
+  box-shadow:
+    0 0 20px rgba(79, 195, 247, 0.25),
+    inset 0 0 12px rgba(79, 195, 247, 0.05);
+}
+
+/* --------------------------------------------------------------------------
+   7. 开场叙事（打字机效果）
+   -------------------------------------------------------------------------- */
+
+.title-narrative {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10%;
+  z-index: 2;
+  cursor: pointer;
+}
+
+.title-narrative p {
+  font-family: var(--font-body);
+  font-size: 1.15rem;
+  line-height: 2;
+  color: rgba(224, 224, 224, 0.9);
+  max-width: 640px;
+  text-align: justify;
+  margin-bottom: 1.2em;
+  opacity: 0;
+  animation: fadeIn 0.6s ease forwards;
+}
+
+.title-narrative .click-hint {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  color: rgba(79, 195, 247, 0.5);
+  letter-spacing: 0.15em;
+  margin-top: 2rem;
+  animation: fadeIn 0.8s ease forwards, pulse 2s ease-in-out infinite;
+}
+
+.title-narrative.hidden {
+  display: none;
+}

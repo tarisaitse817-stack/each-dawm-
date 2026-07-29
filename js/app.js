@@ -5,6 +5,8 @@
 import { AppState } from './state.js';
 import { StorageManager } from './storage.js';
 import { Navigation } from './navigation.js';
+import { Particles } from './particles.js';
+import { TitleScreen } from './title.js';
 
 export const App = {
 
@@ -26,8 +28,9 @@ export const App = {
       }
     }
 
-    // 2. 初始化粒子 Canvas（占位 — Task 14 实现完整粒子系统）
-    this.initParticles();
+    // 2. 初始化粒子系统（Canvas 占位 + CSS 驱动环境粒子）
+    this.initParticlesCanvas();
+    Particles.init();
 
     // 3. 渲染主面板容器（各模块的 render() 后续注入内容到对应面板）
     this.renderPanels();
@@ -35,19 +38,22 @@ export const App = {
     // 4. 初始化侧边栏导航
     Navigation.init();
 
-    // 5. 注册视图切换订阅 — 其他模块通过 AppState.set('currentView', id) 触发导航
+    // 5. 初始化标题界面
+    TitleScreen.init();
+
+    // 6. 注册视图切换订阅 — 其他模块通过 AppState.set('currentView', id) 触发导航
     AppState.subscribe('currentView', function (newView) {
       if (newView && newView !== 'title') {
         Navigation.navigateTo(newView);
       }
     });
 
-    // 6. 渲染全页 Lucide 图标（侧边栏 + 面板内的图标）
+    // 7. 渲染全页 Lucide 图标（侧边栏 + 面板内的图标）
     if (typeof lucide !== 'undefined' && lucide.createIcons) {
       lucide.createIcons();
     }
 
-    // 7. 判断首屏：有存档则进入事件视图，无存档则显示标题界面
+    // 8. 判断首屏：有存档则进入事件视图，无存档则显示标题界面
     var titleScreen = document.getElementById('title-screen');
     if (StorageManager.hasSave()) {
       if (titleScreen) {
@@ -99,7 +105,7 @@ export const App = {
   /**
    * 初始化粒子 Canvas（占位方法 — Task 14 实现完整粒子系统）
    */
-  initParticles() {
+  initParticlesCanvas() {
     var canvas = document.getElementById('particles-canvas');
     if (!canvas) return;
 
