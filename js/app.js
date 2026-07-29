@@ -12,6 +12,7 @@ import { BattleStage } from './battle.js';
 import { DeckPanel } from './deck.js';
 import { CompanionsPanel } from './companions.js';
 import { InventoryPanel } from './inventory.js';
+import { MapPanel } from './map.js';
 
 export const App = {
 
@@ -61,7 +62,10 @@ export const App = {
     // 10. 初始化背包面板
     InventoryPanel.init();
 
-    // 11. 注册视图切换订阅 — 其他模块通过 AppState.set('currentView', id) 触发导航
+    // 11. 初始化地图面板
+    MapPanel.init();
+
+    // 12. 注册视图切换订阅 — 其他模块通过 AppState.set('currentView', id) 触发导航
     AppState.subscribe('currentView', function (newView) {
       if (newView && newView !== 'title') {
         Navigation.navigateTo(newView);
