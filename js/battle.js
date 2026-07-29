@@ -250,10 +250,12 @@ function _getCardTypeLabel(card) {
   return '陷阱';
 }
 
-/** 获取卡片等级星号 */
+/** 获取卡片等级星号（使用内联 SVG 代替 Unicode 符号） */
 function _getStars(level) {
   var s = '';
-  for (var i = 0; i < (level || 0); i++) s += '★';
+  for (var i = 0; i < (level || 0); i++) {
+    s += '<svg class="lvl-star" width="8" height="8" viewBox="0 0 24 24" fill="#FFD54F"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>';
+  }
   return s;
 }
 
@@ -335,7 +337,7 @@ function _buildMonsterCardHTML(card, isOpponent) {
       '<span class="fc-name">' + esc(card.name) + '</span>' +
       '<span class="fc-level">' + _getStars(card.level) + '</span>' +
     '</div>' +
-    '<div class="fc-art">' + (card.attribute === 'light' ? '☆' : '★') + '</div>' +
+    '<div class="fc-art ' + (card.attribute === 'light' ? 'fc-art-light' : 'fc-art-dark') + '"></div>' +
     '<div class="fc-stats">' +
       '<span class="fc-atk">ATK ' + (card.attack || 0) + '</span>' +
       '<span class="fc-def">DEF ' + (card.defense || 0) + '</span>' +
@@ -354,7 +356,7 @@ function _buildSpellTrapCardHTML(card, isOpponent) {
   }
 
   return '<div class="field-card spell-card ' + ownerClass + '">' +
-    '<div class="fc-type-icon">' + (card.type === 'spell' ? '✦' : '⚡') + '</div>' +
+    '<div class="fc-type-icon ' + (card.type === 'spell' ? 'fc-icon-spell' : 'fc-icon-trap') + '"></div>' +
     '<div class="fc-type-label">' + esc(card.name) + '</div>' +
   '</div>';
 }
@@ -483,12 +485,6 @@ function _renderPhaseIndicator() {
   if (turnEl) {
     var whose = _state.isPlayerTurn ? '我方' : '对手';
     turnEl.textContent = '第 ' + _state.turn + ' 回合 · ' + whose;
-  }
-
-  // 更新阶段名
-  var phaseNameEl = _dom.currentPhaseName;
-  if (phaseNameEl) {
-    phaseNameEl.textContent = PHASE_NAMES[_state.phaseIndex];
   }
 }
 
@@ -752,19 +748,19 @@ function _declareAttack(attackerIdx, targetIdx, attackerPlayer) {
       if (isTargetDefense || atk >= target.attack) {
         // 目标被破坏 → 送墓
         if (isPlayerAttacker) {
-          _state.opponentGraveyard.push(targetMonsters[targetIdx]);
+          _sendToGraveyard(targetMonsters[targetIdx], 'opponent');
           targetMonsters[targetIdx] = null;
         } else {
-          _state.playerGraveyard.push(targetMonsters[targetIdx]);
+          _sendToGraveyard(targetMonsters[targetIdx], 'player');
           targetMonsters[targetIdx] = null;
         }
       } else {
         // 攻击者被反杀 → 送墓
         monsters[attackerIdx] = null;
         if (isPlayerAttacker) {
-          _state.playerGraveyard.push(attacker);
+          _sendToGraveyard(attacker, 'player');
         } else {
-          _state.opponentGraveyard.push(attacker);
+          _sendToGraveyard(attacker, 'opponent');
         }
       }
 
@@ -902,7 +898,7 @@ function _summonMonster(handIndex, zoneIndex, position) {
     var tributed = 0;
     for (var j = 0; j < 5 && tributed < tribute; j++) {
       if (_state.playerMonsters[j]) {
-        _state.playerGraveyard.push(_state.playerMonsters[j]);
+        _sendToGraveyard(_state.playerMonsters[j], 'player');
         _state.playerMonsters[j] = null;
         tributed++;
       }
@@ -973,6 +969,61 @@ function _changePosition(zoneIndex) {
   _renderField();
 }
 
+/* ---- 卡牌效果与墓地/除外管理 ---- */
+
+/** 送卡入墓地（专用函数，符合 spec 要求） */
+function _sendToGraveyard(card, player) {
+  if (!card) return;
+  var grave = player === 'player' ? _state.playerGraveyard : _state.opponentGraveyard;
+  grave.push(card);
+}
+
+/** 除外卡牌（专用函数，符合 spec 要求） */
+function _banishCard(card, player) {
+  if (!card) return;
+  var banished = player === 'player' ? _state.playerBanished : _state.opponentBanished;
+  banished.push(card);
+}
+
+/** 发动魔陷 — 翻开 SET 卡并执行效果（符合 spec 要求） */
+function _activateSpellTrap(zoneIndex) {
+  if (_isAnimating) return;
+  var card = _state.playerSpellTraps[zoneIndex];
+  if (!card) {
+    Notifications.show('warning', '无法发动', '该区域没有卡牌');
+    return;
+  }
+  if (card.position !== 'face-down') {
+    Notifications.show('warning', '无法发动', '该卡已经发动过了');
+    return;
+  }
+
+  // 翻开
+  card.position = 'face-up';
+  Notifications.show('info', card.type === 'spell' ? '魔法发动' : '陷阱发动',
+    card.name + ' 效果发动：' + card.description);
+
+  // 执行效果（简化解）
+  if (card.description.indexOf('恢复') !== -1) {
+    var heal = 800;
+    _state.playerLP = Math.min(_state.playerLP + heal, 8000);
+    _updateLPDisplay();
+  } else if (card.description.indexOf('抽') !== -1) {
+    _drawCard('player');
+    _drawCard('player');
+    Notifications.show('info', '效果处理', '抽了 2 张牌');
+  } else if (card.description.indexOf('攻击') !== -1) {
+    Notifications.show('info', '效果处理', '无效了对手的攻击');
+  }
+
+  // 发动后送墓
+  _state.playerSpellTraps[zoneIndex] = null;
+  _sendToGraveyard(card, 'player');
+
+  Particles.spawnBattleParticles(0, 0, 6, '#4FC3F7');
+  _renderField();
+}
+
 /* ---- 演示设置 ---- */
 
 /** 设置演示用战场（让面板看起来活跃） */
@@ -1036,10 +1087,10 @@ function _setupDemoBoard() {
   }
 
   // 各送 2 张到墓地以显示墓地发光
-  _state.playerGraveyard.push(_state.playerDeck.pop());
-  _state.playerGraveyard.push(_state.playerDeck.pop());
-  _state.opponentGraveyard.push(_state.opponentDeck.pop());
-  _state.opponentGraveyard.push(_state.opponentDeck.pop());
+  _sendToGraveyard(_state.playerDeck.pop(), 'player');
+  _sendToGraveyard(_state.playerDeck.pop(), 'player');
+  _sendToGraveyard(_state.opponentDeck.pop(), 'opponent');
+  _sendToGraveyard(_state.opponentDeck.pop(), 'opponent');
 }
 
 /* ---- 事件绑定 ---- */
@@ -1194,6 +1245,12 @@ function _handleSTZoneClick(zoneIndex) {
     if (card && (card.type === 'spell' || card.type === 'trap')) {
       _setSpellTrap(_selectedHandIndex, zoneIndex);
     }
+  } else {
+    // 点击已 SET 的魔陷进行发动
+    var stCard = _state.playerSpellTraps[zoneIndex];
+    if (stCard && stCard.position === 'face-down') {
+      _activateSpellTrap(zoneIndex);
+    }
   }
 }
 
@@ -1317,6 +1374,10 @@ function _buildBoardHTML(opponent) {
         '<svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>' +
         '抽卡' +
       '</button>' +
+      '<button class="battle-btn" data-action="next-phase">' +
+        '<svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>' +
+        '下一阶段' +
+      '</button>' +
       '<button class="battle-btn primary" data-action="end-turn">' +
         '<svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>' +
         '结束回合' +
@@ -1374,7 +1435,6 @@ function _cacheDom() {
     opponentLP: document.querySelector('#battle-lp-opponent'),
     turnInfo: document.querySelector('#battle-turn-info'),
     phaseIndicator: document.querySelectorAll('.phase-item'),
-    currentPhaseName: document.querySelector('.phase-indicator'),
     // Side zones will be queried lazily
   };
 
@@ -1492,6 +1552,32 @@ export const BattleStage = {
    */
   hide() {
     _hideBattle();
+  },
+
+  /**
+   * 发动魔陷（公开 API）
+   * @param {number} zoneIndex - 魔陷区索引 0-4
+   */
+  activateSpellTrap(zoneIndex) {
+    _activateSpellTrap(zoneIndex);
+  },
+
+  /**
+   * 送卡入墓地（公开 API）
+   * @param {Object} card - 卡牌对象
+   * @param {'player'|'opponent'} player - 所属玩家
+   */
+  sendToGraveyard(card, player) {
+    _sendToGraveyard(card, player);
+  },
+
+  /**
+   * 除外卡牌（公开 API）
+   * @param {Object} card - 卡牌对象
+   * @param {'player'|'opponent'} player - 所属玩家
+   */
+  banishCard(card, player) {
+    _banishCard(card, player);
   },
 
   /**

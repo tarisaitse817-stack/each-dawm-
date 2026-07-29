@@ -373,11 +373,14 @@
 }
 
 .zone.st-zone::before {
-  content: '⚡';
+  content: '';
   position: absolute;
-  font-size: 1.2rem;
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  transform: rotate(45deg);
   opacity: 0.12;
-  color: rgba(255, 255, 255, 0.3);
 }
 
 .zone.st-zone.set-card::before {
@@ -756,11 +759,30 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.8rem;
-  opacity: 0.15;
-  font-family: var(--font-title, 'Cinzel', serif);
-  font-weight: 700;
   user-select: none;
+}
+
+/* 光属性 — 圆形 */
+.fc-art-light::before {
+  content: '';
+  display: block;
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(79, 195, 247, 0.15);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(79, 195, 247, 0.08) 0%, transparent 70%);
+}
+
+/* 暗属性 — 菱形 */
+.fc-art-dark::before {
+  content: '';
+  display: block;
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(244, 67, 54, 0.15);
+  border-radius: 2px;
+  transform: rotate(45deg);
+  background: radial-gradient(circle, rgba(244, 67, 54, 0.08) 0%, transparent 70%);
 }
 
 .field-card .fc-stats {
@@ -800,8 +822,33 @@
 }
 
 .field-card.spell-card .fc-type-icon {
-  font-size: 1.2rem;
-  opacity: 0.3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+/* 魔法图标 — 旋转菱形 */
+.fc-icon-spell::before {
+  content: '';
+  display: block;
+  width: 14px;
+  height: 14px;
+  border: 1px solid rgba(79, 195, 247, 0.3);
+  border-radius: 2px;
+  transform: rotate(45deg);
+}
+
+/* 陷阱图标 — 倒三角 */
+.fc-icon-trap::before {
+  content: '';
+  display: block;
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 12px solid rgba(244, 67, 54, 0.25);
 }
 
 .field-card.spell-card .fc-type-label {
