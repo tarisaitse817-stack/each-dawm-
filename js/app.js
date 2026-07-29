@@ -210,7 +210,7 @@ export const App = {
 
     modal.innerHTML =
       '<div class="settings-panel">' +
-        '<button class="settings-close" id="settings-close-btn" aria-label="关闭设置">' +
+        '<button class="settings-close" id="settings-close-btn" aria-label="关闭设置" onclick="window.App.closeSettings()">' +
           '<i data-lucide="x" style="width:18px;height:18px;"></i>' +
         '</button>' +
         '<h2 class="settings-title">设置</h2>' +
