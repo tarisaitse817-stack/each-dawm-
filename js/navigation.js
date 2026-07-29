@@ -1,0 +1,171 @@
+/* ==========================================================================
+   光之回响 (Echoes of Light) — Navigation 导航系统
+   ========================================================================== */
+
+import { AppState } from './state.js';
+
+/**
+ * 视图路由配置
+ */
+const views = [
+  { id: 'event', icon: 'message-circle', label: '事件' },
+  { id: 'inventory', icon: 'backpack', label: '背包' },
+  { id: 'deck', icon: 'cards', label: '卡组' },
+  { id: 'companions', icon: 'users', label: '伙伴' },
+  { id: 'map', icon: 'map', label: '地图' }
+];
+
+/**
+ * 当前激活的视图 ID
+ */
+let _currentViewId = null;
+
+/**
+ * 侧边栏 DOM 元素引用
+ */
+let _sidebarEl = null;
+
+/**
+ * 防止导航重入（AppState.set → subscriber → navigateTo 循环）
+ */
+let _isNavigating = false;
+
+/**
+ * Navigation 单例 — 侧边栏渲染、视图切换、角标管理
+ */
+export const Navigation = {
+
+  /**
+   * 初始化侧边栏：渲染 DOM、绑定事件
+   */
+  init() {
+    _sidebarEl = document.getElementById('sidebar');
+    if (!_sidebarEl) {
+      console.error('[Navigation] #sidebar 元素不存在');
+      return;
+    }
+
+    // 清空侧边栏
+    _sidebarEl.innerHTML = '';
+
+    // --- 渲染导航项 ---
+    views.forEach(function (view) {
+      var item = document.createElement('div');
+      item.className = 'nav-item';
+      item.dataset.view = view.id;
+
+      item.innerHTML =
+        '<i data-lucide="' + view.icon + '" class="nav-icon"></i>' +
+        '<span class="nav-label">' + view.label + '</span>' +
+        '<span class="nav-badge hidden"></span>';
+
+      item.addEventListener('click', function () {
+        Navigation.navigateTo(view.id);
+      });
+
+      _sidebarEl.appendChild(item);
+    });
+
+    // --- 渲染设置按钮（底部固定） ---
+    var settingsItem = document.createElement('div');
+    settingsItem.className = 'nav-item';
+    settingsItem.id = 'nav-settings';
+    settingsItem.innerHTML =
+      '<i data-lucide="settings" class="nav-icon"></i>' +
+      '<span class="nav-label">设置</span>';
+
+    settingsItem.addEventListener('click', function () {
+      // 占位 — Task 后续实现设置面板
+      console.log('[Navigation] 打开设置弹窗');
+    });
+
+    _sidebarEl.appendChild(settingsItem);
+
+    // --- 悬停展开/收起 ---
+    _sidebarEl.addEventListener('mouseenter', function () {
+      _sidebarEl.classList.add('expanded');
+    });
+
+    _sidebarEl.addEventListener('mouseleave', function () {
+      _sidebarEl.classList.remove('expanded');
+    });
+
+    // 渲染 Lucide 图标
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+      lucide.createIcons();
+    }
+  },
+
+  /**
+   * 导航到指定视图
+   * @param {string} viewId - 视图标识（'event' | 'inventory' | 'deck' | 'companions' | 'map'）
+   */
+  navigateTo(viewId) {
+    if (!viewId || viewId === _currentViewId || _isNavigating) return;
+
+    _isNavigating = true;
+
+    // 更新全局状态
+    AppState.set('currentView', viewId);
+
+    // 更新侧边栏 active 样式
+    var items = _sidebarEl.querySelectorAll('.nav-item:not(#nav-settings)');
+    items.forEach(function (item) {
+      item.classList.toggle('active', item.dataset.view === viewId);
+    });
+
+    // 隐藏所有视图面板，显示目标面板
+    var panels = document.querySelectorAll('.view-panel');
+    panels.forEach(function (panel) {
+      panel.classList.remove('active');
+    });
+
+    var targetPanel = document.getElementById('panel-' + viewId);
+    if (targetPanel) {
+      targetPanel.classList.add('active');
+    } else {
+      console.warn('[Navigation] 面板不存在: #panel-' + viewId);
+    }
+
+    // 隐藏标题界面
+    var titleScreen = document.getElementById('title-screen');
+    if (titleScreen && !titleScreen.classList.contains('hidden')) {
+      titleScreen.classList.add('hidden');
+    }
+
+    _currentViewId = viewId;
+    _isNavigating = false;
+  },
+
+  /**
+   * 更新角标：检查新物品和新卡牌
+   * 只有在有数据时显示角标，后续可扩展"新获得"标记逻辑
+   */
+  updateBadges() {
+    if (!_sidebarEl) return;
+
+    var state = AppState.get();
+    if (!state) return;
+
+    // 背包角标
+    var invBadge = _sidebarEl.querySelector('[data-view="inventory"] .nav-badge');
+    if (invBadge && state.inventory && state.inventory.length > 0) {
+      invBadge.classList.remove('hidden');
+    }
+
+    // 卡组角标
+    var deckBadge = _sidebarEl.querySelector('[data-view="deck"] .nav-badge');
+    if (deckBadge && state.decks && state.decks.length > 0) {
+      deckBadge.classList.remove('hidden');
+    }
+
+    // 伙伴角标（有已解锁伙伴时显示）
+    var compBadge = _sidebarEl.querySelector('[data-view="companions"] .nav-badge');
+    if (compBadge && state.companions) {
+      var hasUnlocked = state.companions.some(function (c) { return c.unlocked; });
+      if (hasUnlocked) {
+        compBadge.classList.remove('hidden');
+      }
+    }
+  }
+};

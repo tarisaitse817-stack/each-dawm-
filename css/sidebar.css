@@ -1,0 +1,191 @@
+/* ==========================================================================
+   光之回响 (Echoes of Light) — Sidebar Styles
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Sidebar Container
+   -------------------------------------------------------------------------- */
+
+#sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 64px;
+  transition: width var(--transition-normal);
+  z-index: 100;
+  background: var(--color-bg-panel);
+  border-right: 1px solid var(--color-border-glow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 8px;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+#sidebar.expanded {
+  width: 180px;
+}
+
+/* --------------------------------------------------------------------------
+   2. Navigation Items
+   -------------------------------------------------------------------------- */
+
+.nav-item {
+  width: 48px;
+  height: 48px;
+  margin: 8px auto;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+  user-select: none;
+}
+
+.nav-item:hover {
+  background: rgba(79, 195, 247, 0.12);
+  box-shadow: 0 0 12px rgba(79, 195, 247, 0.4);
+}
+
+.nav-item.active {
+  background: rgba(79, 195, 247, 0.08);
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 25%;
+  height: 50%;
+  width: 3px;
+  background: var(--color-warm-gold);
+  border-radius: 0 2px 2px 0;
+  box-shadow: var(--glow-sm) var(--color-warm-gold);
+}
+
+#sidebar.expanded .nav-item:not(#nav-settings) {
+  width: calc(100% - 16px);
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 0 12px;
+}
+
+#sidebar.expanded #nav-settings {
+  width: calc(100% - 16px);
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 0 12px;
+}
+
+/* --------------------------------------------------------------------------
+   3. Nav Icon
+   -------------------------------------------------------------------------- */
+
+.nav-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: var(--color-spirit-blue);
+  transition: color var(--transition-fast);
+}
+
+.nav-item:hover .nav-icon {
+  color: var(--color-warm-gold);
+}
+
+.nav-item.active .nav-icon {
+  color: var(--color-warm-gold);
+}
+
+/* --------------------------------------------------------------------------
+   4. Nav Label
+   -------------------------------------------------------------------------- */
+
+.nav-label {
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: #b0b0b0;
+  white-space: nowrap;
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  transition: opacity var(--transition-fast), width var(--transition-fast);
+}
+
+#sidebar.expanded .nav-label {
+  opacity: 1;
+  width: auto;
+}
+
+/* --------------------------------------------------------------------------
+   5. Nav Badge (new-content indicator)
+   -------------------------------------------------------------------------- */
+
+.nav-badge {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-warm-gold);
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  box-shadow: var(--glow-sm) var(--color-warm-gold);
+  pointer-events: none;
+}
+
+.nav-badge.hidden {
+  display: none;
+}
+
+/* --------------------------------------------------------------------------
+   6. Settings Button (pinned to bottom)
+   -------------------------------------------------------------------------- */
+
+#nav-settings {
+  position: absolute;
+  bottom: 16px;
+  transition: all var(--transition-fast);
+}
+
+#sidebar.expanded #nav-settings {
+  width: calc(100% - 16px);
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 0 12px;
+}
+
+/* --------------------------------------------------------------------------
+   7. View Panels (main content areas)
+   -------------------------------------------------------------------------- */
+
+#main-content {
+  margin-left: 64px;
+  width: calc(100% - 64px);
+  height: 100vh;
+  overflow-y: auto;
+  transition: margin-left var(--transition-normal), width var(--transition-normal);
+}
+
+#sidebar.expanded ~ #main-content {
+  margin-left: 180px;
+  width: calc(100% - 180px);
+}
+
+.view-panel {
+  display: none;
+  width: 100%;
+  min-height: 100vh;
+  animation: fadeIn var(--transition-normal);
+}
+
+.view-panel.active {
+  display: block;
+}
