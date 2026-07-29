@@ -1,0 +1,329 @@
+/* ==========================================================================
+   光之回响 (Echoes of Light) — Event Dialog Styles
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Panel Container
+   -------------------------------------------------------------------------- */
+
+#panel-event {
+  height: 100vh;
+  flex-direction: column;
+  padding: 24px 32px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Override .view-panel.active { display: block; } to enable flex layout */
+#panel-event.active {
+  display: flex;
+}
+
+/* --------------------------------------------------------------------------
+   2. Atmosphere Background
+   -------------------------------------------------------------------------- */
+
+.event-atmosphere {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(79,195,247,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 70%, rgba(129,199,132,0.06) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* --------------------------------------------------------------------------
+   3. Dialog Container
+   -------------------------------------------------------------------------- */
+
+.event-dialog {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+  width: 100%;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+/* --------------------------------------------------------------------------
+   4. Narrative Text Area
+   -------------------------------------------------------------------------- */
+
+.narrative-text {
+  flex: 1;
+  min-height: 120px;
+  padding: 20px 24px;
+  font-size: 1.15rem;
+  line-height: 1.9;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.narrative-text p {
+  margin-bottom: 1.2em;
+  color: rgba(224, 224, 224, 0.9);
+  padding-left: 12px;
+  border-left: 2px solid rgba(79, 195, 247, 0.15);
+  animation: fadeIn 0.5s ease forwards;
+}
+
+/* Player action — right-aligned, warm gold */
+.narrative-text .player-action {
+  text-align: right;
+  color: var(--color-warm-gold);
+  border-left: none;
+  border-right: 2px solid rgba(255, 213, 79, 0.25);
+  padding-left: 0;
+  padding-right: 12px;
+  font-style: italic;
+}
+
+/* --------------------------------------------------------------------------
+   5. Typewriter Cursor
+   -------------------------------------------------------------------------- */
+
+.narrative-text .typing-cursor {
+  border-right: 2px solid var(--color-spirit-blue);
+  animation: blink-cursor 0.8s step-end infinite;
+}
+
+@keyframes blink-cursor {
+  0%, 100% { border-color: var(--color-spirit-blue); }
+  50% { border-color: transparent; }
+}
+
+/* --------------------------------------------------------------------------
+   6. Glowing Divider
+   -------------------------------------------------------------------------- */
+
+.divider-glow {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-spirit-blue), var(--color-warm-gold), transparent);
+  margin: 0 24px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.divider-glow::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-warm-gold);
+  top: -2px;
+  left: -10px;
+  box-shadow: 0 0 6px var(--color-warm-gold), 0 0 12px rgba(255, 213, 79, 0.3);
+  animation: divider-particle 3s linear infinite;
+}
+
+@keyframes divider-particle {
+  0% {
+    left: -10px;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   7. Suggestions Toggle Button
+   -------------------------------------------------------------------------- */
+
+.suggest-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(79, 195, 247, 0.7);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 8px 24px;
+  font-family: var(--font-ui);
+  user-select: none;
+  transition: color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.suggest-toggle:hover {
+  color: rgba(79, 195, 247, 0.95);
+}
+
+.suggest-arrow {
+  width: 16px;
+  height: 16px;
+  transition: transform var(--transition-normal);
+}
+
+.suggest-arrow.open {
+  transform: rotate(180deg);
+}
+
+/* --------------------------------------------------------------------------
+   8. Suggestions Panel
+   -------------------------------------------------------------------------- */
+
+.suggestions-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  padding: 0 24px;
+}
+
+.suggestions-panel.open {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* --------------------------------------------------------------------------
+   9. Suggestion Cards
+   -------------------------------------------------------------------------- */
+
+.suggestion-card {
+  background: rgba(10, 13, 20, 0.6);
+  border: 1px solid rgba(79, 195, 247, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  margin-bottom: 8px;
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  color: rgba(224, 224, 224, 0.85);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+  user-select: none;
+}
+
+.suggestion-card:last-child {
+  margin-bottom: 0;
+}
+
+.suggestion-card:hover {
+  background: rgba(79, 195, 247, 0.1);
+  border-color: rgba(79, 195, 247, 0.4);
+  box-shadow:
+    0 0 12px rgba(79, 195, 247, 0.15),
+    inset 0 0 8px rgba(79, 195, 247, 0.05);
+  transform: translateX(4px);
+}
+
+.suggestion-card:active {
+  transform: translateX(4px) scale(0.98);
+}
+
+/* --------------------------------------------------------------------------
+   10. Input Area
+   -------------------------------------------------------------------------- */
+
+.input-area {
+  display: flex;
+  gap: 12px;
+  padding: 12px 24px;
+  border-top: 1px solid rgba(79, 195, 247, 0.1);
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   11. Narrative Input
+   -------------------------------------------------------------------------- */
+
+#narrative-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--color-border-glow);
+  border-radius: var(--radius-sm);
+  color: #e0e0e0;
+  padding: 10px 16px;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  outline: none;
+  resize: none;
+  min-height: 42px;
+  max-height: 120px;
+  line-height: 1.5;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+#narrative-input:focus {
+  border-color: rgba(79, 195, 247, 0.6);
+  box-shadow: 0 0 10px rgba(79, 195, 247, 0.1);
+}
+
+#narrative-input::placeholder {
+  color: rgba(224, 224, 224, 0.35);
+  animation: placeholder-pulse 2s ease-in-out infinite;
+}
+
+@keyframes placeholder-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* --------------------------------------------------------------------------
+   12. Send Button
+   -------------------------------------------------------------------------- */
+
+.send-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(79, 195, 247, 0.1);
+  border: 1px solid rgba(79, 195, 247, 0.25);
+  color: var(--color-spirit-blue);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.send-btn:hover {
+  background: rgba(79, 195, 247, 0.2);
+  border-color: rgba(79, 195, 247, 0.5);
+  box-shadow:
+    0 0 12px rgba(79, 195, 247, 0.25),
+    0 0 24px rgba(79, 195, 247, 0.1);
+  transform: scale(1.05);
+}
+
+.send-btn:active {
+  transform: scale(0.95);
+}
+
+.send-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* --------------------------------------------------------------------------
+   13. Scrollbar within narrative area
+   -------------------------------------------------------------------------- */
+
+.narrative-text::-webkit-scrollbar {
+  width: 4px;
+}
+
+.narrative-text::-webkit-scrollbar-thumb {
+  background: rgba(79, 195, 247, 0.15);
+  border-radius: 2px;
+}

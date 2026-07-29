@@ -7,12 +7,13 @@ import { StorageManager } from './storage.js';
 import { Navigation } from './navigation.js';
 import { Particles } from './particles.js';
 import { TitleScreen } from './title.js';
+import { EventPanel } from './event.js';
 
 export const App = {
 
   /**
    * 应用初始化入口（异步）
-   * 执行顺序：存档恢复 → 粒子 Canvas → 面板容器 → 侧边栏 → 订阅 → 图标 → 首屏
+   * 执行顺序：存档恢复 → 粒子 Canvas → 面板容器 → 侧边栏 → 标题 → 事件面板 → 订阅 → 图标 → 首屏
    */
   async init() {
     // 1. 检查并恢复存档
@@ -41,19 +42,22 @@ export const App = {
     // 5. 初始化标题界面
     TitleScreen.init();
 
-    // 6. 注册视图切换订阅 — 其他模块通过 AppState.set('currentView', id) 触发导航
+    // 6. 初始化事件对话面板
+    EventPanel.init();
+
+    // 7. 注册视图切换订阅 — 其他模块通过 AppState.set('currentView', id) 触发导航
     AppState.subscribe('currentView', function (newView) {
       if (newView && newView !== 'title') {
         Navigation.navigateTo(newView);
       }
     });
 
-    // 7. 渲染全页 Lucide 图标（侧边栏 + 面板内的图标）
+    // 8. 渲染全页 Lucide 图标（侧边栏 + 面板内的图标）
     if (typeof lucide !== 'undefined' && lucide.createIcons) {
       lucide.createIcons();
     }
 
-    // 8. 判断首屏：有存档则进入事件视图，无存档则显示标题界面
+    // 9. 判断首屏：有存档则进入事件视图，无存档则显示标题界面
     var titleScreen = document.getElementById('title-screen');
     if (StorageManager.hasSave()) {
       if (titleScreen) {
