@@ -316,6 +316,8 @@ export const EventPanel = {
 
   /**
    * 触发战斗 — 调用 BattleStage（Task 8）
+   * TODO: Task 8 实现后应调用 BattleStage.show(enemy) 而非仅存储数据。
+   *       BattleStage 应订阅 AppState('pendingBattle') 以响应触发。
    * @param {Object} [enemyData] - 对手数据
    */
   triggerBattle(enemyData) {
@@ -326,11 +328,10 @@ export const EventPanel = {
       description: '黑暗中诞生的灵体，散发着不祥的气息。'
     };
 
-    // 存储战斗数据供 BattleStage 使用
+    // 存储战斗数据供 BattleStage（Task 8）使用
     AppState.set('pendingBattle', enemy);
 
-    // 通知导航准备切换视图
-    console.log('[EventPanel] 触发战斗: ' + enemy.name);
+    console.log('[EventPanel] 触发战斗: ' + enemy.name + '（等待 Task 8 BattleStage 接管）');
   },
 
   /* ===================================================================
@@ -431,11 +432,17 @@ export const EventPanel = {
       card.textContent = text;
 
       card.addEventListener('click', function () {
-        // 填入输入框
+        // 单击：填入输入框
         self._inputEl.value = text;
         self._inputEl.style.height = 'auto';
         self._inputEl.style.height = Math.min(self._inputEl.scrollHeight, 120) + 'px';
         self._inputEl.focus();
+      });
+
+      card.addEventListener('dblclick', function () {
+        // 双击：直接提交
+        self._inputEl.value = text;
+        self.submitAction(text);
       });
 
       self._suggestionsPanel.appendChild(card);

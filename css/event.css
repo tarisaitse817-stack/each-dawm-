@@ -12,6 +12,9 @@
   padding: 24px 32px;
   position: relative;
   overflow: hidden;
+  /* 侧边栏偏移由 #main-content (sidebar.css) 的 margin-left: 64px 处理,
+     此处不再重复设置以免产生 128px 双倍间距 */
+  margin-left: 0;
 }
 
 /* Override .view-panel.active { display: block; } to enable flex layout */
