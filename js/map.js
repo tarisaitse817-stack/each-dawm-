@@ -425,12 +425,11 @@ export var MapPanel = {
       _mouseX = e.clientX - rect.left;
       _mouseY = e.clientY - rect.top;
 
-      // 视差效果 — 背景层相对偏移
+      // 视差效果 — 通过 CSS 自定义属性驱动（配合 map.css 中 calc(var(--mx) * -0.02)）
       var terrainLayer = document.getElementById('map-terrain-layer');
       if (terrainLayer) {
-        var parallaxX = (_mouseX - rect.width / 2) * -0.02;
-        var parallaxY = (_mouseY - rect.height / 2) * -0.02;
-        terrainLayer.style.transform = 'translate(' + parallaxX + 'px, ' + parallaxY + 'px)';
+        terrainLayer.style.setProperty('--mx', (_mouseX - rect.width / 2) + 'px');
+        terrainLayer.style.setProperty('--my', (_mouseY - rect.height / 2) + 'px');
       }
 
       // 拖拽处理
@@ -519,6 +518,17 @@ export var MapPanel = {
   _applyTransform: function () {
     var content = document.getElementById('map-content');
     if (!content) return;
+
+    // 限制平移范围，防止拖出界面
+    var canvas = document.getElementById('map-canvas');
+    if (canvas) {
+      var rect = canvas.getBoundingClientRect();
+      var panRange = 0.25 + (_scale - 1) * 0.35;
+      var maxOffsetX = rect.width * Math.max(0.15, panRange);
+      var maxOffsetY = rect.height * Math.max(0.15, panRange);
+      _viewportOffset.x = Math.max(-maxOffsetX, Math.min(maxOffsetX, _viewportOffset.x));
+      _viewportOffset.y = Math.max(-maxOffsetY, Math.min(maxOffsetY, _viewportOffset.y));
+    }
 
     content.style.transform =
       'translate(' + _viewportOffset.x + 'px, ' + _viewportOffset.y + 'px) ' +

@@ -37,7 +37,8 @@
   z-index: 1;
   pointer-events: none;
   opacity: 0.35;
-  transition: transform 0.15s ease-out;
+  transform: translate(calc(var(--mx, 0px) * -3), calc(var(--my, 0px) * -3));
+  transition: none;
 }
 
 /* 森林区域 — 绿色 */
