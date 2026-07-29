@@ -10,6 +10,8 @@ import { TitleScreen } from './title.js';
 import { EventPanel } from './event.js';
 import { BattleStage } from './battle.js';
 import { DeckPanel } from './deck.js';
+import { CompanionsPanel } from './companions.js';
+import { InventoryPanel } from './inventory.js';
 
 export const App = {
 
@@ -53,19 +55,25 @@ export const App = {
     // 8. 初始化卡组编辑面板
     DeckPanel.init();
 
-    // 9. 注册视图切换订阅 — 其他模块通过 AppState.set('currentView', id) 触发导航
+    // 9. 初始化伙伴面板
+    CompanionsPanel.init();
+
+    // 10. 初始化背包面板
+    InventoryPanel.init();
+
+    // 11. 注册视图切换订阅 — 其他模块通过 AppState.set('currentView', id) 触发导航
     AppState.subscribe('currentView', function (newView) {
       if (newView && newView !== 'title') {
         Navigation.navigateTo(newView);
       }
     });
 
-    // 10. 渲染全页 Lucide 图标（侧边栏 + 面板内的图标）
+    // 12. 渲染全页 Lucide 图标（侧边栏 + 面板内的图标）
     if (typeof lucide !== 'undefined' && lucide.createIcons) {
       lucide.createIcons();
     }
 
-    // 11. 判断首屏：有存档则进入事件视图，无存档则显示标题界面
+    // 13. 判断首屏：有存档则进入事件视图，无存档则显示标题界面
     var titleScreen = document.getElementById('title-screen');
     if (StorageManager.hasSave()) {
       if (titleScreen) {

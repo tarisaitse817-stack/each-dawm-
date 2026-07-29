@@ -1,0 +1,352 @@
+/* ==========================================================================
+   光之回响 (Echoes of Light) — 背包界面样式
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Panel Container
+   -------------------------------------------------------------------------- */
+
+#panel-inventory {
+  padding: 24px 32px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   2. Top Bar: Title + Spirit Gems
+   -------------------------------------------------------------------------- */
+
+.inventory-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+.inventory-title {
+  font-family: var(--font-ui);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #e0e0e0;
+  letter-spacing: 0.05em;
+}
+
+.inventory-gems {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gems-number {
+  font-family: var(--font-ui);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-warm-gold);
+  text-shadow:
+    0 0 8px rgba(255, 213, 79, 0.4),
+    0 0 16px rgba(255, 213, 79, 0.2);
+  line-height: 1;
+}
+
+.gems-icon {
+  width: 24px;
+  height: 24px;
+  color: var(--color-warm-gold);
+  filter: drop-shadow(0 0 6px rgba(255, 213, 79, 0.5));
+}
+
+/* --------------------------------------------------------------------------
+   3. Category Tabs
+   -------------------------------------------------------------------------- */
+
+.inventory-categories {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.category-tab {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: rgba(224, 224, 224, 0.5);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.category-tab:hover {
+  color: rgba(224, 224, 224, 0.8);
+  background: rgba(79, 195, 247, 0.06);
+}
+
+.category-tab.active {
+  color: var(--color-warm-gold);
+  border-bottom: 2px solid var(--color-warm-gold);
+  border-radius: 0;
+  padding-bottom: 4px;
+  text-shadow: 0 0 8px rgba(255, 213, 79, 0.15);
+}
+
+/* --------------------------------------------------------------------------
+   4. Item Grid (scrollable)
+   -------------------------------------------------------------------------- */
+
+.inventory-grid-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 16px;
+  min-height: 0;
+}
+
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.inventory-grid-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  color: rgba(224, 224, 224, 0.35);
+}
+
+/* --------------------------------------------------------------------------
+   5. Item Card
+   -------------------------------------------------------------------------- */
+
+.item-card {
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--color-bg-panel);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.item-card:hover {
+  transform: scale(1.08);
+}
+
+/* Rarity border + glow on hover */
+.item-card.rarity-common:hover {
+  border-color: var(--color-rarity-common);
+  box-shadow: 0 0 12px rgba(158, 158, 158, 0.2);
+}
+
+.item-card.rarity-rare:hover {
+  border-color: var(--color-rarity-rare);
+  box-shadow: 0 0 12px rgba(79, 195, 247, 0.3);
+}
+
+.item-card.rarity-epic:hover {
+  border-color: var(--color-rarity-epic);
+  box-shadow: 0 0 12px rgba(171, 71, 188, 0.3);
+}
+
+.item-card.rarity-legendary:hover {
+  border-color: var(--color-rarity-legendary);
+  box-shadow: 0 0 16px rgba(255, 213, 79, 0.35);
+}
+
+.item-card.selected {
+  border-color: var(--color-warm-gold);
+  box-shadow: 0 0 12px rgba(255, 213, 79, 0.2);
+}
+
+/* Item Icon */
+.item-icon {
+  width: 32px;
+  height: 32px;
+  stroke-width: 1.5;
+  transition: all var(--transition-fast);
+}
+
+.item-card:hover .item-icon {
+  transform: scale(1.1);
+}
+
+/* Item Name (bottom of card) */
+.item-card-name {
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  color: rgba(224, 224, 224, 0.7);
+  text-align: center;
+  line-height: 1.2;
+  max-width: 90%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Count Badge (top-right corner) */
+.item-count {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-ui);
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: rgba(224, 224, 224, 0.9);
+  line-height: 1;
+}
+
+/* --------------------------------------------------------------------------
+   6. Item Detail Panel (sticky bottom)
+   -------------------------------------------------------------------------- */
+
+.item-detail {
+  flex-shrink: 0;
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border-glow);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: none;
+  gap: 16px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all var(--transition-normal);
+  position: sticky;
+  bottom: 0;
+}
+
+.item-detail.visible {
+  display: flex;
+}
+
+/* Detail icon area */
+.item-detail-icon {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.item-detail-icon .detail-icon-svg {
+  width: 32px;
+  height: 32px;
+  stroke-width: 1.5;
+}
+
+/* Detail info area */
+.item-detail-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.item-detail-name {
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  font-weight: 600;
+  color: #e0e0e0;
+}
+
+.item-detail-rarity {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+}
+
+.item-detail-effect {
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  color: rgba(224, 224, 224, 0.55);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+/* Detail action buttons */
+.item-detail-actions {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+}
+
+.item-detail-actions .btn-use {
+  padding: 8px 20px;
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-spirit-blue);
+  background: transparent;
+  border: 1px solid var(--color-spirit-blue);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.item-detail-actions .btn-use:hover {
+  background: rgba(79, 195, 247, 0.1);
+  box-shadow: 0 0 10px rgba(79, 195, 247, 0.2);
+}
+
+.item-detail-actions .btn-discard {
+  padding: 8px 20px;
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: rgba(244, 67, 54, 0.6);
+  background: transparent;
+  border: 1px solid rgba(244, 67, 54, 0.25);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.item-detail-actions .btn-discard:hover {
+  color: #f44336;
+  border-color: #f44336;
+  background: rgba(244, 67, 54, 0.08);
+}
+
+/* Confirm discard state */
+.item-detail-actions .btn-discard.confirming {
+  color: #f44336;
+  border-color: #f44336;
+  background: rgba(244, 67, 54, 0.12);
+  animation: pulse 1s ease-in-out infinite;
+}

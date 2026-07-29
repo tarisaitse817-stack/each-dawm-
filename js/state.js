@@ -42,40 +42,40 @@ function createDefaultState() {
     /* --- 伙伴列表 --- */
     companions: [
       {
-        id: 'lingxi',
-        name: '灵曦',
-        affection: 0,
-        location: '初始之地',
-        status: 'idle',
+        id: 'ying',
+        name: '荧',
+        affection: 78,
+        location: '翡翠神殿',
+        status: '休整',
         unlocked: true,
-        background: '破晓时分的第一缕光凝结而成的灵体，拥有看穿虚妄的能力。'
+        background: '曾在神殿中守护光之种的精灵，擅长治愈与光魔法。'
       },
       {
-        id: 'xingli',
-        name: '星璃',
-        affection: 0,
-        location: '初始之地',
-        status: 'idle',
-        unlocked: false,
-        background: '远古星辰破碎后留下的碎片，在夜空中流浪了千年。沉默寡言，但内心温柔。'
+        id: 'jin',
+        name: '烬',
+        affection: 42,
+        location: '灰烬峡谷',
+        status: '外出探索',
+        unlocked: true,
+        background: '游走于暗影边界的旅者，沉默寡言却可靠。'
       },
       {
-        id: 'yelan',
-        name: '夜澜',
-        affection: 0,
-        location: '未知',
-        status: 'idle',
-        unlocked: false,
-        background: '来自深渊之海的浪花精灵，性情桀骜不驯，掌握着潮汐的神秘力量。'
+        id: 'lan',
+        name: '岚',
+        affection: 15,
+        location: '风语草原',
+        status: '休整',
+        unlocked: true,
+        background: '风之部族的后裔，拥有与自然对话的天赋。'
       },
       {
-        id: 'shuangyue',
-        name: '霜月',
+        id: 'unknown1',
+        name: '???',
         affection: 0,
-        location: '未知',
-        status: 'idle',
+        location: '???',
+        status: '未知',
         unlocked: false,
-        background: '极寒之地的月华化身，清冷孤傲，为了寻找失落的记忆而踏上旅途。'
+        background: '???'
       }
     ],
 
@@ -109,14 +109,15 @@ function createDefaultState() {
 
     /* --- 背包物品 --- */
     inventory: [
-      { id: 'item-001', name: '灵辉碎片', type: 'consumable', rarity: 'common', count: 5, effect: '恢复100LP' },
-      { id: 'item-002', name: '星辰之露', type: 'consumable', rarity: 'rare', count: 2, effect: '恢复300LP' },
-      { id: 'item-003', name: '光之结晶', type: 'material', rarity: 'rare', count: 1, effect: '用于强化光属性卡牌' },
-      { id: 'item-004', name: '残破古卷', type: 'key', rarity: 'common', count: 1, effect: '记载着失落的知识碎片' },
-      { id: 'item-005', name: '灵犀之羽', type: 'quest', rarity: 'epic', count: 1, effect: '灵曦赠予的信物，蕴含着温暖的光芒' },
-      { id: 'item-006', name: '黯星碎片', type: 'material', rarity: 'epic', count: 1, effect: '来自陨落星辰的残骸，散发着幽暗的光' },
-      { id: 'item-007', name: '回响药剂', type: 'consumable', rarity: 'common', count: 3, effect: '短时间内提升对灵辉的感知力' },
-      { id: 'item-008', name: '契约之印', type: 'key', rarity: 'legendary', count: 1, effect: '通往终焉之庭的钥匙，刻着古老的誓言' }
+      { id: 'item-cons-001', name: '光之露滴', type: 'consumable', rarity: 'rare', count: 3, effect: '恢复300LP' },
+      { id: 'item-cons-002', name: '森林药草', type: 'consumable', rarity: 'common', count: 5, effect: '恢复100LP' },
+      { id: 'item-cons-003', name: '星辉粉尘', type: 'consumable', rarity: 'rare', count: 8, effect: '清除所有异常状态' },
+      { id: 'item-key-001', name: '神殿碎片', type: 'key', rarity: 'common', count: 2, effect: '记载着失落神殿的秘密碎片' },
+      { id: 'item-mat-001', name: '暗影结晶', type: 'material', rarity: 'rare', count: 1, effect: '蕴含着暗影能量的结晶' },
+      { id: 'item-mat-002', name: '古老卷轴', type: 'material', rarity: 'legendary', count: 1, effect: '记载着远古咒文的卷轴' },
+      { id: 'item-mat-003', name: '风之羽', type: 'material', rarity: 'common', count: 3, effect: '轻盈的风元素羽毛' },
+      { id: 'item-mat-004', name: '大地结晶', type: 'material', rarity: 'common', count: 2, effect: '大地的力量凝聚而成' },
+      { id: 'item-pack-001', name: '基础卡包', type: 'pack', rarity: 'common', count: 2, effect: '打开获得随机卡牌' }
     ],
 
     /* --- 地图节点 --- */
