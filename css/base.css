@@ -276,6 +276,97 @@ ul, ol {
 }
 
 /* --------------------------------------------------------------------------
+   7a. Global Micro-interaction Animations (Task 12)
+   -------------------------------------------------------------------------- */
+
+/* Button ripple effect */
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* Card entrance animation */
+@keyframes card-appear {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Shimmer sweep effect */
+@keyframes shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* Bounce-in entrance */
+@keyframes bounce-in {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Panel fade-in on tab switch */
+#main-content > [id^="panel-"].active {
+  animation: fadeIn 0.25s ease-out both;
+}
+
+/* --------------------------------------------------------------------------
+   7b. Performance & Accessibility (Task 12)
+   -------------------------------------------------------------------------- */
+
+/* Inactive panels: keep DOM but skip rendering */
+.view-panel:not(.active) {
+  visibility: hidden !important;
+}
+
+/* Card list virtualisation for large collections */
+.card-list-virtual {
+  content-visibility: auto;
+  contain-intrinsic-size: 200px;
+}
+
+/* Reduced motion — disable all non-essential animations */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .hand-card,
+  .field-card,
+  .particle-dot,
+  #ambient-particles {
+    animation: none !important;
+    transition: none !important;
+    display: none !important;
+  }
+
+  #particles-canvas {
+    display: none !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
    7. Context Menu (自定义右键菜单)
    -------------------------------------------------------------------------- */
 

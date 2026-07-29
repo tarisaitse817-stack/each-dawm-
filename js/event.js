@@ -161,6 +161,9 @@ export const EventPanel = {
       this._enqueueDisplay(existingHistory);
     }
 
+    // 初始化默认氛围
+    this.setAtmosphere('calm');
+
     // 订阅叙事历史变更 — 自动显示新增内容
     var self = this;
     AppState.subscribe('narrativeHistory', function (newHistory, oldHistory) {
@@ -416,6 +419,32 @@ export const EventPanel = {
      =================================================================== */
 
   /**
+   * 设置场景氛围 — 改变背景色调和分割线粒子颜色
+   * @param {'calm'|'tense'|'mysterious'} mood - 情绪基调
+   */
+  setAtmosphere(mood) {
+    if (!this._el) return;
+
+    // 设置氛围背景
+    var atmoEl = this._el.querySelector('.event-atmosphere');
+    if (atmoEl) {
+      atmoEl.className = 'event-atmosphere';
+      if (mood && mood !== 'calm') {
+        atmoEl.classList.add('mood-' + mood);
+      }
+    }
+
+    // 设置分割线粒子颜色
+    var divider = this._el.querySelector('.divider-glow');
+    if (divider) {
+      divider.className = 'divider-glow';
+      if (mood && mood !== 'calm') {
+        divider.classList.add('particle-' + mood);
+      }
+    }
+  },
+
+  /**
    * 展开建议选项
    * @param {string[]} options - 建议文本数组（2-4 个）
    */
@@ -426,10 +455,12 @@ export const EventPanel = {
 
     var self = this;
 
-    options.slice(0, 4).forEach(function (text) {
+    options.slice(0, 4).forEach(function (text, index) {
       var card = document.createElement('div');
       card.className = 'suggestion-card';
       card.textContent = text;
+      // 交错入场延迟（递增 60ms）
+      card.style.animationDelay = (index * 60) + 'ms';
 
       card.addEventListener('click', function () {
         // 单击：填入输入框
@@ -486,19 +517,29 @@ export const EventPanel = {
       var entry = KEYWORD_MAP[i];
       for (var j = 0; j < entry.keywords.length; j++) {
         if (lowerInput.indexOf(entry.keywords[j].toLowerCase()) !== -1) {
-          // 命中关键词
+          // 命中关键词 — 根据情景切换氛围
           if (entry.action === 'battle') {
+            this.setAtmosphere('tense');
             this.triggerBattle();
             return '一股强大的气息突然出现！暗影斥候从黑暗中显现，战斗一触即发！';
           }
           if (entry.responses && entry.responses.length > 0) {
+            // 探索/对话 → 宁静；前进 → 神秘
+            if (entry.keywords.indexOf('战斗') >= 0 || entry.keywords.indexOf('攻击') >= 0) {
+              this.setAtmosphere('tense');
+            } else if (entry.keywords.indexOf('前进') >= 0 || entry.keywords.indexOf('向前') >= 0) {
+              this.setAtmosphere('mysterious');
+            } else {
+              this.setAtmosphere('calm');
+            }
             return randomPick(entry.responses);
           }
         }
       }
     }
 
-    // 无匹配 — 返回默认响应
+    // 无匹配 — 返回默认响应（神秘氛围）
+    this.setAtmosphere('mysterious');
     return randomPick(DEFAULT_RESPONSES);
   },
 
@@ -568,10 +609,13 @@ export const EventPanel = {
    */
   _scrollToBottom() {
     var self = this;
-    // 使用 requestAnimationFrame 确保 DOM 更新后滚动
+    // 使用 requestAnimationFrame 确保 DOM 更新后平滑滚动
     requestAnimationFrame(function () {
       if (self._narrativeEl) {
-        self._narrativeEl.scrollTop = self._narrativeEl.scrollHeight;
+        self._narrativeEl.scrollTo({
+          top: self._narrativeEl.scrollHeight,
+          behavior: 'smooth'
+        });
       }
     });
   }

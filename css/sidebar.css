@@ -167,6 +167,7 @@
    -------------------------------------------------------------------------- */
 
 #main-content {
+  position: relative;
   margin-left: 64px;
   width: calc(100% - 64px);
   height: 100vh;
@@ -180,12 +181,18 @@
 }
 
 .view-panel {
-  display: none;
+  display: block;
+  visibility: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   min-height: 100vh;
-  animation: fadeIn var(--transition-normal);
+  z-index: 1;
 }
 
 .view-panel.active {
-  display: block;
+  visibility: visible;
+  position: relative;
+  z-index: 2;
 }

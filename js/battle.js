@@ -561,6 +561,17 @@ function _opponentTurn() {
       _opponentPlayCards();
       _renderField();
 
+      // 在对手怪兽区生成粒子
+      setTimeout(function () {
+        if (!_active) return;
+        for (var zi = 0; zi < 5; zi++) {
+          if (_state.opponentMonsters[zi]) {
+            var zone = _dom.opponentMonsterZones ? _dom.opponentMonsterZones.children[zi] : null;
+            if (zone) _spawnParticlesAt(zone, 8, '#ab47bc');
+          }
+        }
+      }, 50);
+
       // 战斗阶段
       setTimeout(function () {
         if (!_active) return;
@@ -608,6 +619,7 @@ function _opponentTurn() {
 function _opponentPlayCards() {
   // 尝试召唤怪兽
   var hand = _state.opponentHand;
+  var monsterZoneIndex = -1;
   if (hand.length > 0) {
     // 找手牌中的怪兽
     for (var i = 0; i < hand.length; i++) {
@@ -618,7 +630,7 @@ function _opponentPlayCards() {
             var card = hand.splice(i, 1)[0];
             card.position = 'attack';
             _state.opponentMonsters[z] = card;
-            Particles.spawnBattleParticles(0, 0, 8, '#ab47bc');
+            monsterZoneIndex = z;
             break;
           }
         }
@@ -710,6 +722,16 @@ function _declareAttack(attackerIdx, targetIdx, attackerPlayer) {
     }
   }
 
+  // 在攻击者和目标之间生成冲击波
+  var attackerCenter = _getElementCenter(zoneEl);
+  var targetCenter = _getElementCenter(targetZoneEl);
+  var shockX = (attackerCenter.x + targetCenter.x) / 2;
+  var shockY = (attackerCenter.y + targetCenter.y) / 2;
+  _createShockwave(shockX, shockY);
+
+  // 攻击拖尾粒子
+  Particles.spawnBattleParticles(attackerCenter.x, attackerCenter.y, 10, isPlayerAttacker ? '#4FC3F7' : '#ab47bc');
+
   // 计算伤害
   var atk = attacker.attack || 0;
   var def = target.defense || 0;
@@ -745,6 +767,14 @@ function _declareAttack(attackerIdx, targetIdx, attackerPlayer) {
   // 处理结果
   setTimeout(function () {
     if (destroyed) {
+      // 目标被破坏时的爆炸粒子
+      Particles.spawnBattleParticles(targetCenter.x, targetCenter.y, 18, '#f44336');
+
+      // 第二波粒子爆发
+      setTimeout(function () {
+        Particles.spawnBattleParticles(targetCenter.x, targetCenter.y, 12, '#FFD54F');
+      }, 150);
+
       if (isTargetDefense || atk >= target.attack) {
         // 目标被破坏 → 送墓
         if (isPlayerAttacker) {
@@ -753,6 +783,10 @@ function _declareAttack(attackerIdx, targetIdx, attackerPlayer) {
         } else {
           _sendToGraveyard(targetMonsters[targetIdx], 'player');
           targetMonsters[targetIdx] = null;
+        }
+
+        if (!isTargetDefense && atk >= target.attack) {
+          _updateLP(isPlayerAttacker ? 'opponent' : 'player', -damage);
         }
       } else {
         // 攻击者被反杀 → 送墓
@@ -763,12 +797,6 @@ function _declareAttack(attackerIdx, targetIdx, attackerPlayer) {
           _sendToGraveyard(attacker, 'opponent');
         }
       }
-
-      if (!isTargetDefense && atk >= target.attack) {
-        _updateLP(isPlayerAttacker ? 'opponent' : 'player', -damage);
-      }
-
-      Particles.spawnBattleParticles(0, 0, 12, '#f44336');
     }
 
     _isAnimating = false;
@@ -788,7 +816,12 @@ function _declareDirectAttack(attackerIdx) {
   if (zoneEl) {
     var cardEl = zoneEl.querySelector('.field-card');
     if (cardEl) cardEl.classList.add('card-attacking');
+    _spawnParticlesAt(zoneEl, 10, '#ab47bc');
   }
+
+  // 玩家 LP 位置生成冲击波
+  var playerLPCenter = _getElementCenter(_dom.playerLP);
+  _createShockwave(playerLPCenter.x, playerLPCenter.y);
 
   var damage = attacker.attack || 0;
   Notifications.show('error', '直接攻击', attacker.name + ' 对你造成了 ' + damage + ' 点伤害');
@@ -801,6 +834,62 @@ function _declareDirectAttack(attackerIdx) {
   }, 500);
 }
 
+/** 获取元素中心坐标（相对于视口） */
+function _getElementCenter(el) {
+  if (!el) return { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+  var rect = el.getBoundingClientRect();
+  return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+}
+
+/** 在元素处生成粒子爆发 */
+function _spawnParticlesAt(el, count, color) {
+  var center = _getElementCenter(el);
+  Particles.spawnBattleParticles(center.x, center.y, count, color);
+}
+
+/** 添加 will-change 并在动画完成后移除 */
+function _addWillChange(el, property) {
+  if (!el) return;
+  el.style.willChange = property || 'transform, opacity';
+  var clear = function () { el.style.willChange = ''; };
+  el.addEventListener('transitionend', clear, { once: true });
+  el.addEventListener('animationend', clear, { once: true });
+  // 后备：1s 后自动移除
+  setTimeout(clear, 1000);
+}
+
+/** 创建冲击波元素 */
+function _createShockwave(x, y) {
+  var sw = document.createElement('div');
+  sw.className = 'shockwave';
+  sw.style.left = x + 'px';
+  sw.style.top = y + 'px';
+  document.body.appendChild(sw);
+  sw.addEventListener('animationend', function () { sw.remove(); });
+  return sw;
+}
+
+/** 创建融合漩涡 */
+function _createFusionVortex(x, y) {
+  var vortex = document.createElement('div');
+  vortex.className = 'fusion-vortex';
+  vortex.style.left = x + 'px';
+  vortex.style.top = y + 'px';
+  document.body.appendChild(vortex);
+  vortex.addEventListener('animationend', function () { vortex.remove(); });
+
+  var flash = document.createElement('div');
+  flash.className = 'fusion-flash';
+  document.body.appendChild(flash);
+  flash.addEventListener('animationend', function () { flash.remove(); });
+
+  // 粒子漩涡
+  Particles.spawnBattleParticles(x, y, 40, '#FFD54F');
+  setTimeout(function () {
+    Particles.spawnBattleParticles(x, y, 30, '#4FC3F7');
+  }, 200);
+}
+
 /** 更新 LP */
 function _updateLP(player, amount) {
   var key = player === 'player' ? 'playerLP' : 'opponentLP';
@@ -810,19 +899,20 @@ function _updateLP(player, amount) {
   if (el) {
     el.textContent = _state[key];
     if (amount < 0) {
-      el.classList.remove('lp-flash', 'lp-down');
+      el.classList.remove('lp-flash', 'lp-down', 'lp-gain');
       // 强制回流
       void el.offsetWidth;
       el.classList.add('lp-down');
+      // 在 LP 数值处生成红色粒子
+      var c = _getElementCenter(el);
+      Particles.spawnBattleParticles(c.x, c.y, 8, '#f44336');
     } else if (amount > 0) {
-      el.classList.remove('lp-flash', 'lp-down');
+      el.classList.remove('lp-flash', 'lp-down', 'lp-gain');
       void el.offsetWidth;
-      el.classList.add('lp-flash');
+      el.classList.add('lp-gain');
+      var c2 = _getElementCenter(el);
+      Particles.spawnBattleParticles(c2.x, c2.y, 6, '#81C784');
     }
-  }
-
-  if (amount < 0) {
-    Particles.spawnBattleParticles(0, 0, 6, '#f44336');
   }
 }
 
@@ -911,7 +1001,17 @@ function _summonMonster(handIndex, zoneIndex, position) {
   card.position = position || 'attack';
   _state.playerMonsters[zoneIndex] = card;
 
-  Particles.spawnBattleParticles(0, 0, 10, '#4FC3F7');
+  // 在目标怪兽区生成粒子效果
+  var zoneEl = _dom.playerMonsterZones ? _dom.playerMonsterZones.children[zoneIndex] : null;
+  _spawnParticlesAt(zoneEl, 15, '#4FC3F7');
+
+  // 卡牌入场拖尾粒子（从手牌位置到怪兽区）
+  var handEl = _dom.playerHand ? _dom.playerHand.children[_selectedHandIndex >= 0 ? _selectedHandIndex : 0] : null;
+  if (handEl) {
+    var handCenter = _getElementCenter(handEl);
+    Particles.spawnBattleParticles(handCenter.x, handCenter.y, 8, '#4FC3F7');
+  }
+
   Notifications.show('success', '召唤', card.name + ' 召唤成功');
 
   _selectedHandIndex = -1;
@@ -947,6 +1047,17 @@ function _setSpellTrap(handIndex, zoneIndex) {
   card.position = 'face-down';
   _state.playerSpellTraps[zoneIndex] = card;
 
+  // SET 卡翻转动画
+  var stZoneEl = _dom.playerSTZones ? _dom.playerSTZones.children[zoneIndex] : null;
+  if (stZoneEl) {
+    var stCardEl = stZoneEl.querySelector('.field-card');
+    if (stCardEl) {
+      stCardEl.classList.add('card-set-flip');
+      _addWillChange(stCardEl, 'transform');
+    }
+    _spawnParticlesAt(stZoneEl, 8, '#81C784');
+  }
+
   Notifications.show('info', 'SET', card.name + ' 已覆盖放置');
 
   _selectedHandIndex = -1;
@@ -976,6 +1087,23 @@ function _sendToGraveyard(card, player) {
   if (!card) return;
   var grave = player === 'player' ? _state.playerGraveyard : _state.opponentGraveyard;
   grave.push(card);
+
+  // 墓地送葬动画：在墓地位置生成粒子
+  var gyKey = player === 'player' ? 'playerGraveyard' : 'opponentGraveyard';
+  var gyZone = _dom[player + 'Graveyard'];
+  if (gyZone) {
+    _spawnParticlesAt(gyZone, 10, player === 'player' ? '#FFD54F' : '#ab47bc');
+
+    // 在卡片原本位置做翻转缩小效果
+    var gyCenter = _getElementCenter(gyZone);
+    // 从场地中央飞向墓地
+    Particles.spawnBattleParticles(
+      window.innerWidth / 2,
+      window.innerHeight / 2,
+      6,
+      player === 'player' ? '#FFD54F' : '#f44336'
+    );
+  }
 }
 
 /** 除外卡牌（专用函数，符合 spec 要求） */
@@ -1016,11 +1144,23 @@ function _activateSpellTrap(zoneIndex) {
     Notifications.show('info', '效果处理', '无效了对手的攻击');
   }
 
+  // 连锁特效：卡牌边缘闪蓝辉 + 缩放
+  var cardEl = _dom.playerSTZones ? _dom.playerSTZones.children[zoneIndex] : null;
+  if (cardEl) {
+    var inner = cardEl.querySelector('.field-card');
+    if (inner) {
+      inner.classList.add('chain-glow');
+      _addWillChange(inner, 'box-shadow, transform');
+    }
+    _spawnParticlesAt(cardEl, 10, '#4FC3F7');
+  }
+
   // 发动后送墓
   _state.playerSpellTraps[zoneIndex] = null;
   _sendToGraveyard(card, 'player');
 
-  Particles.spawnBattleParticles(0, 0, 6, '#4FC3F7');
+  var gyEl = _dom.playerGraveyard;
+  if (gyEl) _spawnParticlesAt(gyEl, 6, '#4FC3F7');
   _renderField();
 }
 
@@ -1261,6 +1401,10 @@ function _hideBattle() {
   _active = false;
   _isAnimating = false;
   _selectedHandIndex = -1;
+
+  // 通知粒子系统战斗结束（降低环境粒子密度）
+  Particles.setBattleActive(false);
+  Particles.clearBattleParticles();
 
   var overlay = document.getElementById('battle-overlay');
   if (overlay) {
@@ -1539,6 +1683,9 @@ export const BattleStage = {
     void overlay.offsetHeight;
     overlay.classList.add('active');
 
+    // 通知粒子系统战斗已激活（提升环境粒子密度）
+    Particles.setBattleActive(true);
+
     Notifications.show('info', '决斗开始',
       '对阵 ' + (opponent ? opponent.name : '暗影势力') + '！',
       3000
@@ -1578,6 +1725,63 @@ export const BattleStage = {
    */
   banishCard(card, player) {
     _banishCard(card, player);
+  },
+
+  /**
+   * 融合召唤特殊效果 — 粒子漩涡 + 卡牌从额外卡组飞出
+   * @param {number} targetZoneIndex - 目标额外怪兽区索引 (0-1)
+   * @param {Object} fusionCard - 融合怪兽数据
+   */
+  fusionSummon(targetZoneIndex, fusionCard) {
+    if (!_active) return;
+
+    var zoneEl = document.querySelector('.extra-monster-zone[data-index="' + targetZoneIndex + '"]');
+    if (!zoneEl) return;
+
+    var center = _getElementCenter(zoneEl);
+
+    // 粒子漩涡
+    _createFusionVortex(center.x, center.y);
+
+    // 从额外卡组位置到目标区域的卡牌飞入
+    var extraDeckEl = _dom.playerExtraDeck;
+    if (extraDeckEl) {
+      var extraCenter = _getElementCenter(extraDeckEl);
+      var dx = center.x - extraCenter.x;
+      var dy = center.y - extraCenter.y;
+
+      var flyCard = document.createElement('div');
+      flyCard.className = 'field-card monster-card card-fly-in';
+      flyCard.style.width = '120px';
+      flyCard.style.height = '160px';
+      flyCard.style.left = extraCenter.x + 'px';
+      flyCard.style.top = extraCenter.y + 'px';
+      flyCard.style.setProperty('--fly-dx', dx + 'px');
+      flyCard.style.setProperty('--fly-dy', dy + 'px');
+      flyCard.innerHTML = '<div class="fc-header"><span class="fc-name">' + esc(fusionCard.name || '融合怪兽') + '</span></div>';
+      document.body.appendChild(flyCard);
+
+      _addWillChange(flyCard, 'transform, opacity');
+
+      flyCard.addEventListener('animationend', function () {
+        flyCard.remove();
+        // 实际放置卡牌到场上
+        if (!_state.playerExtraDeck) _state.playerExtraDeck = [];
+        fusionCard.position = 'attack';
+        // 放入额外怪兽区
+        var extraMonsters = document.querySelectorAll('.extra-monster-zone');
+        for (var i = 0; i < extraMonsters.length; i++) {
+          extraMonsters[i].classList.add('occupied');
+        }
+        _spawnParticlesAt(zoneEl, 20, '#FFD54F');
+        _renderField();
+      });
+    }
+
+    Notifications.show('success', '融合召唤',
+      (fusionCard ? fusionCard.name : '融合怪兽') + ' 降临！',
+      3000
+    );
   },
 
   /**

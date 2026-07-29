@@ -1076,7 +1076,223 @@
 }
 
 /* --------------------------------------------------------------------------
-   17. 响应式调整
+   17. Enhanced Battle Animations (Task 12)
+   -------------------------------------------------------------------------- */
+
+/* ---- Card Enter with will-change hint ---- */
+.hand-card.card-entering,
+.field-card.card-entering {
+  will-change: transform, opacity;
+}
+
+/* ---- Attack Shockwave ---- */
+.shockwave {
+  position: fixed;
+  pointer-events: none;
+  z-index: 550;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  animation: shockwave-expand 0.5s ease-out forwards;
+}
+
+@keyframes shockwave-expand {
+  0% {
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(3);
+    opacity: 0;
+  }
+}
+
+/* ---- LP Gain Flash (green) ---- */
+.lp-gain {
+  animation: lp-gain-pulse 0.4s ease-out;
+}
+
+@keyframes lp-gain-pulse {
+  0% {
+    color: #81C784;
+    transform: scale(1.15);
+    text-shadow: 0 0 16px rgba(129, 199, 132, 0.6);
+  }
+  100% {
+    color: inherit;
+    transform: scale(1);
+    text-shadow: none;
+  }
+}
+
+/* ---- Graveyard Funeral Animation ---- */
+.card-funeral {
+  position: fixed !important;
+  pointer-events: none !important;
+  z-index: 600 !important;
+  animation: card-funeral 0.6s ease-in-out forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes card-funeral {
+  0% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  30% {
+    transform: scale(1.1) rotateY(90deg);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(0.6) rotateY(180deg) translateY(-30px);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(0.2) rotateY(180deg) translateY(80px);
+    opacity: 0;
+  }
+}
+
+/* ---- SET Card Flip ---- */
+.card-set-flip {
+  animation: card-set-flip 0.4s ease-in-out forwards;
+  will-change: transform;
+}
+
+@keyframes card-set-flip {
+  0% {
+    transform: scaleX(1);
+  }
+  45% {
+    transform: scaleX(0);
+  }
+  55% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+/* ---- Chain Glow ---- */
+.chain-glow {
+  animation: chain-glow 0.8s ease-in-out 2;
+  will-change: box-shadow, transform;
+}
+
+@keyframes chain-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(79, 195, 247, 0.3), 0 0 20px rgba(79, 195, 247, 0.1);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(79, 195, 247, 0.8), 0 0 60px rgba(79, 195, 247, 0.4), 0 0 80px rgba(79, 195, 247, 0.2);
+    transform: scale(1.05);
+  }
+}
+
+/* ---- Fusion Summon Vortex ---- */
+.fusion-vortex {
+  position: fixed;
+  pointer-events: none;
+  z-index: 550;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 213, 79, 0.3) 0%, rgba(79, 195, 247, 0.15) 40%, transparent 70%);
+  animation: fusion-vortex-pulse 0.8s ease-out forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes fusion-vortex-pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.8) rotate(180deg);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.5) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Fusion flash overlay */
+.fusion-flash {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 560;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.3) 0%, transparent 60%);
+  animation: fusion-flash-fade 0.6s ease-out forwards;
+}
+
+@keyframes fusion-flash-fade {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Card fly from extra deck */
+.card-fly-in {
+  position: fixed !important;
+  pointer-events: none !important;
+  z-index: 600 !important;
+  animation: card-fly-in 0.5s ease-out forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes card-fly-in {
+  0% {
+    transform: translate(0, 0) scale(0.5) rotate(15deg);
+    opacity: 0;
+  }
+  40% {
+    transform: translate(var(--fly-dx, -40px), var(--fly-dy, 20px)) scale(1.1) rotate(5deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--fly-dx, -40px), var(--fly-dy, 20px)) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* ---- will-cahnge utility ---- */
+.will-scale {
+  will-change: transform;
+}
+
+.will-opacity {
+  will-change: opacity;
+}
+
+/* ---- Reduced motion overrides ---- */
+@media (prefers-reduced-motion: reduce) {
+  .shockwave,
+  .card-funeral,
+  .card-set-flip,
+  .chain-glow,
+  .fusion-vortex,
+  .fusion-flash,
+  .card-fly-in,
+  .lp-flash,
+  .lp-down,
+  .lp-gain {
+    animation: none !important;
+    opacity: 1 !important;
+    display: none !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   18. 响应式调整
    -------------------------------------------------------------------------- */
 @media (max-width: 900px) {
   .zone.monster-zone { width: 90px; height: 130px; }

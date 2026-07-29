@@ -29,11 +29,31 @@
 .event-atmosphere {
   position: absolute;
   inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  transition: background 1.2s cubic-bezier(0.4, 0, 0.2, 1);
   background:
     radial-gradient(ellipse at 50% 30%, rgba(79,195,247,0.08) 0%, transparent 60%),
     radial-gradient(ellipse at 80% 70%, rgba(129,199,132,0.06) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: 0;
+}
+
+/* Atmosphere mood variants (set via JS inline style) */
+.event-atmosphere.mood-calm {
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(79,195,247,0.10) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 70%, rgba(129,199,132,0.08) 0%, transparent 50%);
+}
+
+.event-atmosphere.mood-tense {
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(244,67,54,0.10) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 70%, rgba(255,152,0,0.06) 0%, transparent 50%);
+}
+
+.event-atmosphere.mood-mysterious {
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(156,39,176,0.10) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 70%, rgba(79,195,247,0.06) 0%, transparent 50%);
 }
 
 /* --------------------------------------------------------------------------
@@ -122,6 +142,23 @@
   left: -10px;
   box-shadow: 0 0 6px var(--color-warm-gold), 0 0 12px rgba(255, 213, 79, 0.3);
   animation: divider-particle 3s linear infinite;
+  transition: background 0.6s ease, box-shadow 0.6s ease;
+}
+
+/* Divider particle — mood variants (set via JS) */
+.divider-glow.particle-calm::after {
+  background: #4FC3F7;
+  box-shadow: 0 0 6px #4FC3F7, 0 0 12px rgba(79, 195, 247, 0.3);
+}
+
+.divider-glow.particle-tense::after {
+  background: #f44336;
+  box-shadow: 0 0 6px #f44336, 0 0 12px rgba(244, 67, 54, 0.3);
+}
+
+.divider-glow.particle-mysterious::after {
+  background: #ab47bc;
+  box-shadow: 0 0 6px #ab47bc, 0 0 12px rgba(171, 71, 188, 0.3);
 }
 
 @keyframes divider-particle {
@@ -226,6 +263,27 @@
 
 .suggestion-card:active {
   transform: translateX(4px) scale(0.98);
+}
+
+/* Suggestion card staggered entry */
+.suggestion-card {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.suggestions-panel.open .suggestion-card {
+  animation: suggestion-enter 0.35s ease-out forwards;
+}
+
+@keyframes suggestion-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* --------------------------------------------------------------------------
