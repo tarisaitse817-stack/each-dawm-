@@ -37,7 +37,7 @@
   z-index: 1;
   pointer-events: none;
   opacity: 0.35;
-  transform: translate(calc(var(--mx, 0px) * -3), calc(var(--my, 0px) * -3));
+  transform: translate(calc(var(--mx, 0px) * -0.02), calc(var(--my, 0px) * -0.02));
   transition: none;
 }
 
