@@ -1,0 +1,6 @@
+server/
+.superpowers/
+docs/
+vercel.json
+.vercelignore
+.gitignore

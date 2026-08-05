@@ -1,0 +1,28 @@
+{
+  "port": 9999,
+  "host": "127.0.0.1",
+  "mdpro3_exe": "K:\\MyCardLibrary\\mdpro3\\MDPro3.exe",
+  "mdpro3_dir": "K:\\MyCardLibrary\\mdpro3",
+  "windbot_server": "tiramisu.moenext.com",
+  "windbot_port": "7911",
+  "ai_pool": [
+    "悠悠",
+    "悠悠王",
+    "琪露诺",
+    "谜之剑士LV4",
+    "复制植物",
+    "尼亚",
+    "永远之魂",
+    "比特机灵",
+    "复制梁龙",
+    "奇異果",
+    "奇魔果",
+    "MAX龍果",
+    "幻煌果",
+    "燃血鬥士",
+    "報社鬥士",
+    "我太帅了",
+    "玻璃女巫"
+  ],
+  "llm_timeout": 180
+}

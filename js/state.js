@@ -142,7 +142,12 @@ function createDefaultState() {
       animationIntensity: 'standard',
       bgmVolume: 0.7,
       sfxVolume: 0.8,
-      cardAnimSpeed: 'normal'
+      cardAnimSpeed: 'normal',
+      aiEnabled: true,
+      aiEndpoint: 'http://localhost:9999',
+      aiApiKey: '',
+      aiModel: 'deepseek-chat',
+      mdpro3Deck: 'PlayerInsect'
     },
 
     /* --- 通知队列 --- */

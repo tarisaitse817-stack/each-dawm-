@@ -9,7 +9,7 @@ import { Navigation } from './navigation.js';
 import { Particles } from './particles.js';
 import { TitleScreen } from './title.js';
 import { EventPanel } from './event.js';
-import { BattleStage } from './battle.js';
+import { AiClient, BattleBridge } from './ai.js';
 import { DeckPanel } from './deck.js';
 import { CompanionsPanel } from './companions.js';
 import { InventoryPanel } from './inventory.js';
@@ -74,7 +74,7 @@ export const App = {
     EventPanel.init();
 
     // 12. 初始化对战舞台
-    BattleStage.init();
+    // (BattleStage removed — MDPro3 handles battles)
 
     // 13. 初始化卡组编辑面板
     DeckPanel.init();
@@ -258,6 +258,34 @@ export const App = {
             '</select>' +
           '</div>' +
 
+          /* AI 配置 */
+          '<div class="settings-section-title">AI 叙事引擎</div>' +
+          '<div class="settings-row">' +
+            '<label for="setting-ai-enabled">启用 AI 叙事</label>' +
+            '<input type="checkbox" id="setting-ai-enabled" ' + (settings.aiEnabled !== false ? 'checked' : '') + '>' +
+          '</div>' +
+          '<div class="settings-row">' +
+            '<label for="setting-ai-endpoint">API 端点</label>' +
+            '<input type="text" id="setting-ai-endpoint" value="' + (settings.aiEndpoint || 'http://localhost:9999') + '" placeholder="http://localhost:9999">' +
+          '</div>' +
+          '<div class="settings-row">' +
+            '<label for="setting-ai-apikey">API Key</label>' +
+            '<input type="password" id="setting-ai-apikey" value="' + (settings.aiApiKey || '') + '" placeholder="sk-...">' +
+          '</div>' +
+          '<div class="settings-row">' +
+            '<label for="setting-ai-model">模型</label>' +
+            '<input type="text" id="setting-ai-model" value="' + (settings.aiModel || 'deepseek-chat') + '" placeholder="deepseek-chat">' +
+          '</div>' +
+          '<div class="settings-row">' +
+            '<label for="setting-mdpro3-deck">MDPro3 卡组</label>' +
+            '<input type="text" id="setting-mdpro3-deck" value="' + (settings.mdpro3Deck || 'PlayerInsect') + '" placeholder="PlayerInsect">' +
+          '</div>' +
+          '<div class="settings-row" id="ai-status-row">' +
+            '<span>AI Bridge 状态</span>' +
+            '<span class="ai-status-dot offline" id="ai-status-dot"></span> <span id="ai-status-text">未检测</span>' +
+            '<button id="setting-ai-test" class="settings-test-btn" style="margin-left:8px;padding:4px 12px;border-radius:6px;border:1px solid var(--color-spirit);background:transparent;color:var(--color-spirit);cursor:pointer;">测试连接</button>' +
+          '</div>' +
+
           /* 分割线 */
           '<div class="settings-divider"></div>' +
 
@@ -353,6 +381,17 @@ export const App = {
       if (sfxVal) sfxVal.textContent = sfxEl.value;
     }
     if (cardAnimEl) cardAnimEl.value = settings.cardAnimSpeed || 'normal';
+
+    var aiEnabledEl = document.getElementById('setting-ai-enabled');
+    if (aiEnabledEl) aiEnabledEl.checked = settings.aiEnabled !== false;
+    var aiEndpointEl = document.getElementById('setting-ai-endpoint');
+    if (aiEndpointEl) aiEndpointEl.value = settings.aiEndpoint || 'http://localhost:9999';
+    var aiApiKeyEl = document.getElementById('setting-ai-apikey');
+    if (aiApiKeyEl) aiApiKeyEl.value = settings.aiApiKey || '';
+    var aiModelEl = document.getElementById('setting-ai-model');
+    if (aiModelEl) aiModelEl.value = settings.aiModel || 'deepseek-chat';
+    var mdpro3DeckEl = document.getElementById('setting-mdpro3-deck');
+    if (mdpro3DeckEl) mdpro3DeckEl.value = settings.mdpro3Deck || 'PlayerInsect';
   },
 
   /**
@@ -393,6 +432,15 @@ export const App = {
       } else if (target.id === 'setting-card-anim-speed') {
         settings.cardAnimSpeed = target.value;
         changed = true;
+      } else if (target.id === 'setting-ai-endpoint') {
+        settings.aiEndpoint = target.value;
+        changed = true;
+      } else if (target.id === 'setting-ai-model') {
+        settings.aiModel = target.value;
+        changed = true;
+      } else if (target.id === 'setting-mdpro3-deck') {
+        settings.mdpro3Deck = target.value;
+        changed = true;
       }
 
       if (changed) {
@@ -423,6 +471,43 @@ export const App = {
       AppState.set('settings', settings);
       var fullState = AppState.get();
       StorageManager.save(fullState);
+    });
+
+    // ---- AI checkbox & input ----
+    modal.addEventListener('change', function (e) {
+      if (e.target.id === 'setting-ai-enabled') {
+        var s = AppState.get('settings');
+        s.aiEnabled = e.target.checked;
+        AppState.set('settings', s);
+        StorageManager.save(AppState.get());
+      }
+    });
+    modal.addEventListener('input', function (e) {
+      if (e.target.id === 'setting-ai-apikey') {
+        var s = AppState.get('settings');
+        s.aiApiKey = e.target.value;
+        AppState.set('settings', s);
+        StorageManager.save(AppState.get());
+      }
+    });
+
+    // ---- AI 测试连接 ----
+    modal.addEventListener('click', async function (e) {
+      if (e.target.id === 'setting-ai-test') {
+        var btn = e.target;
+        btn.textContent = '检测中…'; btn.disabled = true;
+        var result = await AiClient.health();
+        var dot = document.getElementById('ai-status-dot');
+        var text = document.getElementById('ai-status-text');
+        if (result && result.ok) {
+          if (dot) dot.className = 'ai-status-dot online';
+          if (text) text.textContent = '已连接 (' + (result.decks ? result.decks.length + '卡组' : 'OK') + ')';
+        } else {
+          if (dot) dot.className = 'ai-status-dot offline';
+          if (text) text.textContent = '未连接';
+        }
+        btn.textContent = '测试连接'; btn.disabled = false;
+      }
     });
 
     // ---- 清除存档按钮 ----
@@ -695,14 +780,8 @@ export const App = {
           return;
         }
 
-        // 3. 关闭对战舞台
-        var battleOverlay = document.getElementById('battle-overlay');
-        if (battleOverlay && battleOverlay.classList.contains('active')) {
-          if (typeof BattleStage.hide === 'function') {
-            BattleStage.hide();
-          } else {
-            battleOverlay.classList.remove('active');
-          }
+        // 3. (battle-overlay removed — Esc exits settings/context menu only)
+        {
           e.preventDefault();
           return;
         }

@@ -1,8 +1,9 @@
-/* ==========================================================================
+﻿/* ==========================================================================
    光之回响 (Echoes of Light) — EventPanel 事件对话界面
    ========================================================================== */
 
 import { AppState } from './state.js';
+import { AiClient, BattleBridge } from './ai.js';
 
 /* ==========================================================================
    常量
@@ -41,7 +42,7 @@ var TALK_RESPONSES = [
   '灵曦从光芒中显现，她那半透明的身影在空气中轻轻摇曳。"你感受到了吗？这片森林在呼唤着什么。"她的声音如同风铃般清脆。',
   '灵曦微微侧首，目光穿透了林间的迷雾。"每一个生命都有自己的光芒，"她轻声说道，"即使是最微弱的星光，也能照亮前行的路。"',
   '"在这片森林的深处，有一座古老的石碑。"灵曦指向远方，"我能感受到它的力量——那是远古时代留下的回响。"',
-  '灵曦轻轻抬手，一串光点从她的指尖飘出，在空中形成了一个古老的符文。"看，这是光之回响的印记。它指引着我们前进的方向。"'
+  '灵曦轻轻抬手，一串光点从她的指尖飘出，在空中形成了一个古老的符文。"看，这是牌佬的印记。它指引着我们前进的方向。"'
 ];
 
 var FORWARD_RESPONSES = [
@@ -278,63 +279,88 @@ export const EventPanel = {
    */
   submitAction(text) {
     var self = this;
-
-    // 1. 保存玩家行动到叙事历史
+    var state = AppState.get();
+    var aiOn = state.settings && state.settings.aiEnabled !== false;
     var playerText = PLAYER_PREFIX + truncate(text, 200);
     this._isInternalUpdate = true;
     AppState.push('narrativeHistory', playerText);
     this._isInternalUpdate = false;
-
-    // 2. 直接显示玩家行动
     this._addPlayerActionText(text);
+    if (this._suggestionsOpen) { this.toggleSuggestions(); }
+    if (aiOn) { this._callAI(text); }
+    else { this._callFallback(text); }
+  },
 
-    // 3. 关闭建议面板
-    if (this._suggestionsOpen) {
-      this.toggleSuggestions();
-    }
-
-    // 4. 模拟响应延迟
+  async _callAI(text) {
+    var self = this;
     this._pendingResponses++;
+    this._showThinking();
+    try {
+      var result = await AiClient.chat(text);
+      this._hideThinking();
+      self._isInternalUpdate = true;
+      AppState.push('narrativeHistory', result.narrative);
+      self._isInternalUpdate = false;
+      self._addNarratorText(result.narrative, undefined, function () {
+        self._pendingResponses--;
+        if (result.battle) { self._showBattleTrigger(); }
+        else if (self._pendingResponses === 0) { self.showSuggestions(DEFAULT_SUGGESTIONS); }
+      });
+    } catch (err) {
+      this._hideThinking();
+      this._callFallback(text);
+    }
+  },
 
+  _showThinking() {
+    var c = document.querySelector('#panel-event .narrative-container');
+    if (!c) return;
+    var el = document.createElement('div');
+    el.className = 'ai-thinking';
+    el.innerHTML = '<span class="ai-thinking-dot"></span><span class="ai-thinking-dot"></span><span class="ai-thinking-dot"></span> 小猫之神思考中\u2026';
+    c.appendChild(el); this._thinkingEl = el;
+    c.scrollTop = c.scrollHeight;
+  },
+
+  _hideThinking() {
+    if (this._thinkingEl) { this._thinkingEl.remove(); this._thinkingEl = null; }
+  },
+
+  _showBattleTrigger() {
+    var c = document.querySelector('#panel-event .narrative-container');
+    if (!c) return;
+    var deck = BattleBridge.getDeckName();
+    var el = document.createElement('div');
+    el.className = 'battle-trigger-container';
+    el.innerHTML = '<div class="battle-trigger-card"><div class="battle-trigger-glow"></div><div class="battle-trigger-text">黑暗决斗即将开始</div><div class="battle-trigger-deck">使用卡组: ' + deck + '</div><button class="battle-trigger-btn" id="battle-trigger-btn">开始对战</button></div>';
+    c.appendChild(el); this._battleTriggerEl = el;
+    c.scrollTop = c.scrollHeight;
+    var btn = el.querySelector('#battle-trigger-btn');
+    if (btn) { btn.addEventListener('click', function () { self._launchBattle(btn); }); }
+  },
+
+  async _launchBattle(btn) {
+    btn.disabled = true; btn.textContent = '正在启动 MDPro3\u2026';
+    var result = await BattleBridge.launch(BattleBridge.getDeckName());
+    if (result.ok) {
+      btn.textContent = '决斗已开启 (对手: ' + result.ai + ')';
+      btn.className = 'battle-trigger-btn launched';
+    } else { btn.textContent = '启动失败，请手动运行 MDPro3'; btn.disabled = false; }
+  },
+
+  _callFallback(text) {
+    var self = this;
+    this._pendingResponses++;
     setTimeout(function () {
-      // 生成响应
       var response = self._generateResponse(text);
-
-      // 保存到叙事历史
       self._isInternalUpdate = true;
       AppState.push('narrativeHistory', response);
       self._isInternalUpdate = false;
-
-      // 显示响应
       self._addNarratorText(response, undefined, function () {
         self._pendingResponses--;
-
-        // 响应完毕后显示建议
-        if (self._pendingResponses === 0) {
-          self.showSuggestions(DEFAULT_SUGGESTIONS);
-        }
+        if (self._pendingResponses === 0) { self.showSuggestions(DEFAULT_SUGGESTIONS); }
       });
     }, 600 + Math.random() * 400);
-  },
-
-  /**
-   * 触发战斗 — 调用 BattleStage（Task 8）
-   * TODO: Task 8 实现后应调用 BattleStage.show(enemy) 而非仅存储数据。
-   *       BattleStage 应订阅 AppState('pendingBattle') 以响应触发。
-   * @param {Object} [enemyData] - 对手数据
-   */
-  triggerBattle(enemyData) {
-    var enemy = enemyData || {
-      name: '暗影斥候',
-      lp: 3000,
-      maxLp: 3000,
-      description: '黑暗中诞生的灵体，散发着不祥的气息。'
-    };
-
-    // 存储战斗数据供 BattleStage（Task 8）使用
-    AppState.set('pendingBattle', enemy);
-
-    console.log('[EventPanel] 触发战斗: ' + enemy.name + '（等待 Task 8 BattleStage 接管）');
   },
 
   /* ===================================================================

@@ -7,11 +7,32 @@ import { StorageManager } from './storage.js';
 import { Navigation } from './navigation.js';
 
 /* 开场叙事文本（3 段话） */
+/**
+ * 开场叙事 — 优先从世界书加载，否则使用默认
+ */
 var OPENING_NARRATIVE = [
   '你在无尽的黑暗中睁开了双眼。不——你甚至不确定自己是否还有"眼睛"这个东西。只有光。微弱而温暖的光，从遥远的地方流淌而来，轻轻拂过你的意识。',
   '"你醒了。"一个声音，像是风穿过水晶的风铃，又像是远山的回响。你试图寻找声音的来源，却发现自己的身体正缓缓飘浮在一片星辉之中。',
-  '"来吧，旅人。光之回响在呼唤你。"'
+  '"来吧，牌佬。属于你的奇妙冒险在等待着你。"'
 ];
+
+async function loadOpeningNarrative() {
+  try {
+    var resp = await fetch('data/worldbook.json');
+    if (resp.ok) {
+      var wb = await resp.json();
+      var raw = (wb.first_mes || '').replace(/<\/?maintext>/g, '').replace(/\\n/g, '\n');
+      // Split into paragraphs (> 50 chars each)
+      var paragraphs = raw.split(/\n\n+/).filter(function(p) { return p.trim().length > 50; });
+      if (paragraphs.length >= 3) {
+        OPENING_NARRATIVE = paragraphs;
+        console.log('[TitleScreen] 加载世界书开场叙事: ' + paragraphs.length + ' 段');
+      }
+    }
+  } catch (e) {
+    console.log('[TitleScreen] 使用默认开场叙事');
+  }
+}
 
 export const TitleScreen = {
 
@@ -33,6 +54,7 @@ export const TitleScreen = {
     }
 
     this.render();
+    loadOpeningNarrative();
   },
 
   /**
@@ -45,8 +67,8 @@ export const TitleScreen = {
 
     this._el.innerHTML =
       '<div class="title-content">' +
-        '<div class="title-logo">光之回响</div>' +
-        '<div class="title-subtitle">文字冒险 × 卡牌对战</div>' +
+        '<div class="title-logo">牌佬的奇妙冒险</div>' +
+        '<div class="title-subtitle">AI 文字冒险 × 卡牌对战</div>' +
         '<div class="title-btn-container">' +
           (hasSave
             ? '<button class="title-btn primary" id="btn-continue">继续冒险</button>'

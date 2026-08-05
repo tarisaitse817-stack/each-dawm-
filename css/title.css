@@ -3,6 +3,47 @@
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
+   0. 封面轮播动画
+   -------------------------------------------------------------------------- */
+
+#cover-slideshow {
+  position: fixed; inset: 0; z-index: 0;
+  overflow: hidden;
+}
+.cover-slide {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  opacity: 0;
+  animation: cover-kenburns 32s infinite;
+  will-change: transform, opacity;
+}
+/* Each slide gets a staggered animation delay */
+.cover-slide:nth-child(1) { animation-delay: 0s; }
+.cover-slide:nth-child(2) { animation-delay: 8s; }
+.cover-slide:nth-child(3) { animation-delay: 16s; }
+.cover-slide:nth-child(4) { animation-delay: 24s; }
+
+@keyframes cover-kenburns {
+  0%   { opacity: 0; transform: scale(1.05); }
+  3%   { opacity: 0.55; transform: scale(1.05); }
+  22%  { opacity: 0.55; transform: scale(1.15); }
+  25%  { opacity: 0; transform: scale(1.15); }
+  100% { opacity: 0; transform: scale(1.15); }
+}
+
+/* Dark gradient overlay for text readability */
+.cover-overlay {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at center, transparent 30%, rgba(5,8,16,0.7) 80%),
+    linear-gradient(180deg, rgba(5,8,16,0.3) 0%, rgba(5,8,16,0.6) 50%, rgba(5,8,16,0.85) 100%);
+  pointer-events: none;
+}
+
+/* Title screen is transparent — cover slideshow shows through */
+#particles-canvas { z-index: 5; }
+
+/* --------------------------------------------------------------------------
    1. 浮动粒子动画
    -------------------------------------------------------------------------- */
 
@@ -49,7 +90,7 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: radial-gradient(ellipse at center, #0d1520 0%, #060a10 70%);
+  background: transparent;
   display: flex;
   flex-direction: column;
   align-items: center;

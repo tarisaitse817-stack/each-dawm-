@@ -1,0 +1,72 @@
+/* AI 思维指示器 */
+.ai-thinking {
+  display: flex; align-items: center; gap: 6px;
+  padding: 12px 20px; margin: 12px 0;
+  color: var(--color-spirit); font-size: 0.9em;
+  opacity: 0.8;
+}
+.ai-thinking-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--color-spirit);
+  animation: ai-bounce 1.2s infinite;
+}
+.ai-thinking-dot:nth-child(2) { animation-delay: 0.15s; }
+.ai-thinking-dot:nth-child(3) { animation-delay: 0.3s; }
+@keyframes ai-bounce {
+  0%, 80%, 100% { transform: scale(0.5); opacity: 0.3; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+/* 对战触发卡片 */
+.battle-trigger-container {
+  margin: 20px 0; display: flex; justify-content: center;
+}
+.battle-trigger-card {
+  position: relative;
+  background: linear-gradient(135deg, rgba(79,195,247,0.12), rgba(255,213,79,0.08));
+  border: 1px solid rgba(79,195,247,0.3);
+  border-radius: 16px; padding: 24px 32px; text-align: center;
+  overflow: hidden;
+  animation: battle-card-in 0.5s ease-out;
+}
+@keyframes battle-card-in {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.battle-trigger-glow {
+  position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+  background: radial-gradient(circle, rgba(79,195,247,0.12) 0%, transparent 70%);
+  animation: battle-glow 2s ease-in-out infinite;
+}
+@keyframes battle-glow {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(180deg); }
+}
+.battle-trigger-text {
+  font-size: 1.3em; font-weight: 600; color: var(--color-warm-gold);
+  margin-bottom: 6px; position: relative; z-index: 1;
+}
+.battle-trigger-deck {
+  font-size: 0.85em; color: var(--color-spirit); opacity: 0.7;
+  margin-bottom: 16px; position: relative; z-index: 1;
+}
+.battle-trigger-btn {
+  position: relative; z-index: 1;
+  padding: 10px 36px;
+  background: linear-gradient(135deg, var(--color-spirit), #0288d1);
+  color: #fff; border: none; border-radius: 8px;
+  font-size: 1em; font-weight: 600; cursor: pointer;
+  transition: all 0.3s;
+}
+.battle-trigger-btn:hover {
+  box-shadow: 0 0 20px rgba(79,195,247,0.5); transform: translateY(-1px);
+}
+.battle-trigger-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.battle-trigger-btn.launched {
+  background: linear-gradient(135deg, #66bb6a, #388e3c);
+}
+
+/* AI 状态灯 */
+.ai-status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
+.ai-status-dot.online { background: #4caf50; box-shadow: 0 0 6px rgba(76,175,80,0.6); }
+.ai-status-dot.offline { background: #f44336; box-shadow: 0 0 6px rgba(244,67,54,0.4); }
