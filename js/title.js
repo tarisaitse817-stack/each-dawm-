@@ -156,6 +156,7 @@ export const TitleScreen = {
         }
       });
     }
+    this._hideCover();
     Navigation.navigateTo('event');
     this.hide();
   },
@@ -181,6 +182,7 @@ export const TitleScreen = {
    */
   _startNewGame() {
     AppState.reset();
+    this._hideCover();
     Navigation.navigateTo('event');
 
     // 开场叙事直接在事件面板中以打字机效果展示
@@ -203,6 +205,7 @@ export const TitleScreen = {
    */
   show() {
     if (!this._el) return;
+    this._showCover();
     this._el.classList.remove('hidden');
 
     // 恢复主内容显示
@@ -226,5 +229,15 @@ export const TitleScreen = {
   hide() {
     if (!this._el) return;
     this._el.classList.add('hidden');
+  },
+
+  _hideCover() {
+    var cover = document.getElementById('cover-slideshow');
+    if (cover) cover.classList.add('hidden');
+  },
+
+  _showCover() {
+    var cover = document.getElementById('cover-slideshow');
+    if (cover) cover.classList.remove('hidden');
   }
 };

@@ -127,11 +127,13 @@ export const Navigation = {
       console.warn('[Navigation] 面板不存在: #panel-' + viewId);
     }
 
-    // 隐藏标题界面
+    // 隐藏标题界面 + 封面轮播
     var titleScreen = document.getElementById('title-screen');
     if (titleScreen && !titleScreen.classList.contains('hidden')) {
       titleScreen.classList.add('hidden');
     }
+    var cover = document.getElementById('cover-slideshow');
+    if (cover) cover.classList.add('hidden');
 
     _currentViewId = viewId;
     _isNavigating = false;
