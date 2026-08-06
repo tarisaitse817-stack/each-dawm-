@@ -77,6 +77,14 @@ def build_messages(user_input, history, game_state):
     # Build the main system message
     system_msg = "\n\n".join(sys_parts)
 
+    # Inject world context — replace placeholder in system message
+    world_ctx = build_world_context()
+    if "<|前置世界书|>" in system_msg:
+        system_msg = system_msg.replace("<|前置世界书|>", world_ctx)
+    else:
+        # If no placeholder, prepend world context
+        system_msg = world_ctx + "\n\n" + system_msg
+
     # Append format requirements
     if format_parts:
         system_msg += "\n\n" + "\n".join(format_parts)
