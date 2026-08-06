@@ -156,9 +156,6 @@ export const TitleScreen = {
         }
       });
     }
-    if (window.App && typeof window.App.switchBgm === 'function') {
-      window.App.switchBgm('game');
-    }
     Navigation.navigateTo('event');
     this.hide();
   },
@@ -184,9 +181,6 @@ export const TitleScreen = {
    */
   _startNewGame() {
     AppState.reset();
-    if (window.App && typeof window.App.switchBgm === 'function') {
-      window.App.switchBgm('game');
-    }
     Navigation.navigateTo('event');
 
     // 开场叙事直接在事件面板中以打字机效果展示
