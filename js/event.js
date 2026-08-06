@@ -67,7 +67,6 @@ var KEYWORD_MAP = [
   { keywords: ['对话', '说话', '交谈', '询问', '呼唤', '聊天', '聊聊'], action: 'response', responses: SEREN_RESPONSES },
   { keywords: ['前进', '向前', '走去', '前行', '出发', '移动', '继续'], action: 'response', responses: OUTSIDE_RESPONSES },
 ];
-];
 
 /* ==========================================================================
    工具函数
