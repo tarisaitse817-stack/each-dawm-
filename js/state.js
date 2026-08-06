@@ -150,6 +150,14 @@ function createDefaultState() {
       mdpro3Deck: 'PlayerInsect'
     },
 
+    /* --- 时间系统 --- */
+    gameTime: {
+      day: 1,
+      weekday: 1,     // 1=周一...7=周日
+      hour: 8,        // 0-23
+      minute: 0
+    },
+
     /* --- Token 统计 --- */
     tokenStats: {
       promptTokens: 0,

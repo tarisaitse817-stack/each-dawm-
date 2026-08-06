@@ -234,6 +234,33 @@ ul, ol {
 }
 
 /* --------------------------------------------------------------------------
+   5.5 时间显示
+   -------------------------------------------------------------------------- */
+#time-display {
+  position: fixed;
+  top: 16px;
+  left: 20px;
+  z-index: 100;
+  font-family: 'LXGW WenKai', var(--font-body);
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(10, 13, 20, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(79, 195, 247, 0.15);
+  border-radius: 10px;
+  padding: 6px 14px;
+  pointer-events: none;
+  letter-spacing: 0.05em;
+  transition: opacity 0.4s;
+  user-select: none;
+}
+
+#time-display .time-icon {
+  margin-right: 4px;
+}
+
+/* --------------------------------------------------------------------------
    6. Keyframe Animations
    -------------------------------------------------------------------------- */
 

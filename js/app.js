@@ -27,6 +27,7 @@ export const App = {
   _bgmGame: null,
   _bgmStarted: false,
   _bgmCurrent: 'title',
+  _timeEl: null,
 
   /* ======================================================================
      init — 应用初始化入口（异步）
@@ -123,6 +124,58 @@ export const App = {
     if (titleScreen) {
       titleScreen.classList.remove('hidden');
     }
+
+    // 20. 初始化时间显示
+    this._timeEl = document.getElementById('time-display');
+    this.updateTimeDisplay();
+  },
+
+  /* ======================================================================
+     advanceTime — 推进游戏时间（每次行动调用）
+     ====================================================================== */
+  advanceTime: function (minutes) {
+    if (!minutes) minutes = 20 + Math.floor(Math.random() * 40); // 20-60 minutes
+    var t = AppState.get('gameTime');
+    if (!t) return;
+
+    t.minute += minutes;
+    while (t.minute >= 60) { t.minute -= 60; t.hour += 1; }
+    while (t.hour >= 24) {
+      t.hour -= 24;
+      t.day += 1;
+      t.weekday = t.weekday >= 7 ? 1 : t.weekday + 1;
+    }
+    AppState.set('gameTime', t);
+    this.updateTimeDisplay();
+  },
+
+  /* ======================================================================
+     updateTimeDisplay — 刷新左上角时间显示
+     ====================================================================== */
+  updateTimeDisplay: function () {
+    if (!this._timeEl) this._timeEl = document.getElementById('time-display');
+    var el = this._timeEl;
+    if (!el) return;
+
+    var t = AppState.get('gameTime');
+    if (!t) t = { day: 1, weekday: 1, hour: 8, minute: 0 };
+
+    var weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+    var period;
+    var h = t.hour;
+    if (h >= 6 && h < 8) period = '清晨';
+    else if (h >= 8 && h < 12) period = '上午';
+    else if (h >= 12 && h < 14) period = '中午';
+    else if (h >= 14 && h < 18) period = '下午';
+    else if (h >= 18 && h < 20) period = '傍晚';
+    else if (h >= 20 && h < 23) period = '晚上';
+    else period = '深夜';
+
+    var hh = t.hour < 10 ? '0' + t.hour : '' + t.hour;
+    var mm = t.minute < 10 ? '0' + t.minute : '' + t.minute;
+
+    el.innerHTML = '☀ ' + weekdays[t.weekday - 1] + ' ' + period + ' ' + hh + ':' + mm + '  Day ' + t.day;
+    el.classList.remove('hidden');
   },
 
   /* ======================================================================

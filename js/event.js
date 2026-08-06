@@ -253,6 +253,10 @@ export const EventPanel = {
    */
   submitAction(text) {
     var self = this;
+    // 推进游戏时间
+    if (window.App && typeof window.App.advanceTime === 'function') {
+      window.App.advanceTime();
+    }
     var state = AppState.get();
     var aiOn = state.settings && state.settings.aiEnabled !== false;
     var playerText = PLAYER_PREFIX + truncate(text, 200);
