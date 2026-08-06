@@ -21,9 +21,9 @@ async function loadOpeningNarrative() {
     var resp = await fetch('data/worldbook.json');
     if (resp.ok) {
       var wb = await resp.json();
-      var raw = (wb.first_mes || '').replace(/<\/?maintext>/g, '').replace(/\\n/g, '\n');
+      var raw = (wb.first_mes || '').replace(/<\/?maintext>/g, '').split('\\n').join('\n');
       // Split into paragraphs (> 50 chars each)
-      var paragraphs = raw.split(/\n\n+/).filter(function(p) { return p.trim().length > 50; });
+      var paragraphs = raw.split(/\n\n+/).filter(function(p) { return p.trim().length > 10; });
       if (paragraphs.length >= 3) {
         OPENING_NARRATIVE = paragraphs;
         console.log('[TitleScreen] 加载世界书开场叙事: ' + paragraphs.length + ' 段');
