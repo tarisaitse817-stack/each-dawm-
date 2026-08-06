@@ -67,7 +67,7 @@ export const TitleScreen = {
 
     this._el.innerHTML =
       '<div class="title-content">' +
-        '<div class="title-logo">当妹卡降临到我身边</div>' +
+        '<div class="title-logo" id="title-logo-text">当妹卡降临到我身边</div>' +
         '<div class="title-subtitle">AI 文字冒险 × 卡牌对战</div>' +
         '<div class="title-btn-container">' +
           (hasSave
@@ -79,7 +79,29 @@ export const TitleScreen = {
       '</div>' +
       '<div class="title-narrative hidden"></div>';
 
+    // 标题字符拆分：每个字独立动画
+    this._splitTitleChars();
+
     this._bindEvents();
+  },
+
+  /**
+   * 将标题文字拆分为独立字符（每个字随机动画延迟）
+   */
+  _splitTitleChars: function () {
+    var logo = document.getElementById('title-logo-text');
+    if (!logo) return;
+
+    var text = logo.textContent.trim();
+    logo.textContent = '';
+    for (var i = 0; i < text.length; i++) {
+      var span = document.createElement('span');
+      span.className = 'char';
+      span.textContent = text[i];
+      // 随机延迟，让每个字跳动不同步
+      span.style.setProperty('--char-delay', (Math.random() * 0.8).toFixed(2) + 's');
+      logo.appendChild(span);
+    }
   },
 
   /**
