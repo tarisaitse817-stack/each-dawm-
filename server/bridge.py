@@ -56,64 +56,60 @@ def build_messages(user_input, history, game_state):
     """Assemble full messages array from preset + worldbook + state"""
     msgs = []
 
-    # System prompts from preset (enabled, system_prompt=true)
-    sys_parts = []
-    format_parts = []
-    for p in preset["prompts"]:
-        content = strip_macros(p["content"])
-        if not content:
-            continue
-        if p.get("system_prompt") and p.get("marker"):
-            # Marker-only placeholders — inject world data
-            if p["identifier"] == "worldInfoBefore":
-                sys_parts.append(build_world_context())
-            elif p["identifier"] == "charDescription":
-                pass  # character data is in worldbook, skip empty marker
-            else:
-                sys_parts.append(content)
-        elif p.get("system_prompt"):
-            sys_parts.append(content)
-        else:
-            # Non-system_prompt but enabled — format/style instructions
-            if p["identifier"] == "f65144f0-d39e-43e6-84e7-5c1d78a1a23d":
-                format_parts.append(content)  # 格式要求(有思维链)
-            else:
-                sys_parts.append(content)
-
     # Build world context FIRST — it's the most important part
     world_ctx = build_world_context()
 
-    # Build the main system message with world context at the TOP
-    system_msg = world_ctx + "\n\n" + "\n\n".join(sys_parts)
+    # ============================================================
+    # Build clean system prompt: World → Role → Style → Format
+    # ============================================================
+    system_msg = world_ctx + "\n\n"
 
-    # Remove any remaining placeholder tags from preset content
-    system_msg = system_msg.replace("<|前置世界书|>", "")
-    system_msg = system_msg.replace("<小猫之神世界书处理>", "")
+    # Role instruction — direct and prominent
+    system_msg += """【你的角色】
+你是这个世界的说书人。你的任务是根据【世界设定】中的世界观、角色信息、规则，
+以主角（可爱的小粉丝/玩家）的第一人称视角，续写互动叙事。
 
-    # Append format requirements
-    if format_parts:
-        system_msg += "\n\n" + "\n".join(format_parts)
+【核心要求】
+- 主角是玩家扮演的"可爱的小粉丝"，一个普通社畜，是卡片精灵们的master
+- 回应玩家输入时，从主角的视角出发，描写他所看到、听到、感受到的一切
+- 精灵角色必须严格遵循她们的角色卡设定（性格、说话方式、行为习惯）
+- 修罗场吃醋规则必须生效：当主角和其他精灵亲密互动时，其他精灵会积累醋意值
+- 叙事风格：温馨日常、恋爱喜剧，带轻微色气但舒缓温柔"""
 
-    # Append game state compact
+    # Add cleaned preset instructions (non-Cat-God parts only)
+    style_parts = []
+    for p in preset["prompts"]:
+        if p.get("system_prompt") and p.get("marker"):
+            continue  # skip marker placeholders
+        content = strip_macros(p["content"])
+        if not content or len(content) < 10:
+            continue
+        # Skip the Cat God summoning dialogue parts
+        if "小猫之神" in content or "喵" in content or "小鱼干" in content or "<|sep|>" in content:
+            continue
+        style_parts.append(content)
+
+    if style_parts:
+        system_msg += "\n\n【风格指引】\n" + "\n".join(style_parts)
+
+    # Game state
     state_json = json.dumps(compact_state(game_state), ensure_ascii=False, indent=1)
-    system_msg += f"\n\n|游戏状态|\n```json\n{state_json}\n```"
+    system_msg += f"\n\n【游戏状态】\n```json\n{state_json}\n```"
 
     # Output contract
     system_msg += """
-|输出契约|
-你必须用 ```json``` 代码块输出，格式固定为:
-{"thinking": "小猫之神的思考过程(可空)", "end_output": "叙事文本(用<maintext>包裹)", "battle": false}
+【输出格式】
+用 ```json``` 代码块输出:
+{"thinking": "思考过程(可空)", "end_output": "叙事文本(用<maintext>包裹)", "battle": false}
 
 规则:
-- end_output 中的叙事必须用 <maintext></maintext> 包裹
-- 每次叙事输出不少于 800 字，目标 1000 字左右，要有充分的细节描写
-- 叙事要细腻推进：环境描写、角色的神态/动作/语气、内心的情感变化、对话交流，缺一不可
-- 严格遵循世界书中设定的世界观、角色性格、相处规则
-- battle 为 true 时表示触发黑暗决斗(修罗场爆发)，end_output 只写到决斗即将开始
+- end_output 必须用 <maintext></maintext> 包裹
+- 每次叙事不少于 800 字，目标 1000 字
+- 细腻推进：环境、神态、动作、语气、内心情感、对话，缺一不可
+- battle=true 表示触发黑暗决斗，end_output 写到决斗即将开始
 - 回复以 <end> 结束
-- thinking 可以为空字符串但不能缺失
-- JSON 字段顺序不能乱
-- 用简体中文输出"""
+- thinking 可为空字符串但不能缺失
+- 用简体中文"""
 
     msgs.append({"role": "system", "content": system_msg})
 

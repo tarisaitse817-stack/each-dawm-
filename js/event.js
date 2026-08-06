@@ -310,6 +310,7 @@ export const EventPanel = {
       });
     } catch (err) {
       this._hideThinking();
+      this._pendingResponses--;
       this._callFallback(text);
     }
   },
