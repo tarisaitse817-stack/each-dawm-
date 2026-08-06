@@ -135,13 +135,6 @@ export const TitleScreen = {
   },
 
   /**
-   * "新的旅程" — 展示开场叙事（打字机效果）
-   */
-  _onNewGame() {
-    this._showOpeningNarrative();
-  },
-
-  /**
    * "设置" — 打开设置面板（Task 13 实现完整面板）
    */
   _onSettings() {
@@ -157,82 +150,8 @@ export const TitleScreen = {
   },
 
   /**
-   * 展示开场叙事（打字机效果）
-   * 逐字显示三段开场文本，完成后显示"点击继续"提示
-   */
-  _showOpeningNarrative() {
-    if (this._isTyping) return;
-    this._isTyping = true;
-
-    var self = this;
-    var contentEl = this._el.querySelector('.title-content');
-    var narrativeEl = this._el.querySelector('.title-narrative');
-
-    if (!narrativeEl) return;
-
-    // 隐藏主内容区域
-    if (contentEl) {
-      contentEl.style.display = 'none';
-    }
-
-    // 清空并显示叙事区域
-    narrativeEl.innerHTML = '';
-    narrativeEl.classList.remove('hidden');
-
-    var totalParagraphs = OPENING_NARRATIVE.length;
-    var currentPara = 0;
-
-    /**
-     * 逐段打字
-     */
-    function typeNextParagraph() {
-      if (currentPara >= totalParagraphs) {
-        // 所有段落打完 — 显示点击提示
-        self._isTyping = false;
-        var hint = document.createElement('div');
-        hint.className = 'click-hint';
-        hint.textContent = '— 点击继续 —';
-        narrativeEl.appendChild(hint);
-
-        // 点击后进入游戏
-        var clickHandler = function () {
-          narrativeEl.removeEventListener('click', clickHandler);
-          self._startNewGame();
-        };
-        narrativeEl.addEventListener('click', clickHandler);
-        return;
-      }
-
-      var p = document.createElement('p');
-      narrativeEl.appendChild(p);
-
-      var text = OPENING_NARRATIVE[currentPara];
-      var charIndex = 0;
-
-      /**
-       * 逐字输出
-       */
-      function typeChar() {
-        if (charIndex < text.length) {
-          p.textContent += text[charIndex];
-          charIndex++;
-          setTimeout(typeChar, 30);
-        } else {
-          // 当前段落完成，等待后继续下一段
-          currentPara++;
-          setTimeout(typeNextParagraph, 400);
-        }
-      }
-
-      typeChar();
-    }
-
-    typeNextParagraph();
-  },
-
-  /**
    * 开始新游戏
-   * 重置状态 → 跳转到事件视图 → 添加开场叙事到历史
+   * 重置状态 → 跳转到事件视图 → 开场叙事在事件面板中以打字机展示
    */
   _startNewGame() {
     AppState.reset();
@@ -241,12 +160,19 @@ export const TitleScreen = {
     }
     Navigation.navigateTo('event');
 
-    // 添加开场叙事到历史
+    // 开场叙事直接在事件面板中以打字机效果展示
     var history = AppState.get('narrativeHistory') || [];
     history = history.concat(OPENING_NARRATIVE);
     AppState.set('narrativeHistory', history);
 
     this.hide();
+  },
+
+  /**
+   * "新的旅程" — 直接进入事件面板展示开场叙事
+   */
+  _onNewGame() {
+    this._startNewGame();
   },
 
   /**
