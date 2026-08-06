@@ -118,18 +118,10 @@ export const App = {
       lucide.createIcons();
     }
 
-    // 19. 判断首屏
+    // 19. 始终显示标题界面（有存档时显示"继续冒险"按钮）
     var titleScreen = document.getElementById('title-screen');
-    if (StorageManager.hasSave()) {
-      if (titleScreen) {
-        titleScreen.classList.add('hidden');
-      }
-      Navigation.navigateTo('event');
-      Navigation.updateBadges();
-    } else {
-      if (titleScreen) {
-        titleScreen.classList.remove('hidden');
-      }
+    if (titleScreen) {
+      titleScreen.classList.remove('hidden');
     }
   },
 
