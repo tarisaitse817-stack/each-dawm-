@@ -298,6 +298,8 @@ export const EventPanel = {
     try {
       var result = await AiClient.chat(text);
       this._hideThinking();
+      // 累积 token 统计
+      this._accumulateTokenUsage(result.usage);
       self._isInternalUpdate = true;
       AppState.push('narrativeHistory', result.narrative);
       self._isInternalUpdate = false;
@@ -310,6 +312,24 @@ export const EventPanel = {
       this._hideThinking();
       this._callFallback(text);
     }
+  },
+
+  /**
+   * 累积 token 统计到 AppState
+   */
+  _accumulateTokenUsage: function (usage) {
+    if (!usage || !usage.total_tokens) return;
+    var stats = AppState.get('tokenStats') || {
+      promptTokens: 0,
+      completionTokens: 0,
+      totalTokens: 0,
+      turns: 0
+    };
+    stats.promptTokens += usage.prompt_tokens || 0;
+    stats.completionTokens += usage.completion_tokens || 0;
+    stats.totalTokens += usage.total_tokens || 0;
+    stats.turns += 1;
+    AppState.set('tokenStats', stats);
   },
 
   _showThinking() {

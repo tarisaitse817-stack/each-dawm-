@@ -168,7 +168,12 @@ def call_llm(messages, api_key, endpoint, model):
     try:
         resp = urlopen(req, timeout=config.get("llm_timeout", 180))
         data = json.loads(resp.read().decode("utf-8"))
-        return data["choices"][0]["message"]["content"]
+        usage = data.get("usage", {})
+        return data["choices"][0]["message"]["content"], {
+            "prompt_tokens": usage.get("prompt_tokens", 0),
+            "completion_tokens": usage.get("completion_tokens", 0),
+            "total_tokens": usage.get("total_tokens", 0)
+        }
     except HTTPError as e:
         body = e.read().decode("utf-8", errors="replace")
         if e.code == 401 or e.code == 403:
@@ -181,6 +186,7 @@ def call_llm(messages, api_key, endpoint, model):
         raise RuntimeError(f"timeout: API 连接超时 — {e.reason}")
     except Exception as e:
         raise RuntimeError(f"llm_error: {str(e)[:200]}")
+    return "", {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}  # unreachable
 
 def parse_output(raw_text):
     """Parse AI output — extract JSON, fallback gracefully"""
@@ -368,14 +374,15 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 self.reply(200, {"ok": True, "dry_run": True, "messages": msgs})
                 return
 
-            raw = call_llm(msgs, body["api_key"], body["endpoint"], body["model"])
+            raw, usage = call_llm(msgs, body["api_key"], body["endpoint"], body["model"])
             narrative, battle, thinking = parse_output(raw)
 
             self.reply(200, {
                 "ok": True,
                 "narrative": narrative,
                 "battle": battle,
-                "thinking": thinking
+                "thinking": thinking,
+                "usage": usage
             })
         except RuntimeError as e:
             msg = str(e)

@@ -150,6 +150,14 @@ function createDefaultState() {
       mdpro3Deck: 'PlayerInsect'
     },
 
+    /* --- Token 统计 --- */
+    tokenStats: {
+      promptTokens: 0,
+      completionTokens: 0,
+      totalTokens: 0,
+      turns: 0
+    },
+
     /* --- 通知队列 --- */
     notifications: []
   };

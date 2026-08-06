@@ -369,3 +369,43 @@
 #settings-models-row.hidden {
   display: none;
 }
+
+/* --------------------------------------------------------------------------
+   14. Token 统计
+   -------------------------------------------------------------------------- */
+.token-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  background: rgba(10, 13, 20, 0.5);
+  border: 1px solid rgba(79, 195, 247, 0.12);
+  border-radius: 8px;
+}
+
+.token-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.token-stat-label {
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  color: rgba(224, 224, 224, 0.65);
+}
+
+.token-stat-value {
+  font-family: var(--font-mono, 'Consolas', 'Courier New', monospace);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-spirit);
+  min-width: 80px;
+  text-align: right;
+}
+
+.token-stat-divider {
+  height: 1px;
+  background: rgba(79, 195, 247, 0.12);
+  margin: 4px 0;
+}

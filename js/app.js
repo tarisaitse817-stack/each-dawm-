@@ -223,6 +223,37 @@ export const App = {
   },
 
   /* ======================================================================
+     _refreshTokenStats — 刷新设置面板中的 token 统计显示
+     ====================================================================== */
+  _refreshTokenStats: function () {
+    var stats = AppState.get('tokenStats') || { promptTokens: 0, completionTokens: 0, totalTokens: 0, turns: 0 };
+    var turns = stats.turns || 0;
+
+    var elTurns = document.getElementById('stat-turns');
+    var elAvgPrompt = document.getElementById('stat-avg-prompt');
+    var elAvgCompletion = document.getElementById('stat-avg-completion');
+    var elAvgTotal = document.getElementById('stat-avg-total');
+    var elCumulative = document.getElementById('stat-cumulative');
+
+    if (elTurns) elTurns.textContent = turns;
+
+    if (turns > 0) {
+      var avgPrompt = Math.round(stats.promptTokens / turns);
+      var avgCompletion = Math.round(stats.completionTokens / turns);
+      var avgTotal = Math.round(stats.totalTokens / turns);
+      if (elAvgPrompt) elAvgPrompt.textContent = avgPrompt.toLocaleString();
+      if (elAvgCompletion) elAvgCompletion.textContent = avgCompletion.toLocaleString();
+      if (elAvgTotal) elAvgTotal.textContent = avgTotal.toLocaleString();
+    } else {
+      if (elAvgPrompt) elAvgPrompt.textContent = '—';
+      if (elAvgCompletion) elAvgCompletion.textContent = '—';
+      if (elAvgTotal) elAvgTotal.textContent = '—';
+    }
+
+    if (elCumulative) elCumulative.textContent = (stats.totalTokens || 0).toLocaleString();
+  },
+
+  /* ======================================================================
      _tryPlayBgm — 尝试播放 BGM（可能被浏览器拦截）
      ====================================================================== */
   _tryPlayBgm: function () {
@@ -413,6 +444,17 @@ export const App = {
             '<button id="setting-ai-test" class="settings-test-btn" style="margin-left:8px;padding:4px 12px;border-radius:6px;border:1px solid var(--color-spirit);background:transparent;color:var(--color-spirit);cursor:pointer;">测试连接</button>' +
           '</div>' +
 
+          /* Token 统计 */
+          '<div class="settings-section-title">Token 用量统计</div>' +
+          '<div class="token-stats" id="token-stats">' +
+            '<div class="token-stat-row"><span class="token-stat-label">AI 对话轮数</span><span class="token-stat-value" id="stat-turns">0</span></div>' +
+            '<div class="token-stat-row"><span class="token-stat-label">平均 Prompt Tokens</span><span class="token-stat-value" id="stat-avg-prompt">—</span></div>' +
+            '<div class="token-stat-row"><span class="token-stat-label">平均 Completion Tokens</span><span class="token-stat-value" id="stat-avg-completion">—</span></div>' +
+            '<div class="token-stat-row"><span class="token-stat-label">平均 总 Tokens / 轮</span><span class="token-stat-value" id="stat-avg-total">—</span></div>' +
+            '<div class="token-stat-divider"></div>' +
+            '<div class="token-stat-row"><span class="token-stat-label">累计 Tokens</span><span class="token-stat-value" id="stat-cumulative">0</span></div>' +
+          '</div>' +
+
           /* 分割线 */
           '<div class="settings-divider"></div>' +
 
@@ -457,6 +499,9 @@ export const App = {
     var confirmArea = document.getElementById('settings-clear-confirm');
     if (clearBtn) clearBtn.classList.remove('hidden');
     if (confirmArea) confirmArea.classList.add('hidden');
+
+    // 刷新 token 统计
+    this._refreshTokenStats();
 
     modal.classList.remove('hidden', 'closing');
     this._settingsVisible = true;

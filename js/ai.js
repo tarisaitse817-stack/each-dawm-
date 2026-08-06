@@ -44,7 +44,8 @@ export const AiClient = {
             return {
                 narrative: data.narrative || '',
                 battle: !!data.battle,
-                thinking: data.thinking || ''
+                thinking: data.thinking || '',
+                usage: data.usage || { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
             };
         } catch (err) {
             clearTimeout(timer);
