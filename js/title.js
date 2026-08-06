@@ -68,7 +68,6 @@ export const TitleScreen = {
     this._el.innerHTML =
       '<div class="title-content">' +
         '<div class="title-logo" id="title-logo-text">当妹卡降临到我身边</div>' +
-        '<div class="title-subtitle">AI 文字冒险 × 卡牌对战</div>' +
         '<div class="title-btn-container">' +
           (hasSave
             ? '<button class="title-btn primary" id="btn-continue">继续冒险</button>'
