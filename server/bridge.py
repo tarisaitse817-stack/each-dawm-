@@ -298,8 +298,57 @@ class BridgeHandler(BaseHTTPRequestHandler):
             self.handle_chat(body)
         elif self.path == "/battle":
             self.handle_battle(body)
+        elif self.path == "/models":
+            self.handle_models(body)
         else:
             self.reply(404, {"ok": False, "error": "not_found"})
+
+    def handle_models(self, body):
+        """Fetch available models from user's AI API"""
+        api_key = body.get("api_key", "")
+        endpoint = body.get("endpoint", "")
+        if not api_key or not endpoint:
+            self.reply(400, {"ok": False, "error": "missing_field", "message": "需要 api_key 和 endpoint"})
+            return
+
+        # Try /models and /v1/models
+        urls = []
+        base = endpoint.rstrip("/")
+        if base.endswith("/v1"):
+            urls.append(f"{base}/models")
+        else:
+            urls.append(f"{base}/v1/models")
+            urls.append(f"{base}/models")
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}"
+        }
+
+        models = []
+        last_error = None
+        for url in urls:
+            try:
+                req = Request(url, headers=headers)
+                resp = urlopen(req, timeout=15)
+                data = json.loads(resp.read().decode("utf-8"))
+                raw_models = data.get("data", data.get("models", []))
+                for m in raw_models:
+                    mid = m.get("id", m.get("model", ""))
+                    if mid and not mid.startswith("ft:") and "embed" not in mid.lower():
+                        models.append(mid)
+                if models:
+                    break
+            except HTTPError as e:
+                last_error = f"API 返回 {e.code}: {e.read().decode('utf-8', errors='replace')[:200]}"
+            except Exception as e:
+                last_error = str(e)[:200]
+
+        if models:
+            models.sort()
+            self.reply(200, {"ok": True, "models": models, "total": len(models)})
+        else:
+            self.reply(502, {"ok": False, "error": "no_models", "message": last_error or "无法获取模型列表"})
 
     def handle_chat(self, body):
         required = ["input", "api_key", "endpoint", "model"]

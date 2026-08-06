@@ -338,3 +338,34 @@
 #settings-modal.closing .settings-panel {
   animation: modal-in 0.15s ease-out reverse;
 }
+
+/* --------------------------------------------------------------------------
+   13. 获取模型按钮
+   -------------------------------------------------------------------------- */
+.settings-fetch-btn {
+  padding: 6px 14px;
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-spirit);
+  background: transparent;
+  border: 1px solid rgba(79, 195, 247, 0.35);
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.settings-fetch-btn:hover {
+  background: rgba(79, 195, 247, 0.1);
+  border-color: rgba(79, 195, 247, 0.6);
+}
+
+.settings-fetch-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#settings-models-row.hidden {
+  display: none;
+}

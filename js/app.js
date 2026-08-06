@@ -394,7 +394,14 @@ export const App = {
           '</div>' +
           '<div class="settings-row">' +
             '<label for="setting-ai-model">模型</label>' +
-            '<input type="text" id="setting-ai-model" value="' + (settings.aiModel || 'deepseek-chat') + '" placeholder="deepseek-chat">' +
+            '<div style="display:flex;align-items:center;gap:8px;flex:1;">' +
+              '<input type="text" id="setting-ai-model" value="' + (settings.aiModel || 'deepseek-chat') + '" placeholder="deepseek-chat" style="flex:1;">' +
+              '<button id="setting-fetch-models" class="settings-fetch-btn" title="从 API 获取可用模型">获取模型</button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="settings-row hidden" id="settings-models-row">' +
+            '<label for="setting-ai-model-select">选择模型</label>' +
+            '<select id="setting-ai-model-select" style="flex:1;"></select>' +
           '</div>' +
           '<div class="settings-row">' +
             '<label for="setting-mdpro3-deck">MDPro3 卡组</label>' +
@@ -611,6 +618,79 @@ export const App = {
         s.aiApiKey = e.target.value;
         AppState.set('settings', s);
         StorageManager.save(AppState.get());
+      }
+    });
+
+    // ---- AI 获取模型列表 ----
+    modal.addEventListener('click', async function (e) {
+      if (e.target.id === 'setting-fetch-models') {
+        e.preventDefault();
+        var btn = e.target;
+        var apiKeyEl = document.getElementById('setting-ai-apikey');
+        var endpointEl = document.getElementById('setting-ai-endpoint');
+        var key = (apiKeyEl ? apiKeyEl.value : '').trim();
+        var ep = (endpointEl ? endpointEl.value : '').trim();
+
+        if (!ep || !key) {
+          alert('请先填写 API 端点和 API Key');
+          return;
+        }
+
+        btn.textContent = '获取中…';
+        btn.disabled = true;
+
+        try {
+          var resp = await fetch('http://localhost:9999/models', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ api_key: key, endpoint: ep })
+          });
+          var data = await resp.json();
+
+          var selectEl = document.getElementById('setting-ai-model-select');
+          var selectRow = document.getElementById('settings-models-row');
+          var textInput = document.getElementById('setting-ai-model');
+
+          if (data.ok && data.models && data.models.length > 0) {
+            selectEl.innerHTML = '';
+            data.models.forEach(function (m) {
+              var opt = document.createElement('option');
+              opt.value = m;
+              opt.textContent = m;
+              if (m === textInput.value) opt.selected = true;
+              selectEl.appendChild(opt);
+            });
+            selectRow.classList.remove('hidden');
+            // 如果当前输入不在列表中，添加一个选项
+            if (textInput.value && !data.models.includes(textInput.value)) {
+              var customOpt = document.createElement('option');
+              customOpt.value = textInput.value;
+              customOpt.textContent = textInput.value + ' (自定义)';
+              customOpt.selected = true;
+              selectEl.insertBefore(customOpt, selectEl.firstChild);
+            }
+          } else {
+            alert('获取模型失败: ' + (data.message || '未知错误'));
+          }
+        } catch (err) {
+          alert('无法连接桥接服务器 (localhost:9999)，请确保 bridge.py 正在运行');
+        }
+
+        btn.textContent = '获取模型';
+        btn.disabled = false;
+      }
+    });
+
+    // ---- 模型下拉选择同步到文本输入 ----
+    modal.addEventListener('change', function (e) {
+      if (e.target.id === 'setting-ai-model-select') {
+        var textInput = document.getElementById('setting-ai-model');
+        if (textInput) {
+          textInput.value = e.target.value;
+          // 触发 change 事件以保存设置
+          var evt = new Event('change', { bubbles: true });
+          textInput.dispatchEvent(evt);
+        }
       }
     });
 
