@@ -22,6 +22,18 @@
   <link rel="stylesheet" href="css/settings.css">
 </head>
 <body>
+  <!-- ==================================================================
+   开场动画（光之涟漪）— 始终首先显示，纯 CSS 动画
+   ================================================================== -->
+  <div id="splash-overlay">
+    <div class="splash-dot"></div>
+    <div class="splash-ripple"></div>
+    <div class="splash-ripple"></div>
+    <div class="splash-ripple"></div>
+    <div class="splash-title">当妹卡降临到我身边</div>
+    <div class="splash-subtitle">AI 文字冒险 × 卡牌对战</div>
+  </div>
+
   <!-- 封面轮播背景 -->
   <div id="cover-slideshow">
     <div class="cover-slide" style="background-image:url('assets/covers/封面一.png')"></div>
@@ -36,8 +48,6 @@
   <nav id="sidebar"></nav>
   <!-- 主内容区 -->
   <main id="main-content"></main>
-  <!-- AI 叙事 + 对战桥接 -->
-  <!-- (battle-overlay removed — MDPro3 接管对战) -->
   <!-- 设置面板模态框 -->
   <div id="settings-modal"></div>
   <!-- 通知层 -->
@@ -46,6 +56,40 @@
   <canvas id="particles-canvas"></canvas>
   <!-- 自定义右键菜单 -->
   <div id="context-menu"></div>
+
+  <!-- Splash 独立控制（非 module，确保第一时间执行） -->
+  <script>
+    (function () {
+      var overlay = document.getElementById('splash-overlay');
+      if (!overlay) return;
+
+      // 动画总时长 ~2s，之后淡出
+      var SPLASH_DURATION = 2000;
+
+      // 开始淡出
+      function finish() {
+        overlay.classList.add('outro');
+        // 过渡结束后移除 DOM
+        setTimeout(function () {
+          if (overlay.parentNode) {
+            overlay.parentNode.removeChild(overlay);
+          }
+          // 通知 app.js 模块 splash 已完成
+          window.__splashDone = true;
+          window.dispatchEvent(new Event('splashdone'));
+        }, 400);
+      }
+
+      // 倒计时结束
+      setTimeout(finish, SPLASH_DURATION);
+
+      // 点击可跳过
+      overlay.addEventListener('click', function () {
+        finish();
+      });
+    })();
+  </script>
+
   <!-- JS 模块 -->
   <script type="module" src="js/app.js"></script>
 </body>

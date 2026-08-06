@@ -34,13 +34,18 @@ export const App = {
      标题 → 事件 → 对战 → 卡组 → 伙伴 → 背包 → 地图 → 订阅 → 图标 → 首屏
      ====================================================================== */
   async init() {
-    // 0. 开场动画（无存档时显示光之涟漪 splash）
-    if (!StorageManager.hasSave()) {
-      this._showSplash();
-    }
-
-    // 0.5. 初始化 BGM
+    // 0. 初始化 BGM（splash 已在 HTML 中，由内联脚本控制）
     this._initBgm();
+
+    // 0.5. splash 结束时尝试播放 BGM
+    var self = this;
+    if (window.__splashDone) {
+      self._tryPlayBgm();
+    } else {
+      window.addEventListener('splashdone', function () {
+        self._tryPlayBgm();
+      }, { once: true });
+    }
 
     // 1. 检查并恢复存档
     if (StorageManager.hasSave()) {
@@ -126,36 +131,6 @@ export const App = {
         titleScreen.classList.remove('hidden');
       }
     }
-  },
-
-  /* ======================================================================
-     _showSplash — 开场动画（光之涟漪）
-     全屏覆盖层，CSS 动画自动播放，~1.8s 后淡出
-     ====================================================================== */
-  _showSplash: function () {
-    var overlay = document.createElement('div');
-    overlay.id = 'splash-overlay';
-    overlay.innerHTML =
-      '<div class="splash-dot"></div>' +
-      '<div class="splash-ripple"></div>' +
-      '<div class="splash-ripple"></div>' +
-      '<div class="splash-ripple"></div>' +
-      '<div class="splash-title">当妹卡降临到我身边</div>' +
-      '<div class="splash-subtitle">AI 文字冒险 × 卡牌对战</div>';
-    document.body.appendChild(overlay);
-
-    // 1.8s 后淡出，同时尝试启动 BGM
-    var self = this;
-    setTimeout(function () {
-      overlay.classList.add('outro');
-      self._tryPlayBgm();
-      // 过渡结束后移除 DOM
-      setTimeout(function () {
-        if (overlay.parentNode) {
-          overlay.parentNode.removeChild(overlay);
-        }
-      }, 400);
-    }, 1800);
   },
 
   /* ======================================================================
