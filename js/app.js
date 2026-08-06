@@ -187,17 +187,12 @@ export const App = {
       ? AppState.get('settings').bgmVolume
       : 0.7;
 
-    // 标题画面 BGM
+    // 标题画面 BGM（延迟加载，不阻塞页面）
     var titleAudio = new Audio('assets/bgm/dashing-and-bashing.mp3');
     titleAudio.loop = true;
     titleAudio.volume = vol;
+    titleAudio.preload = 'none';
     this._bgmTitle = titleAudio;
-
-    // 游戏中 BGM
-    var gameAudio = new Audio('assets/bgm/hello-sun.mp3');
-    gameAudio.loop = true;
-    gameAudio.volume = vol;
-    this._bgmGame = gameAudio;
 
     // 默认使用标题 BGM
     this._bgm = titleAudio;
