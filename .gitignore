@@ -1,2 +1,4 @@
 .superpowers/
 .vercel
+__pycache__/
+server/test_prompt*.txt
