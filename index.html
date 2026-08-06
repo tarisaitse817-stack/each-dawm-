@@ -30,7 +30,7 @@
     <div class="splash-ripple"></div>
     <div class="splash-ripple"></div>
     <div class="splash-ripple"></div>
-    <div class="splash-title">当妹卡降临到我身边</div>
+    <div class="splash-title" id="splash-title-text">当妹卡降临到我身边</div>
   </div>
 
   <!-- 封面轮播背景（6 张原图） -->
@@ -63,6 +63,22 @@
     (function () {
       var overlay = document.getElementById('splash-overlay');
       if (!overlay) return;
+
+      // 标题字符拆分为彩色独立字符
+      var splashTitle = document.getElementById('splash-title-text');
+      if (splashTitle) {
+        var colors = ['#FFD54F','#FF8A80','#FF80AB','#80D8FF','#B9F6CA','#B388FF','#FFAB40','#40C4FF','#FF6E6E','#64FFDA'];
+        var text = splashTitle.textContent.trim();
+        splashTitle.textContent = '';
+        for (var i = 0; i < text.length; i++) {
+          var span = document.createElement('span');
+          span.className = 'char';
+          span.textContent = text[i];
+          span.style.color = colors[i % colors.length];
+          span.style.animationDelay = (0.05 * i).toFixed(2) + 's';
+          splashTitle.appendChild(span);
+        }
+      }
 
       // 动画总时长 ~2s，之后淡出
       var SPLASH_DURATION = 2000;

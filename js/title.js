@@ -91,12 +91,20 @@ export const TitleScreen = {
     var logo = document.getElementById('title-logo-text');
     if (!logo) return;
 
+    // 活泼配色：暖金、珊瑚、粉、天蓝、薄荷、紫、橙
+    var colors = [
+      '#FFD54F', '#FF8A80', '#FF80AB', '#80D8FF',
+      '#B9F6CA', '#B388FF', '#FFAB40', '#40C4FF',
+      '#FF6E6E', '#64FFDA'
+    ];
+
     var text = logo.textContent.trim();
     logo.textContent = '';
     for (var i = 0; i < text.length; i++) {
       var span = document.createElement('span');
       span.className = 'char';
       span.textContent = text[i];
+      span.style.color = colors[i % colors.length];
       // 随机延迟，让每个字跳动不同步
       span.style.setProperty('--char-delay', (Math.random() * 0.8).toFixed(2) + 's');
       logo.appendChild(span);
