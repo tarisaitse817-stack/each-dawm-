@@ -101,6 +101,9 @@ def build_messages(user_input, history, game_state):
 
 规则:
 - end_output 中的叙事必须用 <maintext></maintext> 包裹
+- 每次叙事输出不少于 800 字，目标 1000 字左右，要有充分的细节描写
+- 叙事要细腻推进：环境描写、角色的神态/动作/语气、内心的情感变化、对话交流，缺一不可
+- 严格遵循世界书中设定的世界观、角色性格、相处规则
 - battle 为 true 时表示触发黑暗决斗(修罗场爆发)，end_output 只写到决斗即将开始
 - 回复以 <end> 结束
 - thinking 可以为空字符串但不能缺失
