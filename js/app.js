@@ -22,6 +22,11 @@ export const App = {
   _settingsVisible: false,
   _currentContextCardId: null,
   _currentContextType: null,
+  _bgm: null,
+  _bgmTitle: null,
+  _bgmGame: null,
+  _bgmStarted: false,
+  _bgmCurrent: 'title',
 
   /* ======================================================================
      init — 应用初始化入口（异步）
@@ -29,6 +34,14 @@ export const App = {
      标题 → 事件 → 对战 → 卡组 → 伙伴 → 背包 → 地图 → 订阅 → 图标 → 首屏
      ====================================================================== */
   async init() {
+    // 0. 开场动画（无存档时显示光之涟漪 splash）
+    if (!StorageManager.hasSave()) {
+      this._showSplash();
+    }
+
+    // 0.5. 初始化 BGM
+    this._initBgm();
+
     // 1. 检查并恢复存档
     if (StorageManager.hasSave()) {
       var saveData = StorageManager.load();
@@ -113,6 +126,146 @@ export const App = {
         titleScreen.classList.remove('hidden');
       }
     }
+  },
+
+  /* ======================================================================
+     _showSplash — 开场动画（光之涟漪）
+     全屏覆盖层，CSS 动画自动播放，~1.8s 后淡出
+     ====================================================================== */
+  _showSplash: function () {
+    var overlay = document.createElement('div');
+    overlay.id = 'splash-overlay';
+    overlay.innerHTML =
+      '<div class="splash-dot"></div>' +
+      '<div class="splash-ripple"></div>' +
+      '<div class="splash-ripple"></div>' +
+      '<div class="splash-ripple"></div>' +
+      '<div class="splash-title">当妹卡降临到我身边</div>' +
+      '<div class="splash-subtitle">AI 文字冒险 × 卡牌对战</div>';
+    document.body.appendChild(overlay);
+
+    // 1.8s 后淡出，同时尝试启动 BGM
+    var self = this;
+    setTimeout(function () {
+      overlay.classList.add('outro');
+      self._tryPlayBgm();
+      // 过渡结束后移除 DOM
+      setTimeout(function () {
+        if (overlay.parentNode) {
+          overlay.parentNode.removeChild(overlay);
+        }
+      }, 400);
+    }, 1800);
+  },
+
+  /* ======================================================================
+     _initBgm — 初始化背景音乐（预加载标题 + 游戏双轨）
+     ====================================================================== */
+  _initBgm: function () {
+    var self = this;
+    var vol = (AppState.get('settings').bgmVolume !== undefined)
+      ? AppState.get('settings').bgmVolume
+      : 0.7;
+
+    // 标题画面 BGM
+    var titleAudio = new Audio('assets/bgm/dashing-and-bashing.mp3');
+    titleAudio.loop = true;
+    titleAudio.volume = vol;
+    this._bgmTitle = titleAudio;
+
+    // 游戏中 BGM
+    var gameAudio = new Audio('assets/bgm/hello-sun.mp3');
+    gameAudio.loop = true;
+    gameAudio.volume = vol;
+    this._bgmGame = gameAudio;
+
+    // 默认使用标题 BGM
+    this._bgm = titleAudio;
+
+    // 浏览器自动播放限制：首次用户交互时兜底启动
+    function fallbackPlay() {
+      if (!self._bgmStarted && self._bgm) {
+        self._bgm.play().then(function () {
+          self._bgmStarted = true;
+        }).catch(function () {});
+      }
+    }
+    document.addEventListener('click', fallbackPlay, { once: true });
+    document.addEventListener('keydown', fallbackPlay, { once: true });
+  },
+
+  /* ======================================================================
+     switchBgm — 切换 BGM 曲目
+     @param {'title'|'game'} track
+     ====================================================================== */
+  switchBgm: function (track) {
+    if (track === this._bgmCurrent) return;
+    var self = this;
+
+    var current = this._bgm;
+    var next = track === 'title' ? this._bgmTitle : this._bgmGame;
+
+    if (!next) return;
+
+    // 交叉淡入淡出
+    if (current && this._bgmStarted) {
+      // 淡出当前
+      var fadeOut = setInterval(function () {
+        if (current.volume > 0.02) {
+          current.volume = Math.max(0, current.volume - 0.03);
+        } else {
+          clearInterval(fadeOut);
+          current.pause();
+          current.currentTime = 0;
+          current.volume = self._getStoredVolume();
+        }
+      }, 30);
+
+      // 淡入新曲
+      next.volume = 0;
+      next.play().then(function () {
+        self._bgmStarted = true;
+        var fadeIn = setInterval(function () {
+          var target = self._getStoredVolume();
+          if (next.volume < target - 0.02) {
+            next.volume = Math.min(target, next.volume + 0.03);
+          } else {
+            clearInterval(fadeIn);
+            next.volume = target;
+          }
+        }, 30);
+      }).catch(function () {});
+    } else {
+      next.volume = this._getStoredVolume();
+      next.play().then(function () {
+        self._bgmStarted = true;
+      }).catch(function () {});
+    }
+
+    this._bgm = next;
+    this._bgmCurrent = track;
+  },
+
+  /* ======================================================================
+     _getStoredVolume — 读取存储的音量设置
+     ====================================================================== */
+  _getStoredVolume: function () {
+    return (AppState.get('settings').bgmVolume !== undefined)
+      ? AppState.get('settings').bgmVolume
+      : 0.7;
+  },
+
+  /* ======================================================================
+     _tryPlayBgm — 尝试播放 BGM（可能被浏览器拦截）
+     ====================================================================== */
+  _tryPlayBgm: function () {
+    if (!this._bgm || this._bgmStarted) return;
+    var self = this;
+    this._bgm.play().then(function () {
+      self._bgmStarted = true;
+    }).catch(function () {
+      // 浏览器拦截 — 等待用户交互兜底
+    });
   },
 
   /* ======================================================================
@@ -462,6 +615,9 @@ export const App = {
         settings.bgmVolume = value / 100;
         var bgmLabel = document.getElementById('setting-bgm-value');
         if (bgmLabel) bgmLabel.textContent = value;
+        if (self._bgm) { self._bgm.volume = value / 100; }
+        if (self._bgmTitle) { self._bgmTitle.volume = value / 100; }
+        if (self._bgmGame) { self._bgmGame.volume = value / 100; }
       } else if (target.id === 'setting-sfx-volume') {
         settings.sfxVolume = value / 100;
         var sfxLabel = document.getElementById('setting-sfx-value');

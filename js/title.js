@@ -67,7 +67,7 @@ export const TitleScreen = {
 
     this._el.innerHTML =
       '<div class="title-content">' +
-        '<div class="title-logo">牌佬的奇妙冒险</div>' +
+        '<div class="title-logo">当妹卡降临到我身边</div>' +
         '<div class="title-subtitle">AI 文字冒险 × 卡牌对战</div>' +
         '<div class="title-btn-container">' +
           (hasSave
@@ -126,6 +126,9 @@ export const TitleScreen = {
           AppState.set(key, saveData[key]);
         }
       });
+    }
+    if (window.App && typeof window.App.switchBgm === 'function') {
+      window.App.switchBgm('game');
     }
     Navigation.navigateTo('event');
     this.hide();
@@ -233,6 +236,9 @@ export const TitleScreen = {
    */
   _startNewGame() {
     AppState.reset();
+    if (window.App && typeof window.App.switchBgm === 'function') {
+      window.App.switchBgm('game');
+    }
     Navigation.navigateTo('event');
 
     // 添加开场叙事到历史

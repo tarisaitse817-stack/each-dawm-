@@ -1,0 +1,118 @@
+/* ==========================================================================
+   开场动画（光之涟漪）Splash Screen Styles
+   ========================================================================== */
+
+/* ---- Splash 覆盖层 ---- */
+#splash-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #0a0d14;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: opacity 0.35s ease-out;
+}
+
+#splash-overlay.outro {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---- 光点 ---- */
+.splash-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: #4FC3F7;
+  box-shadow:
+    0 0 16px rgba(79, 195, 247, 0.9),
+    0 0 48px rgba(79, 195, 247, 0.5),
+    0 0 96px rgba(79, 195, 247, 0.25);
+  opacity: 0;
+  animation: splash-dot-pulse 0.6s 0.15s ease-out forwards;
+}
+
+@keyframes splash-dot-pulse {
+  0%   { transform: scale(0); opacity: 0; }
+  30%  { transform: scale(0.6); opacity: 1; }
+  60%  { transform: scale(2.5); opacity: 0.7; }
+  100% { transform: scale(4); opacity: 0; }
+}
+
+/* ---- 涟漪环 ---- */
+.splash-ripple {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  margin-left: 0;
+  margin-top: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgba(79, 195, 247, 0.55);
+  opacity: 0;
+  animation: splash-ripple-expand 1s ease-out forwards;
+}
+
+.splash-ripple:nth-child(2) { animation-delay: 0.45s; }
+.splash-ripple:nth-child(3) { animation-delay: 0.6s; }
+.splash-ripple:nth-child(4) { animation-delay: 0.75s; }
+
+@keyframes splash-ripple-expand {
+  0%   { width: 0; height: 0; margin-left: 0; margin-top: 0; opacity: 0.7; border-width: 2px; }
+  100% { width: 560px; height: 560px; margin-left: -280px; margin-top: -280px; opacity: 0; border-width: 0.2px; }
+}
+
+/* ---- 标题文字 ---- */
+.splash-title {
+  position: relative;
+  z-index: 2;
+  font-family: var(--font-body, 'Noto Sans SC', sans-serif);
+  font-size: clamp(1.8rem, 5vw, 3.2rem);
+  font-weight: 700;
+  color: #FFD54F;
+  text-align: center;
+  letter-spacing: 0.12em;
+  text-shadow:
+    0 0 30px rgba(255, 213, 79, 0.5),
+    0 0 70px rgba(255, 213, 79, 0.25),
+    0 0 120px rgba(255, 213, 79, 0.1);
+  opacity: 0;
+  transform: translateY(18px);
+  animation:
+    splash-title-in  0.55s 0.9s ease-out forwards,
+    splash-title-breathe 1.2s 1.45s ease-in-out infinite;
+}
+
+@keyframes splash-title-in {
+  0%   { opacity: 0; transform: translateY(18px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes splash-title-breathe {
+  0%, 100% { text-shadow: 0 0 30px rgba(255, 213, 79, 0.5), 0 0 70px rgba(255, 213, 79, 0.25); }
+  50%      { text-shadow: 0 0 45px rgba(255, 213, 79, 0.65), 0 0 100px rgba(255, 213, 79, 0.35); }
+}
+
+/* ---- 副标题 ---- */
+.splash-subtitle {
+  position: absolute;
+  top: calc(50% + 52px);
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  z-index: 2;
+  font-family: var(--font-ui, 'Inter', sans-serif);
+  font-size: 0.85rem;
+  color: rgba(79, 195, 247, 0.6);
+  letter-spacing: 0.35em;
+  white-space: nowrap;
+  opacity: 0;
+  animation: splash-title-in 0.5s 1.05s ease-out forwards;
+}
