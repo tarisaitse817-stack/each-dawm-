@@ -1,422 +1,105 @@
 /* ==========================================================================
-   光之回响 (Echoes of Light) — 地图界面样式
+   都市地图样式
    ========================================================================== */
 
-/* --------------------------------------------------------------------------
-   1. 地图面板容器
-   -------------------------------------------------------------------------- */
-#panel-map {
-  height: 100vh;
+.city-map {
+  position: relative;
+  width: 100%;
+  height: 380px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1520 100%);
+  margin-bottom: 16px;
+}
+
+.city-map-bg {
+  position: absolute;
+  inset: 0;
+}
+
+.city-roads {
+  width: 100%;
+  height: 100%;
+}
+
+.city-locs {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.city-loc {
+  position: absolute;
   display: flex;
   flex-direction: column;
-  position: relative;
-  overflow: hidden;
-}
-
-/* --------------------------------------------------------------------------
-   2. 地图画布容器
-   -------------------------------------------------------------------------- */
-.map-canvas {
-  flex: 1;
-  position: relative;
-  cursor: grab;
-  overflow: hidden;
-  background: var(--color-bg-deep);
-}
-
-.map-canvas.grabbing {
-  cursor: grabbing;
-}
-
-/* --------------------------------------------------------------------------
-   3. 手绘风格背景地形层
-   -------------------------------------------------------------------------- */
-.map-terrain-layer {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  opacity: 0.35;
-  transform: translate(calc(var(--mx, 0px) * -0.02), calc(var(--my, 0px) * -0.02));
-  transition: none;
-}
-
-/* 森林区域 — 绿色 */
-.map-terrain-forest {
-  position: absolute;
-  border-radius: 45% 55% 60% 40% / 50% 45% 55% 50%;
-  background: radial-gradient(ellipse closest-side, rgba(129, 199, 132, 0.45) 0%, transparent 80%);
-  pointer-events: none;
-}
-
-/* 湖泊区域 — 蓝色 */
-.map-terrain-lake {
-  position: absolute;
-  border-radius: 55% 45% 40% 60% / 45% 55% 45% 55%;
-  background: radial-gradient(circle closest-side, rgba(79, 195, 247, 0.35) 0%, transparent 75%);
-  pointer-events: none;
-}
-
-/* 山脉区域 — 灰色 */
-.map-terrain-mountain {
-  position: absolute;
-  border-radius: 40% 60% 50% 50% / 50% 40% 60% 50%;
-  background: radial-gradient(ellipse closest-side, rgba(130, 130, 140, 0.25) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-/* 城镇/村落/古城 — 棕色 */
-.map-terrain-town {
-  position: absolute;
-  border-radius: 50% 50% 45% 55% / 50% 45% 55% 50%;
-  background: radial-gradient(circle closest-side, rgba(160, 120, 80, 0.3) 0%, transparent 65%);
-  pointer-events: none;
-}
-
-/* 荒地 — 暖黄/赭色 */
-.map-terrain-waste {
-  position: absolute;
-  border-radius: 55% 45% 55% 45% / 50% 55% 45% 50%;
-  background: radial-gradient(ellipse closest-side, rgba(200, 170, 100, 0.2) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-/* 额外纹理叠加 (噪点感) */
-.map-terrain-texture {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.08;
-  background-image:
-    repeating-conic-gradient(rgba(255,255,255,0.03) 0% 25%, transparent 0% 50%);
-  background-size: 60px 60px;
-}
-
-/* --------------------------------------------------------------------------
-   4. 地图内容容器（用于拖拽平移 + 滚轮缩放）
-   -------------------------------------------------------------------------- */
-.map-content {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  transform-origin: center center;
-  will-change: transform;
-}
-
-/* --------------------------------------------------------------------------
-   5. 路径线
-   -------------------------------------------------------------------------- */
-.map-path {
-  position: absolute;
-  height: 2px;
-  transform-origin: left center;
-  pointer-events: none;
-  z-index: 5;
-}
-
-/* 已完成路径 — 暖金色实线 + 微光 */
-.map-path.completed {
-  background: var(--color-warm-gold);
-  box-shadow: 0 0 4px rgba(255, 213, 79, 0.4);
-}
-
-/* 可前往路径 — 蓝辉半透明虚线 */
-.map-path.available {
-  background: transparent;
-  height: 0;
-  border-top: 2px dashed rgba(79, 195, 247, 0.45);
-}
-
-/* 锁定路径 — 暗色弱显 */
-.map-path.locked {
-  background: rgba(100, 100, 110, 0.2);
-  height: 1px;
-}
-
-/* --------------------------------------------------------------------------
-   6. 地图节点
-   -------------------------------------------------------------------------- */
-.map-node {
-  position: absolute;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  transition: all var(--transition-normal);
-  z-index: 10;
-  cursor: pointer;
-  display: flex;
   align-items: center;
-  justify-content: center;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  padding: 10px 14px;
+  border: 2px solid;
+  border-radius: 14px;
+  background: rgba(10, 13, 20, 0.75);
+  backdrop-filter: blur(4px);
+  transition: all 0.25s ease;
 }
 
-/* 节点内部图标 */
-.map-node i {
-  width: 18px;
-  height: 18px;
-  color: #fff;
-  pointer-events: none;
+.city-loc:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+  background: rgba(10, 13, 20, 0.9);
+  box-shadow: 0 0 16px rgba(79, 195, 247, 0.2);
 }
 
-/* 节点标签（名称） */
-.map-node-label {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: var(--font-ui);
-  font-size: 0.75rem;
-  color: rgba(224, 224, 224, 0.85);
-  white-space: nowrap;
-  pointer-events: none;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
-  letter-spacing: 0.03em;
+.city-loc.here {
+  box-shadow: 0 0 20px currentColor;
+  border-width: 3px;
 }
 
-/* 节点图标容器 — 小圆点装饰（仅可用/已完成） */
-.map-node-dot {
-  width: 8px;
-  height: 8px;
+.city-loc-dot {
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.6);
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  box-shadow: 0 0 4px rgba(255,255,255,0.4);
+  margin-bottom: 4px;
+  box-shadow: 0 0 10px currentColor;
 }
 
-/* --- 节点状态：可前往 --- */
-.map-node.available {
-  background: var(--color-spirit-blue);
-  box-shadow: 0 0 20px rgba(79, 195, 247, 0.6);
-  animation: node-pulse 2s ease-in-out infinite;
-}
-
-.map-node.available:hover {
-  box-shadow: 0 0 30px rgba(79, 195, 247, 0.8), 0 0 60px rgba(79, 195, 247, 0.4);
-  transform: translate(-50%, -50%) scale(1.15);
-}
-
-/* --- 节点状态：已完成 --- */
-.map-node.completed {
-  background: var(--color-warm-gold);
-  box-shadow: 0 0 8px rgba(255, 213, 79, 0.4);
-}
-
-.map-node.completed i {
-  color: rgba(10, 13, 20, 0.7);
-}
-
-.map-node.completed .map-node-label {
-  color: var(--color-warm-gold);
-}
-
-/* --- 节点状态：锁定/未解锁 --- */
-.map-node.locked {
-  background: rgba(150, 150, 150, 0.3);
-  border: 1px dashed rgba(150, 150, 150, 0.5);
-  cursor: not-allowed;
-}
-
-.map-node.locked i {
-  opacity: 0.4;
-}
-
-.map-node.locked .map-node-label {
-  color: rgba(150, 150, 150, 0.6);
-}
-
-/* --- 节点脉冲动画 --- */
-@keyframes node-pulse {
-  0%, 100% {
-    box-shadow: 0 0 10px rgba(79, 195, 247, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 30px rgba(79, 195, 247, 0.8), 0 0 60px rgba(79, 195, 247, 0.3);
-  }
-}
-
-/* --------------------------------------------------------------------------
-   7. 节点悬停 Tooltip
-   -------------------------------------------------------------------------- */
-.node-tooltip {
-  position: absolute;
-  background: var(--color-bg-panel);
-  border: 1px solid var(--color-border-glow);
-  border-radius: var(--radius-md);
-  padding: 12px;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  z-index: 20;
-  min-width: 140px;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-.node-tooltip.visible {
-  opacity: 1;
-}
-
-.node-tooltip-title {
+.city-loc-label {
   font-family: var(--font-ui);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: #e0e0e0;
-  margin-bottom: 4px;
+  white-space: nowrap;
 }
 
-.node-tooltip-desc {
-  font-family: var(--font-ui);
-  font-size: 0.78rem;
-  color: rgba(224, 224, 224, 0.7);
-  line-height: 1.4;
-}
-
-.node-tooltip-status {
-  display: inline-block;
-  margin-top: 6px;
-  font-size: 0.7rem;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-family: var(--font-ui);
-}
-
-.node-tooltip-status.available {
-  background: rgba(79, 195, 247, 0.2);
-  color: var(--color-spirit-blue);
-  border: 1px solid rgba(79, 195, 247, 0.3);
-}
-
-.node-tooltip-status.completed {
-  background: rgba(255, 213, 79, 0.15);
-  color: var(--color-warm-gold);
-  border: 1px solid rgba(255, 213, 79, 0.25);
-}
-
-.node-tooltip-status.locked {
-  background: rgba(150, 150, 150, 0.15);
-  color: rgba(150, 150, 150, 0.7);
-  border: 1px solid rgba(150, 150, 150, 0.2);
-}
-
-/* --------------------------------------------------------------------------
-   8. 节点确认弹窗（点击可前往节点时）
-   -------------------------------------------------------------------------- */
-.node-confirm {
+.city-loc-here {
   position: absolute;
-  z-index: 30;
-  background: var(--color-bg-panel);
-  border: 1px solid var(--color-border-glow);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  min-width: 200px;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
-  animation: confirm-in 0.2s ease-out;
+  top: -14px;
+  right: -8px;
+  font-size: 1rem;
+  animation: bounce 1s ease-in-out infinite;
 }
 
-@keyframes confirm-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
 }
 
-.node-confirm-title {
-  font-family: var(--font-ui);
-  font-size: 0.9rem;
-  color: #e0e0e0;
-  margin-bottom: 12px;
-  text-align: center;
-}
-
-.node-confirm-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-}
-
-.node-confirm-actions .btn-primary,
-.node-confirm-actions .btn-secondary {
-  padding: 0.5rem 1.2rem;
-  font-size: 0.85rem;
-}
-
-/* --------------------------------------------------------------------------
-   9. 底部状态栏
-   -------------------------------------------------------------------------- */
-.map-status {
-  padding: 12px 24px;
-  background: var(--color-bg-panel);
-  border-top: 1px solid var(--color-border-glow);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 10;
-  flex-shrink: 0;
-}
-
-.map-status-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-ui);
-  font-size: 0.82rem;
-  color: rgba(224, 224, 224, 0.75);
-}
-
-.map-status-item i {
-  width: 16px;
-  height: 16px;
-  opacity: 0.7;
-}
-
-.map-status-item .status-value {
-  color: #e0e0e0;
-  font-weight: 500;
-}
-
-/* 进度条 */
-.map-progress-bar {
-  width: 80px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  overflow: hidden;
-  margin-left: 6px;
-}
-
-.map-progress-fill {
-  height: 100%;
-  background: var(--color-spirit-blue);
-  border-radius: 2px;
-  transition: width var(--transition-normal);
-}
-
-/* --------------------------------------------------------------------------
-   10. 空状态 / 加载中
-   -------------------------------------------------------------------------- */
-.map-empty {
+/* Info bar */
+.city-info {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: rgba(150, 150, 150, 0.6);
-  font-family: var(--font-ui);
-  font-size: 0.9rem;
-  gap: 12px;
+  gap: 6px;
+  padding: 12px 16px;
+  background: rgba(10, 13, 20, 0.5);
+  border: 1px solid rgba(79, 195, 247, 0.12);
+  border-radius: 10px;
 }
 
-.map-empty i {
-  width: 48px;
-  height: 48px;
-  opacity: 0.3;
+.city-info-item {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  color: rgba(224, 224, 224, 0.7);
+}
+
+.city-info-item strong {
+  color: var(--color-spirit);
 }
