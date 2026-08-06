@@ -47,8 +47,8 @@
   font-weight: 700;
   color: var(--color-warm-gold);
   text-shadow:
-    0 0 8px rgba(255, 213, 79, 0.4),
-    0 0 16px rgba(255, 213, 79, 0.2);
+    0 0 8px rgba(212, 165, 116, 0.4),
+    0 0 16px rgba(212, 165, 116, 0.2);
   line-height: 1;
 }
 
@@ -56,7 +56,7 @@
   width: 24px;
   height: 24px;
   color: var(--color-warm-gold);
-  filter: drop-shadow(0 0 6px rgba(255, 213, 79, 0.5));
+  filter: drop-shadow(0 0 6px rgba(212, 165, 116, 0.5));
 }
 
 /* --------------------------------------------------------------------------
@@ -87,7 +87,7 @@
 
 .category-tab:hover {
   color: rgba(224, 224, 224, 0.8);
-  background: rgba(79, 195, 247, 0.06);
+  background: rgba(212, 165, 116, 0.06);
 }
 
 .category-tab.active {
@@ -95,7 +95,7 @@
   border-bottom: 2px solid var(--color-warm-gold);
   border-radius: 0;
   padding-bottom: 4px;
-  text-shadow: 0 0 8px rgba(255, 213, 79, 0.15);
+  text-shadow: 0 0 8px rgba(212, 165, 116, 0.15);
 }
 
 /* --------------------------------------------------------------------------
@@ -158,7 +158,7 @@
 
 .item-card.rarity-rare:hover {
   border-color: var(--color-rarity-rare);
-  box-shadow: 0 0 12px rgba(79, 195, 247, 0.3);
+  box-shadow: 0 0 12px rgba(212, 165, 116, 0.3);
 }
 
 .item-card.rarity-epic:hover {
@@ -168,12 +168,12 @@
 
 .item-card.rarity-legendary:hover {
   border-color: var(--color-rarity-legendary);
-  box-shadow: 0 0 16px rgba(255, 213, 79, 0.35);
+  box-shadow: 0 0 16px rgba(212, 165, 116, 0.35);
 }
 
 .item-card.selected {
   border-color: var(--color-warm-gold);
-  box-shadow: 0 0 12px rgba(255, 213, 79, 0.2);
+  box-shadow: 0 0 12px rgba(212, 165, 116, 0.2);
 }
 
 /* Item Icon */
@@ -319,8 +319,8 @@
 }
 
 .item-detail-actions .btn-use:hover {
-  background: rgba(79, 195, 247, 0.1);
-  box-shadow: 0 0 10px rgba(79, 195, 247, 0.2);
+  background: rgba(212, 165, 116, 0.1);
+  box-shadow: 0 0 10px rgba(212, 165, 116, 0.2);
 }
 
 .item-detail-actions .btn-discard {

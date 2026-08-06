@@ -93,7 +93,7 @@ export const TitleScreen = {
 
     // 活泼配色：暖金、珊瑚、粉、天蓝、薄荷、紫、橙
     var colors = [
-      '#FFD54F', '#FF8A80', '#FF80AB', '#80D8FF',
+      '#D4A574', '#FF8A80', '#FF80AB', '#80D8FF',
       '#B9F6CA', '#B388FF', '#FFAB40', '#40C4FF',
       '#FF6E6E', '#64FFDA'
     ];

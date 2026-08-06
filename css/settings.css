@@ -56,7 +56,7 @@
   font-family: var(--font-ui);
   font-size: 1.25rem;
   font-weight: 600;
-  color: #e0e0e0;
+  color: #EAE4D9;
   margin-bottom: 24px;
   padding-bottom: 16px;
   border-bottom: 1px solid rgba(255,255,255,0.06);
@@ -84,7 +84,7 @@
 }
 
 .settings-close:hover {
-  color: #e0e0e0;
+  color: #EAE4D9;
   background: rgba(255,255,255,0.06);
   border-color: rgba(255,255,255,0.2);
 }
@@ -112,7 +112,7 @@
 .settings-row select {
   font-family: var(--font-ui);
   font-size: 0.85rem;
-  color: #e0e0e0;
+  color: #EAE4D9;
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.12);
   border-radius: var(--radius-sm);
@@ -129,19 +129,19 @@
 }
 
 .settings-row select:hover {
-  border-color: rgba(79, 195, 247, 0.4);
+  border-color: rgba(212, 165, 116, 0.4);
   background-color: rgba(255,255,255,0.07);
 }
 
 .settings-row select:focus {
   outline: none;
   border-color: var(--color-spirit-blue);
-  box-shadow: 0 0 0 2px rgba(79, 195, 247, 0.15);
+  box-shadow: 0 0 0 2px rgba(212, 165, 116, 0.15);
 }
 
 .settings-row select option {
   background: #1a1d24;
-  color: #e0e0e0;
+  color: #EAE4D9;
 }
 
 /* --------------------------------------------------------------------------
@@ -173,14 +173,14 @@
   background: var(--color-spirit-blue);
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0 0 8px rgba(79, 195, 247, 0.3);
+  box-shadow: 0 0 8px rgba(212, 165, 116, 0.3);
   margin-top: -6px;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .settings-row input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.15);
-  box-shadow: 0 0 12px rgba(79, 195, 247, 0.5);
+  box-shadow: 0 0 12px rgba(212, 165, 116, 0.5);
 }
 
 .settings-row input[type="range"]::-moz-range-track {
@@ -197,7 +197,7 @@
   border-radius: 50%;
   border: none;
   cursor: pointer;
-  box-shadow: 0 0 8px rgba(79, 195, 247, 0.3);
+  box-shadow: 0 0 8px rgba(212, 165, 116, 0.3);
 }
 
 .settings-row input[type="range"]:focus {
@@ -205,11 +205,11 @@
 }
 
 .settings-row input[type="range"]:focus::-webkit-slider-thumb {
-  box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.2), 0 0 8px rgba(79, 195, 247, 0.3);
+  box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.2), 0 0 8px rgba(212, 165, 116, 0.3);
 }
 
 .settings-row input[type="range"]:focus::-moz-range-thumb {
-  box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.2), 0 0 8px rgba(79, 195, 247, 0.3);
+  box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.2), 0 0 8px rgba(212, 165, 116, 0.3);
 }
 
 /* 滑块值数字标签 */
@@ -320,12 +320,12 @@
 }
 
 .settings-panel::-webkit-scrollbar-thumb {
-  background: rgba(79, 195, 247, 0.2);
+  background: rgba(212, 165, 116, 0.2);
   border-radius: 2px;
 }
 
 .settings-panel::-webkit-scrollbar-thumb:hover {
-  background: rgba(79, 195, 247, 0.35);
+  background: rgba(212, 165, 116, 0.35);
 }
 
 /* --------------------------------------------------------------------------
@@ -349,7 +349,7 @@
   font-weight: 500;
   color: var(--color-spirit);
   background: transparent;
-  border: 1px solid rgba(79, 195, 247, 0.35);
+  border: 1px solid rgba(212, 165, 116, 0.35);
   border-radius: 6px;
   cursor: pointer;
   white-space: nowrap;
@@ -357,8 +357,8 @@
 }
 
 .settings-fetch-btn:hover {
-  background: rgba(79, 195, 247, 0.1);
-  border-color: rgba(79, 195, 247, 0.6);
+  background: rgba(212, 165, 116, 0.1);
+  border-color: rgba(212, 165, 116, 0.6);
 }
 
 .settings-fetch-btn:disabled {
@@ -378,8 +378,8 @@
   flex-direction: column;
   gap: 6px;
   padding: 10px 14px;
-  background: rgba(10, 13, 20, 0.5);
-  border: 1px solid rgba(79, 195, 247, 0.12);
+  background: rgba(18, 20, 42, 0.5);
+  border: 1px solid rgba(212, 165, 116, 0.12);
   border-radius: 8px;
 }
 
@@ -406,6 +406,6 @@
 
 .token-stat-divider {
   height: 1px;
-  background: rgba(79, 195, 247, 0.12);
+  background: rgba(212, 165, 116, 0.12);
   margin: 4px 0;
 }

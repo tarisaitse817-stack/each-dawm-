@@ -5,7 +5,7 @@
 import { AppState } from './state.js';
 
 var LOCATIONS = [
-  { id: 'home',    name: '家',     icon: 'home',        x: 20, y: 55, color: '#FFD54F' },
+  { id: 'home',    name: '家',     icon: 'home',        x: 20, y: 55, color: '#D4A574' },
   { id: 'company', name: '公司',   icon: 'building-2',   x: 70, y: 25, color: '#80D8FF' },
   { id: 'mall',    name: '商业街', icon: 'shopping-bag', x: 60, y: 65, color: '#FF80AB' },
   { id: 'market',  name: '超市',   icon: 'store',        x: 35, y: 25, color: '#B9F6CA' },

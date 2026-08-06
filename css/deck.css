@@ -91,7 +91,7 @@
 .deck-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-  border-color: rgba(79, 195, 247, 0.4);
+  border-color: rgba(212, 165, 116, 0.4);
 }
 
 .deck-card-header {
@@ -128,12 +128,12 @@
 
 .deck-card-btn.edit-btn {
   color: var(--color-spirit-blue);
-  border-color: rgba(79, 195, 247, 0.3);
+  border-color: rgba(212, 165, 116, 0.3);
 }
 
 .deck-card-btn.edit-btn:hover {
-  background: rgba(79, 195, 247, 0.1);
-  box-shadow: 0 0 8px rgba(79, 195, 247, 0.2);
+  background: rgba(212, 165, 116, 0.1);
+  box-shadow: 0 0 8px rgba(212, 165, 116, 0.2);
 }
 
 .deck-card-btn.delete-btn {
@@ -208,7 +208,7 @@
 .deck-card-new:hover {
   border-color: var(--color-spirit-blue);
   color: var(--color-spirit-blue);
-  background: rgba(79, 195, 247, 0.04);
+  background: rgba(212, 165, 116, 0.04);
 }
 
 .deck-card-new .new-deck-icon {
@@ -332,7 +332,7 @@
 
 .card-rarity-rare {
   border-color: var(--color-rarity-rare);
-  box-shadow: 0 0 8px rgba(79, 195, 247, 0.3);
+  box-shadow: 0 0 8px rgba(212, 165, 116, 0.3);
 }
 
 .card-rarity-rare:hover {
@@ -350,7 +350,7 @@
 
 .card-rarity-legendary {
   border-color: var(--color-rarity-legendary);
-  box-shadow: 0 0 8px rgba(255, 213, 79, 0.3);
+  box-shadow: 0 0 8px rgba(212, 165, 116, 0.3);
 }
 
 .card-rarity-legendary:hover {

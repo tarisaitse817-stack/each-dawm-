@@ -42,7 +42,7 @@ export const Particles = {
     }
 
     // 颜色选项：灵火蓝 / 暖金辉
-    var colors = ['#4FC3F7', '#FFD54F'];
+    var colors = ['#D4A574', '#D4A574'];
 
     // 非战斗场景 — 15 个浮动粒子（降低密度以优化性能）
     for (var i = 0; i < 15; i++) {
@@ -88,7 +88,7 @@ export const Particles = {
     }
 
     count = Math.min(count || 30, 50);
-    color = color || '#4FC3F7';
+    color = color || '#D4A574';
 
     // 确保 Canvas 尺寸与视口匹配
     if (this._canvas.width !== window.innerWidth) {

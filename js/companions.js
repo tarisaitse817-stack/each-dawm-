@@ -11,9 +11,9 @@ import { Notifications } from './notifications.js';
 
 /** 立绘渐变色映射（按 companion id） */
 var PORTRAIT_GRADIENTS = {
-  'ying': 'linear-gradient(135deg, #1a237e 0%, #4FC3F7 50%, #81C784 100%)',
+  'ying': 'linear-gradient(135deg, #1a1c3b 0%, #D4A574 50%, #C0392B 100%)',
   'jin': 'linear-gradient(135deg, #1a0a0a 0%, #6d1b1b 50%, #ff6b35 100%)',
-  'lan': 'linear-gradient(135deg, #0d2b1a 0%, #388E3C 50%, #81C784 100%)',
+  'lan': 'linear-gradient(135deg, #0d2b1a 0%, #388E3C 50%, #C0392B 100%)',
   'unknown1': 'linear-gradient(135deg, #1a1a1a 0%, #333 50%, #555 100%)'
 };
 
@@ -169,7 +169,7 @@ export var CompanionsPanel = {
     for (var i = 0; i < maxStars; i++) {
       var fillPercent = Math.max(0, Math.min(100, Math.round((totalFilled - i) / 1 * 100)));
       var gradId = 'star-' + companionId + '-' + i;
-      var fillColor = unlocked ? '#FFD54F' : '#555';
+      var fillColor = unlocked ? '#D4A574' : '#555';
       var emptyColor = unlocked ? 'rgba(85,85,85,0.4)' : 'rgba(50,50,50,0.3)';
 
       html +=
@@ -182,7 +182,7 @@ export var CompanionsPanel = {
               '<stop offset="100%" stop-color="' + emptyColor + '"/>' +
             '</linearGradient>' +
           '</defs>' +
-          '<polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="url(#' + gradId + ')" stroke="' + (unlocked ? '#FFD54F' : '#444') + '" stroke-width="0.5"/>' +
+          '<polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="url(#' + gradId + ')" stroke="' + (unlocked ? '#D4A574' : '#444') + '" stroke-width="0.5"/>' +
         '</svg>';
     }
 

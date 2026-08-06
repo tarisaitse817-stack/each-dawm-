@@ -33,14 +33,14 @@
   z-index: 0;
   transition: background 1.2s cubic-bezier(0.4, 0, 0.2, 1);
   background:
-    radial-gradient(ellipse at 50% 30%, rgba(79,195,247,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 30%, rgba(212,165,116,0.08) 0%, transparent 60%),
     radial-gradient(ellipse at 80% 70%, rgba(129,199,132,0.06) 0%, transparent 50%);
 }
 
 /* Atmosphere mood variants (set via JS inline style) */
 .event-atmosphere.mood-calm {
   background:
-    radial-gradient(ellipse at 50% 30%, rgba(79,195,247,0.10) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 30%, rgba(212,165,116,0.10) 0%, transparent 60%),
     radial-gradient(ellipse at 80% 70%, rgba(129,199,132,0.08) 0%, transparent 50%);
 }
 
@@ -53,7 +53,7 @@
 .event-atmosphere.mood-mysterious {
   background:
     radial-gradient(ellipse at 50% 30%, rgba(156,39,176,0.10) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 70%, rgba(79,195,247,0.06) 0%, transparent 50%);
+    radial-gradient(ellipse at 80% 70%, rgba(212,165,116,0.06) 0%, transparent 50%);
 }
 
 /* --------------------------------------------------------------------------
@@ -90,7 +90,7 @@
   margin-bottom: 1.2em;
   color: rgba(224, 224, 224, 0.9);
   padding-left: 12px;
-  border-left: 2px solid rgba(79, 195, 247, 0.15);
+  border-left: 2px solid rgba(212, 165, 116, 0.15);
   animation: fadeIn 0.5s ease forwards;
 }
 
@@ -99,7 +99,7 @@
   text-align: right;
   color: var(--color-warm-gold);
   border-left: none;
-  border-right: 2px solid rgba(255, 213, 79, 0.25);
+  border-right: 2px solid rgba(212, 165, 116, 0.25);
   padding-left: 0;
   padding-right: 12px;
   font-style: italic;
@@ -140,15 +140,15 @@
   background: var(--color-warm-gold);
   top: -2px;
   left: -10px;
-  box-shadow: 0 0 6px var(--color-warm-gold), 0 0 12px rgba(255, 213, 79, 0.3);
+  box-shadow: 0 0 6px var(--color-warm-gold), 0 0 12px rgba(212, 165, 116, 0.3);
   animation: divider-particle 3s linear infinite;
   transition: background 0.6s ease, box-shadow 0.6s ease;
 }
 
 /* Divider particle — mood variants (set via JS) */
 .divider-glow.particle-calm::after {
-  background: #4FC3F7;
-  box-shadow: 0 0 6px #4FC3F7, 0 0 12px rgba(79, 195, 247, 0.3);
+  background: #D4A574;
+  box-shadow: 0 0 6px #D4A574, 0 0 12px rgba(212, 165, 116, 0.3);
 }
 
 .divider-glow.particle-tense::after {
@@ -186,7 +186,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: rgba(79, 195, 247, 0.7);
+  color: rgba(212, 165, 116, 0.7);
   cursor: pointer;
   font-size: 0.9rem;
   padding: 8px 24px;
@@ -197,7 +197,7 @@
 }
 
 .suggest-toggle:hover {
-  color: rgba(79, 195, 247, 0.95);
+  color: rgba(212, 165, 116, 0.95);
 }
 
 .suggest-arrow {
@@ -231,8 +231,8 @@
    -------------------------------------------------------------------------- */
 
 .suggestion-card {
-  background: rgba(10, 13, 20, 0.6);
-  border: 1px solid rgba(79, 195, 247, 0.2);
+  background: rgba(18, 20, 42, 0.6);
+  border: 1px solid rgba(212, 165, 116, 0.2);
   border-radius: var(--radius-sm);
   padding: 10px 16px;
   margin-bottom: 8px;
@@ -253,11 +253,11 @@
 }
 
 .suggestion-card:hover {
-  background: rgba(79, 195, 247, 0.1);
-  border-color: rgba(79, 195, 247, 0.4);
+  background: rgba(212, 165, 116, 0.1);
+  border-color: rgba(212, 165, 116, 0.4);
   box-shadow:
-    0 0 12px rgba(79, 195, 247, 0.15),
-    inset 0 0 8px rgba(79, 195, 247, 0.05);
+    0 0 12px rgba(212, 165, 116, 0.15),
+    inset 0 0 8px rgba(212, 165, 116, 0.05);
   transform: translateX(4px);
 }
 
@@ -294,7 +294,7 @@
   display: flex;
   gap: 12px;
   padding: 12px 24px;
-  border-top: 1px solid rgba(79, 195, 247, 0.1);
+  border-top: 1px solid rgba(212, 165, 116, 0.1);
   align-items: flex-end;
   flex-shrink: 0;
 }
@@ -308,7 +308,7 @@
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid var(--color-border-glow);
   border-radius: var(--radius-sm);
-  color: #e0e0e0;
+  color: #EAE4D9;
   padding: 10px 16px;
   font-family: var(--font-body);
   font-size: 1rem;
@@ -321,8 +321,8 @@
 }
 
 #narrative-input:focus {
-  border-color: rgba(79, 195, 247, 0.6);
-  box-shadow: 0 0 10px rgba(79, 195, 247, 0.1);
+  border-color: rgba(212, 165, 116, 0.6);
+  box-shadow: 0 0 10px rgba(212, 165, 116, 0.1);
 }
 
 #narrative-input::placeholder {
@@ -346,8 +346,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(79, 195, 247, 0.1);
-  border: 1px solid rgba(79, 195, 247, 0.25);
+  background: rgba(212, 165, 116, 0.1);
+  border: 1px solid rgba(212, 165, 116, 0.25);
   color: var(--color-spirit-blue);
   cursor: pointer;
   transition:
@@ -359,11 +359,11 @@
 }
 
 .send-btn:hover {
-  background: rgba(79, 195, 247, 0.2);
-  border-color: rgba(79, 195, 247, 0.5);
+  background: rgba(212, 165, 116, 0.2);
+  border-color: rgba(212, 165, 116, 0.5);
   box-shadow:
-    0 0 12px rgba(79, 195, 247, 0.25),
-    0 0 24px rgba(79, 195, 247, 0.1);
+    0 0 12px rgba(212, 165, 116, 0.25),
+    0 0 24px rgba(212, 165, 116, 0.1);
   transform: scale(1.05);
 }
 
@@ -385,6 +385,6 @@
 }
 
 .narrative-text::-webkit-scrollbar-thumb {
-  background: rgba(79, 195, 247, 0.15);
+  background: rgba(212, 165, 116, 0.15);
   border-radius: 2px;
 }

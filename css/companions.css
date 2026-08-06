@@ -55,7 +55,7 @@
 
 .companion-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--glow-md) rgba(79, 195, 247, 0.15);
+  box-shadow: var(--glow-md) rgba(212, 165, 116, 0.15);
 }
 
 .companion-card.locked {
@@ -191,17 +191,17 @@
 }
 
 .status-tag.rest {
-  --color-status-rest: #4FC3F7;
-  background: rgba(79, 195, 247, 0.12);
+  --color-status-rest: #D4A574;
+  background: rgba(212, 165, 116, 0.12);
   color: var(--color-status-rest);
-  border-color: rgba(79, 195, 247, 0.25);
+  border-color: rgba(212, 165, 116, 0.25);
 }
 
 .status-tag.explore {
-  --color-status-explore: #FFD54F;
-  background: rgba(255, 213, 79, 0.12);
+  --color-status-explore: #D4A574;
+  background: rgba(212, 165, 116, 0.12);
   color: var(--color-status-explore);
-  border-color: rgba(255, 213, 79, 0.25);
+  border-color: rgba(212, 165, 116, 0.25);
 }
 
 .status-tag.tense {
@@ -241,7 +241,7 @@
   inset: 0;
   background: linear-gradient(90deg,
     transparent,
-    rgba(255, 213, 79, 0.15),
+    rgba(212, 165, 116, 0.15),
     transparent
   );
   background-size: 200% 100%;

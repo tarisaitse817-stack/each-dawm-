@@ -23,8 +23,8 @@
 }
 .battle-trigger-card {
   position: relative;
-  background: linear-gradient(135deg, rgba(79,195,247,0.12), rgba(255,213,79,0.08));
-  border: 1px solid rgba(79,195,247,0.3);
+  background: linear-gradient(135deg, rgba(212,165,116,0.12), rgba(212,165,116,0.08));
+  border: 1px solid rgba(212,165,116,0.3);
   border-radius: 16px; padding: 24px 32px; text-align: center;
   overflow: hidden;
   animation: battle-card-in 0.5s ease-out;
@@ -35,7 +35,7 @@
 }
 .battle-trigger-glow {
   position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-  background: radial-gradient(circle, rgba(79,195,247,0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(212,165,116,0.12) 0%, transparent 70%);
   animation: battle-glow 2s ease-in-out infinite;
 }
 @keyframes battle-glow {
@@ -59,7 +59,7 @@
   transition: all 0.3s;
 }
 .battle-trigger-btn:hover {
-  box-shadow: 0 0 20px rgba(79,195,247,0.5); transform: translateY(-1px);
+  box-shadow: 0 0 20px rgba(212,165,116,0.5); transform: translateY(-1px);
 }
 .battle-trigger-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 .battle-trigger-btn.launched {

@@ -57,7 +57,7 @@
   font-weight: 700;
   font-size: 0.9rem;
   margin-bottom: 2px;
-  color: #e0e0e0;
+  color: #EAE4D9;
   font-family: var(--font-ui);
 }
 
@@ -122,7 +122,7 @@
   border-left: 3px solid var(--color-spirit-blue);
   box-shadow:
     4px 4px 16px rgba(0, 0, 0, 0.4),
-    inset 0 0 0 1px rgba(79, 195, 247, 0.15);
+    inset 0 0 0 1px rgba(212, 165, 116, 0.15);
 }
 .notification.info .notify-icon { color: var(--color-spirit-blue); }
 .notification.info .notify-progress-bar { background: var(--color-spirit-blue); }
