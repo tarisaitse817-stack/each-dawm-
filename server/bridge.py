@@ -37,12 +37,18 @@ def pick_random_ai():
     return random.choice(AI_POOL)
 
 def strip_macros(text):
-    """Remove remaining SillyTavern macros from text"""
+    """Remove remaining SillyTavern macros and broken remnants"""
+    # Standard macros
     text = re.sub(r'\{\{random::[^}]*\}\}', '', text)
     text = re.sub(r'\{\{setvar::[^}]*\}\}', '', text)
     text = re.sub(r'\{\{getvar::[^}]*\}\}', '', text)
     text = re.sub(r'\{\{trim\}\}', '', text)
     text = re.sub(r'\{\{user\}\}', '可爱的小粉丝', text)
+    # Broken/partial macro remnants
+    text = re.sub(r'^\s*\}\}', '', text)  # orphaned }} closers
+    text = re.sub(r'^\s*"[^"]*"\s*', '', text)  # orphaned quoted instructions at start
+    # Clean up leading garbage lines (SillyTavern UI instructions)
+    text = re.sub(r'^[^|]*?\n(?=\|)', '', text)
     return text.strip()
 
 # ─── Prompt Assembly ───
@@ -74,16 +80,15 @@ def build_messages(user_input, history, game_state):
             else:
                 sys_parts.append(content)
 
-    # Build the main system message
-    system_msg = "\n\n".join(sys_parts)
-
-    # Inject world context — replace placeholder in system message
+    # Build world context FIRST — it's the most important part
     world_ctx = build_world_context()
-    if "<|前置世界书|>" in system_msg:
-        system_msg = system_msg.replace("<|前置世界书|>", world_ctx)
-    else:
-        # If no placeholder, prepend world context
-        system_msg = world_ctx + "\n\n" + system_msg
+
+    # Build the main system message with world context at the TOP
+    system_msg = world_ctx + "\n\n" + "\n\n".join(sys_parts)
+
+    # Remove any remaining placeholder tags from preset content
+    system_msg = system_msg.replace("<|前置世界书|>", "")
+    system_msg = system_msg.replace("<小猫之神世界书处理>", "")
 
     # Append format requirements
     if format_parts:
@@ -140,11 +145,12 @@ def build_messages(user_input, history, game_state):
 
 def build_world_context():
     """Build world context from worldbook entries"""
-    parts = ["<|前置世界书|>"]
+    parts = ["【以下是世界设定与角色信息，你必须严格遵守】"]
     for entry in worldbook["entries"]:
         if entry.get("enabled", True):
-            parts.append(f"--- {entry['comment'] or '设定'} ---\n{entry['content']}")
-    parts.append("</小猫之神世界书处理>")
+            label = entry['comment'] if entry['comment'] and entry['comment'] != '未' else '设定'
+            parts.append(f"--- {label} ---\n{entry['content']}")
+    parts.append("【世界设定结束】")
     return "\n\n".join(parts)
 
 def compact_state(state):

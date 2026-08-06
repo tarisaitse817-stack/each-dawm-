@@ -1,0 +1,16 @@
+System length: 17729 chars
+World context at START: True
+World context position: 78
+Has placeholder tag: False
+Has Cat God framing: True
+Has 1000 chars req: True
+
+=== FIRST 300 CHARS ===
+【以下是世界设定与角色信息，你必须严格遵守】
+
+--- 未知世界观 ---
+\n<world_view>\n# 基础信息\n基础信息:\n  世界名称: '牌佬的温馨同居都市'\n  version: 2\n  世界简称: '现世, 奇妙都市, 温馨小家'\n  世界类型: '现代都市、日常、治愈、恋爱喜剧'\n  核心设定: '在一个平凡的现代都市中，普通大众对异常现象有着浑然不觉的认知屏蔽，而主角则凭借卡片的羁绊让《游戏王》的妹卡精灵实体化，开启了一边苦逼打工一边沉浸在温馨香艳日常中的奇妙同居生活。'\n# 地理环境 \n地理环境:\n  世界整体形态: '球形行星（地球）'\n  主要地
+
+=== WORLD TO OUTPUT GAP ===
+World context ends: 16128, Output contract starts: 17330
+Middle section (Cat God + style): 1202 chars
