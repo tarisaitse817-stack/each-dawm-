@@ -424,10 +424,10 @@ export const EventPanel = {
       this._hideThinking();
       this._pendingResponses--;
       this._isSubmitting = false;
-      // 显示错误信息，帮助排查
       var errMsg = err.message || String(err);
       console.error('[EventPanel] AI 调用失败:', errMsg);
-      this._addNarratorText('⚠️ AI 错误：' + errMsg + '\n\n（回退到离线模式）', 0, function () {
+      // 显示友好提示，走离线兜底
+      this._addNarratorText('💬 API 连不上哦，再检查一下网站和密钥吧\n（已切换到离线模式）', 0, function () {
         self._callFallback(text);
       });
     }
