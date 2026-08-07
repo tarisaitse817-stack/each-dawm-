@@ -10,7 +10,6 @@ import { AppState } from './state.js';
 const views = [
   { id: 'event', icon: 'message-circle', label: '事件' },
   { id: 'inventory', icon: 'backpack', label: '背包' },
-  { id: 'deck', icon: 'cards', label: '卡组' },
   { id: 'companions', icon: 'users', label: '伙伴' },
   { id: 'map', icon: 'map', label: '地图' }
 ];
@@ -98,7 +97,7 @@ export const Navigation = {
 
   /**
    * 导航到指定视图
-   * @param {string} viewId - 视图标识（'event' | 'inventory' | 'deck' | 'companions' | 'map'）
+   * @param {string} viewId - 视图标识（'event' | 'inventory' | 'companions' | 'map'）
    */
   navigateTo(viewId) {
     if (!viewId || viewId === _currentViewId || _isNavigating) return;
@@ -153,12 +152,6 @@ export const Navigation = {
     var invBadge = _sidebarEl.querySelector('[data-view="inventory"] .nav-badge');
     if (invBadge && state.inventory && state.inventory.length > 0) {
       invBadge.classList.remove('hidden');
-    }
-
-    // 卡组角标
-    var deckBadge = _sidebarEl.querySelector('[data-view="deck"] .nav-badge');
-    if (deckBadge && state.decks && state.decks.length > 0) {
-      deckBadge.classList.remove('hidden');
     }
 
     // 伙伴角标（有已解锁伙伴时显示）

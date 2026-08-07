@@ -82,28 +82,75 @@
   justify-content: center;
   position: relative;
   overflow: hidden;
+  background: var(--color-bg-deep);
+}
+
+/* 角色主题光晕 */
+.companion-portrait::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  box-shadow: 0 0 16px var(--companion-glow, rgba(212, 165, 116, 0.15));
+  pointer-events: none;
+  z-index: 2;
 }
 
 .companion-portrait::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 50%, rgba(0,0,0,0.2) 100%);
+  background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 40%, rgba(0,0,0,0.35) 100%);
   border-radius: inherit;
   pointer-events: none;
+  z-index: 1;
 }
 
+/* 头像图片 */
+.portrait-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  position: relative;
+  z-index: 0;
+  transition: transform 0.4s ease;
+}
+
+.companion-card:hover .portrait-img {
+  transform: scale(1.06);
+}
+
+/* 头像装饰边框 */
+.portrait-border {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--companion-accent, rgba(212, 165, 116, 0.3));
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0.6;
+}
+
+/* 占位图标 */
 .portrait-icon {
   width: 40px;
   height: 40px;
-  opacity: 0.7;
+  opacity: 0.5;
   position: relative;
   z-index: 1;
   stroke-width: 1.5;
+  color: var(--color-card-gold);
 }
 
-.portrait-icon.locked-icon {
-  opacity: 0.3;
+/* 未解锁角色 — 神秘剪影 */
+.portrait-locked {
+  background: rgba(18, 20, 42, 0.6) !important;
+}
+
+.portrait-locked .portrait-icon.locked-icon {
+  opacity: 0.2;
+  color: rgba(255, 255, 255, 0.3);
 }
 
 /* --------------------------------------------------------------------------
@@ -211,6 +258,36 @@
   border-color: rgba(244, 67, 54, 0.25);
 }
 
+.status-tag.stalker {
+  background: rgba(255, 128, 171, 0.12);
+  color: #ff80ab;
+  border-color: rgba(255, 128, 171, 0.25);
+}
+
+.status-tag.pressure {
+  background: rgba(179, 157, 219, 0.12);
+  color: #b39ddb;
+  border-color: rgba(179, 157, 219, 0.25);
+}
+
+.status-tag.warm {
+  background: rgba(255, 204, 128, 0.12);
+  color: #ffcc80;
+  border-color: rgba(255, 204, 128, 0.25);
+}
+
+.status-tag.brocon {
+  background: rgba(129, 199, 132, 0.12);
+  color: #81c784;
+  border-color: rgba(129, 199, 132, 0.25);
+}
+
+.status-tag.stranger {
+  background: rgba(160, 160, 160, 0.08);
+  color: #777;
+  border-color: rgba(160, 160, 160, 0.15);
+}
+
 .status-tag.unknown {
   background: rgba(128, 128, 128, 0.12);
   color: #888;
@@ -219,11 +296,13 @@
 
 /* Description */
 .companion-desc {
-  font-family: var(--font-ui);
-  font-size: 0.8125rem;
-  color: rgba(224, 224, 224, 0.5);
-  line-height: 1.5;
-  margin-top: 2px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: rgba(224, 224, 224, 0.65);
+  line-height: 1.7;
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(212, 165, 116, 0.08);
 }
 
 /* --------------------------------------------------------------------------

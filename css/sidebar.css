@@ -12,7 +12,10 @@
   top: 0;
   bottom: 0;
   width: 64px;
-  transition: width var(--transition-normal);
+  transition:
+    width var(--transition-normal),
+    opacity 0.6s var(--transition-slow),
+    transform 0.6s var(--transition-slow);
   z-index: 100;
   background: var(--color-bg-panel);
   border-right: 1px solid var(--color-border-glow);
@@ -23,6 +26,13 @@
   overflow: hidden;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+}
+
+/* 侧边栏隐藏状态 — 标题画面期间不可见 */
+#sidebar.sidebar-hidden {
+  opacity: 0;
+  transform: translateX(-12px);
+  pointer-events: none;
 }
 
 #sidebar.expanded {
@@ -172,7 +182,15 @@
   width: calc(100% - 64px);
   height: 100vh;
   overflow-y: auto;
-  transition: margin-left var(--transition-normal), width var(--transition-normal);
+  transition:
+    margin-left 0.6s var(--transition-slow),
+    width 0.6s var(--transition-slow);
+}
+
+/* 全宽模式 — 标题画面期间（侧边栏隐藏） */
+#main-content.full-width {
+  margin-left: 0;
+  width: 100%;
 }
 
 #sidebar.expanded ~ #main-content {

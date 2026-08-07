@@ -19,7 +19,7 @@ function createDefaultState() {
   return {
 
     /* --- 视图状态 --- */
-    currentView: 'title',             // 'title' | 'event' | 'inventory' | 'deck' | 'companions' | 'map'
+    currentView: 'title',             // 'title' | 'event' | 'inventory' | 'companions' | 'map'
 
     /* --- 玩家数据 --- */
     player: {
@@ -42,70 +42,70 @@ function createDefaultState() {
     /* --- 伙伴列表 --- */
     companions: [
       {
-        id: 'ying',
-        name: '荧',
-        affection: 78,
-        location: '翡翠神殿',
-        status: '休整',
+        id: 'liuyue',
+        name: '柳月',
+        affection: 45,
+        location: '公司·地铁口',
+        status: '暗中窥视',
         unlocked: true,
-        background: '曾在神殿中守护光之种的精灵，擅长治愈与光魔法。'
+        avatar: 'assets/companions/柳月.png',
+        background: '公司新来的后辈，粉发粉瞳，总是一副文弱天真的模样。每天在地铁口"偶遇"你，白裙下的纤细双腿总是怯生生地并拢着。但那双无辜的眸子里，似乎藏着某种令人不安的执着——她的手机里，据说有一个能改写现实的催眠APP。'
       },
       {
-        id: 'jin',
-        name: '烬',
-        affection: 42,
-        location: '灰烬峡谷',
-        status: '外出探索',
+        id: 'linyi',
+        name: '林仪',
+        affection: 40,
+        location: '公司·总裁办公室',
+        status: '职场施压',
         unlocked: true,
-        background: '游走于暗影边界的旅者，沉默寡言却可靠。'
+        avatar: 'assets/companions/林仪.png',
+        background: '你的直属上司，23岁便坐上管理层的天才。白发蓝瞳，白紫连衣裙勾勒出成熟的曲线，黑丝包裹的修长双腿在办公桌下总是不安分地交叠。两年前你拒绝了她酒后的大胆告白，从此她变得愈发冰冷——但每次训话时，她的指尖都在掌心里掐出了血痕。'
       },
       {
-        id: 'lan',
-        name: '岚',
-        affection: 15,
-        location: '风语草原',
-        status: '休整',
+        id: 'suyun',
+        name: '苏昀',
+        affection: 55,
+        location: '街角·便利超市',
+        status: '温柔守望',
         unlocked: true,
-        background: '风之部族的后裔，拥有与自然对话的天赋。'
+        avatar: 'assets/companions/苏昀.png',
+        background: '街角便利超市的店长，彩虹色的长发松松挽在脑后，金色的眼眸总是含着水一样温柔的关切。两年前你从劫匪手中救下了她，从此她就把你最爱吃的零食永远摆在收银台最近的位置。25岁的她身上有种熟透了的醇香，却连初吻都还留着——据说那次醉酒告白，不是醉话。'
       },
       {
-        id: 'unknown1',
-        name: '???',
+        id: 'baiyue',
+        name: '白月',
+        affection: 70,
+        location: '主角家中',
+        status: '兄控模式',
+        unlocked: true,
+        avatar: 'assets/companions/白月.png',
+        background: '你的亲妹妹，16岁的高中生。绿发绿瞳，学校制服配着超短百褶裙和白色过膝袜，每天放学后就霸占你的沙发打滚。嘴上总是一口一个"杂鱼哥哥"，但分开那一年的深夜，她总是抱着你的旧衬衫才能入睡。今年考上你所在城市的高中后，就再也没打算从你家搬出去过。'
+      },
+      {
+        id: 'sairen',
+        name: '塞壬',
         affection: 0,
-        location: '???',
-        status: '未知',
+        location: '家附近的河岸',
+        status: '未曾谋面',
         unlocked: false,
-        background: '???'
-      }
-    ],
-
-    /* --- 卡组 --- */
-    decks: [
-      {
-        id: 'radiance-shield',
-        name: '辉光之盾',
-        mainCards: [
-          { id: 'card-001', name: '光之护盾', cost: 1, type: 'defense', power: 200, description: '凝聚光元素形成护盾，吸收即将到来的伤害。' },
-          { id: 'card-002', name: '灵辉治愈', cost: 2, type: 'heal', power: 300, description: '以灵辉之力恢复自身生命值。' },
-          { id: 'card-003', name: '圣光裁决', cost: 3, type: 'attack', power: 400, description: '召唤圣光之剑，对敌人造成致命打击。' }
-        ],
-        extraCards: [],
-        sideCards: []
+        avatar: 'assets/companions/塞壬.png',
+        background: '珠泪哀歌的卡片精灵，灰蓝色的发丝间挑染着幽幽的紫，一双紫水晶般的眼眸总是汪着怯生生的水光。她藏在你家附近的小河里，每天傍晚趴在浅滩上，远远地望着你的窗户亮起灯。她还不知道你的名字，只是固执地觉得——你是她在现世唯一想等的人。'
       },
       {
-        id: 'spark-flame',
-        name: '星火燎原',
-        mainCards: [
-          { id: 'card-004', name: '星火术', cost: 1, type: 'attack', power: 150, description: '召唤点点星火灼烧敌人。' },
-          { id: 'card-005', name: '烈焰冲击', cost: 2, type: 'attack', power: 350, description: '释放熊熊烈焰冲击敌人。' },
-          { id: 'card-006', name: '燎原之势', cost: 4, type: 'attack', power: 600, description: '引燃全场，对敌人造成毁灭性的范围伤害。' }
-        ],
-        extraCards: [],
-        sideCards: []
+        id: 'ecclesia',
+        name: '艾克利西娅',
+        affection: 0,
+        location: '小吃街·包子铺',
+        status: '未曾谋面',
+        unlocked: false,
+        avatar: 'assets/companions/艾克利西娅.png',
+        background: '流落现世的金发圣女，华丽的发髻上缀着蓝色花朵，银色的眼眸清澈得不染纤尘。为了每天吃上热腾腾的包子，她在这家铺子里当了帮工。她还不认识你——只把你当成每天来买早饭的常客，但每次你点单的时候，她头顶那根呆毛总是不自觉地多晃几下。'
       }
     ],
 
-    activeDeckId: null,
+    /* --- MDPro3 卡组由玩家在 MDPro3 中自行设定 --- */
+
+    /* activeDeckId removed — 卡组由 MDPro3 管理 */
 
     /* --- 背包物品 --- */
     inventory: [

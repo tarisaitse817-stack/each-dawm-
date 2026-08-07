@@ -147,6 +147,12 @@ export const TitleScreen = {
    * "继续冒险" — 从存档恢复并进入事件视图
    */
   _onContinue() {
+    // 立即显示侧边栏（无开场白）
+    var sidebar = document.getElementById('sidebar');
+    if (sidebar) sidebar.classList.remove('sidebar-hidden');
+    var main = document.getElementById('main-content');
+    if (main) main.classList.remove('full-width');
+
     var saveData = StorageManager.load();
     if (saveData) {
       var currentState = AppState.get();
@@ -181,6 +187,9 @@ export const TitleScreen = {
    * 重置状态 → 跳转到事件视图 → 开场叙事在事件面板中以打字机展示
    */
   _startNewGame() {
+    // 通知事件面板：新游戏开始（重置侧边栏渐显触发标志）
+    window.dispatchEvent(new CustomEvent('newgame-start'));
+
     AppState.reset();
     this._hideCover();
     Navigation.navigateTo('event');
@@ -207,6 +216,12 @@ export const TitleScreen = {
     if (!this._el) return;
     this._showCover();
     this._el.classList.remove('hidden');
+
+    // 隐藏侧边栏 — 标题画面期间不可见
+    var sidebar = document.getElementById('sidebar');
+    if (sidebar) sidebar.classList.add('sidebar-hidden');
+    var main = document.getElementById('main-content');
+    if (main) main.classList.add('full-width');
 
     // 恢复主内容显示
     var contentEl = this._el.querySelector('.title-content');

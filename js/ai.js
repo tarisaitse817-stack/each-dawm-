@@ -16,9 +16,7 @@ export const AiClient = {
                 gamePhase: state.gamePhase,
                 companions: state.companions,
                 inventory: state.inventory,
-                mapNodes: state.mapNodes,
-                activeDeckId: state.activeDeckId,
-                decks: state.decks
+                mapNodes: state.mapNodes
             },
             api_key: settings.aiApiKey || '',
             endpoint: settings.aiEndpoint || '',
@@ -87,18 +85,6 @@ export const BattleBridge = {
 
     getDeckName() {
         const state = AppState.get();
-        const deckId = state.activeDeckId;
-        if (!deckId) return 'PlayerInsect';
-        const deck = (state.decks || []).find(d => d.id === deckId);
-        // Map internal deck names to MDPro3 Deck folder names
-        const nameMap = {
-            '虫惑魔': '虫惑魔',
-            '珠泪': '珠泪',
-            '码丽丝': '码丽丝',
-            '烙印': '烙印',
-            '天气': '天气',
-            '直播双子': '怪盗コンビEvil★Twin'
-        };
-        return nameMap[deck?.name] || 'PlayerInsect';
+        return state.settings.mdpro3Deck || 'PlayerInsect';
     }
 };

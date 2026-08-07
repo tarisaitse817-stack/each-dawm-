@@ -9,31 +9,30 @@ import { Notifications } from './notifications.js';
    常量
    ========================================================================== */
 
-/** 立绘渐变色映射（按 companion id） */
-var PORTRAIT_GRADIENTS = {
-  'ying': 'linear-gradient(135deg, #1a1c3b 0%, #D4A574 50%, #C0392B 100%)',
-  'jin': 'linear-gradient(135deg, #1a0a0a 0%, #6d1b1b 50%, #ff6b35 100%)',
-  'lan': 'linear-gradient(135deg, #0d2b1a 0%, #388E3C 50%, #C0392B 100%)',
-  'unknown1': 'linear-gradient(135deg, #1a1a1a 0%, #333 50%, #555 100%)'
+/** 伙伴主题色映射（用于卡片氛围光晕） */
+var COMPANION_THEMES = {
+  'liuyue': { glow: 'rgba(255, 150, 180, 0.3)', accent: '#ff80ab' },
+  'linyi': { glow: 'rgba(180, 160, 220, 0.3)', accent: '#b39ddb' },
+  'suyun': { glow: 'rgba(255, 200, 100, 0.3)', accent: '#ffcc80' },
+  'baiyue': { glow: 'rgba(130, 220, 150, 0.3)', accent: '#81c784' },
+  'sairen': { glow: 'rgba(130, 200, 230, 0.3)', accent: '#82d4e8' },
+  'ecclesia': { glow: 'rgba(255, 220, 140, 0.3)', accent: '#ffd88c' }
 };
 
-/** 默认立绘渐变色 */
-var DEFAULT_PORTRAIT_GRADIENT = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)';
-
-/** 立绘图标映射 */
-var PORTRAIT_ICONS = {
-  'ying': 'sun',
-  'jin': 'moon',
-  'lan': 'wind',
-  'unknown1': 'help-circle'
-};
+/** 默认主题 */
+var DEFAULT_THEME = { glow: 'rgba(212, 165, 116, 0.15)', accent: '#D4A574' };
 
 /** 状态 → CSS 类名映射 */
 var STATUS_CLASS_MAP = {
   '休整': 'rest',
   '外出探索': 'explore',
   '探索': 'explore',
-  '紧张': 'tense'
+  '紧张': 'tense',
+  '暗中窥视': 'stalker',
+  '职场施压': 'pressure',
+  '温柔守望': 'warm',
+  '兄控模式': 'brocon',
+  '未曾谋面': 'stranger'
 };
 
 /** 上次亲和度快照（用于变化检测） */
@@ -111,32 +110,47 @@ export var CompanionsPanel = {
      _renderCard — 渲染单个伙伴卡片
      ====================================================================== */
   _renderCard: function (companion, index) {
-    var name = companion.name || '???';
+    var name = (companion.unlocked !== false) ? (companion.name || '???') : '???';
     var affection = companion.affection != null ? companion.affection : 0;
     var location = companion.location || '???';
     var status = companion.status || '未知';
     var unlocked = companion.unlocked !== false;
     var background = companion.background || '???';
+    var avatar = companion.avatar || '';
 
-    var portraitGradient = PORTRAIT_GRADIENTS[companion.id] || DEFAULT_PORTRAIT_GRADIENT;
-    var portraitIcon = PORTRAIT_ICONS[companion.id] || 'user';
+    var theme = COMPANION_THEMES[companion.id] || DEFAULT_THEME;
     var statusClass = STATUS_CLASS_MAP[status] || 'unknown';
     var cardLockedClass = unlocked ? '' : ' locked';
     var nameLockedClass = unlocked ? '' : ' locked-name';
-    var iconLockedClass = unlocked ? '' : ' locked-icon';
 
     var starsHtml = this._renderStars(companion.id, affection, unlocked);
 
-    // 入场动画延迟
     var animDelay = (0.1 + index * 0.12).toFixed(2) + 's';
+
+    // 立绘区：解锁角色显示头像，未解锁显示剪影
+    var portraitHtml;
+    if (unlocked && avatar) {
+      portraitHtml =
+        '<div class="companion-portrait" style="--companion-glow: ' + theme.glow + '; --companion-accent: ' + theme.accent + ';">' +
+          '<img src="' + avatar + '" alt="' + this._escapeHtml(name) + '" class="portrait-img" loading="lazy">' +
+          '<div class="portrait-border"></div>' +
+        '</div>';
+    } else if (unlocked && !avatar) {
+      portraitHtml =
+        '<div class="companion-portrait" style="--companion-glow: ' + theme.glow + '; --companion-accent: ' + theme.accent + ';">' +
+          '<i data-lucide="user" class="portrait-icon"></i>' +
+        '</div>';
+    } else {
+      // 未解锁 — 神秘剪影
+      portraitHtml =
+        '<div class="companion-portrait portrait-locked">' +
+          '<i data-lucide="help-circle" class="portrait-icon locked-icon"></i>' +
+        '</div>';
+    }
 
     var html =
       '<div class="companion-card' + cardLockedClass + '" data-companion-id="' + this._escapeHtml(companion.id) + '" style="animation-delay: ' + animDelay + ';">' +
-        // 立绘区
-        '<div class="companion-portrait" style="background: ' + portraitGradient + ';">' +
-          '<i data-lucide="' + portraitIcon + '" class="portrait-icon' + iconLockedClass + '"></i>' +
-        '</div>' +
-        // 信息区
+        portraitHtml +
         '<div class="companion-info">' +
           '<div class="companion-name' + nameLockedClass + '">' + this._escapeHtml(name) + '</div>' +
           '<div class="companion-affection">' +

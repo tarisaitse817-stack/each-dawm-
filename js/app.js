@@ -1,6 +1,6 @@
 /* ==========================================================================
    光之回响 (Echoes of Light) — App 应用入口
-   设置面板 + 右键菜单 + 键盘快捷键 + 全模块集成
+   设置面板 + 键盘快捷键 + 全模块集成
    ========================================================================== */
 
 import { AppState } from './state.js';
@@ -10,7 +10,6 @@ import { Particles } from './particles.js';
 import { TitleScreen } from './title.js';
 import { EventPanel } from './event.js';
 import { AiClient, BattleBridge } from './ai.js';
-import { DeckPanel } from './deck.js';
 import { CompanionsPanel } from './companions.js';
 import { InventoryPanel } from './inventory.js';
 import { MapPanel } from './map.js';
@@ -20,8 +19,6 @@ export const App = {
 
   /* ---- 内部状态 ---- */
   _settingsVisible: false,
-  _currentContextCardId: null,
-  _currentContextType: null,
   _bgm: null,
   _bgmTitle: null,
   _bgmGame: null,
@@ -31,8 +28,8 @@ export const App = {
 
   /* ======================================================================
      init — 应用初始化入口（异步）
-     执行顺序：存档恢复 → 粒子 → 面板容器 → 导航 → 设置面板 → 右键菜单 → 键盘快捷键 →
-     标题 → 事件 → 对战 → 卡组 → 伙伴 → 背包 → 地图 → 订阅 → 图标 → 首屏
+     执行顺序：存档恢复 → 粒子 → 面板容器 → 导航 → 设置面板 → 键盘快捷键 →
+     标题 → 事件 → 伙伴 → 背包 → 地图 → 订阅 → 图标 → 首屏
      ====================================================================== */
   async init() {
     // 0. 初始化 BGM（splash 已在 HTML 中，由内联脚本控制）
@@ -77,10 +74,7 @@ export const App = {
     // 6. 绑定设置面板事件
     this._initSettingsEvents();
 
-    // 7. 初始化自定义右键菜单
-    this._initContextMenu();
-
-    // 8. 初始化键盘快捷键
+    // 7. 初始化键盘快捷键
     this._initKeyboardShortcuts();
 
     // 9. 绑定导航栏设置按钮
@@ -92,11 +86,8 @@ export const App = {
     // 11. 初始化事件对话面板
     EventPanel.init();
 
-    // 12. 初始化对战舞台
-    // (BattleStage removed — MDPro3 handles battles)
-
-    // 13. 初始化卡组编辑面板
-    DeckPanel.init();
+    // 12. 对战由 MDPro3 处理
+    // 13. 卡组由玩家在 MDPro3 中设定
 
     // 14. 初始化伙伴面板
     CompanionsPanel.init();
@@ -120,14 +111,19 @@ export const App = {
     }
 
     // 19. 始终显示标题界面（有存档时显示"继续冒险"按钮）
-    var titleScreen = document.getElementById('title-screen');
-    if (titleScreen) {
-      titleScreen.classList.remove('hidden');
-    }
+    TitleScreen.show();
 
     // 20. 初始化时间显示
     this._timeEl = document.getElementById('time-display');
     this.updateTimeDisplay();
+
+    // 21. 监听开场白结束事件 — 侧边栏渐显
+    window.addEventListener('sidebar-reveal', function () {
+      var sidebar = document.getElementById('sidebar');
+      if (sidebar) sidebar.classList.remove('sidebar-hidden');
+      var mainContent = document.getElementById('main-content');
+      if (mainContent) mainContent.classList.remove('full-width');
+    });
   },
 
   /* ======================================================================
@@ -326,8 +322,8 @@ export const App = {
 
     if (mainContent.querySelector('.view-panel')) return;
 
-    var viewIds = ['event', 'inventory', 'deck', 'companions', 'map'];
-    var viewNames = ['事件', '背包', '卡组', '伙伴', '地图'];
+    var viewIds = ['event', 'inventory', 'companions', 'map'];
+    var viewNames = ['事件', '背包', '伙伴', '地图'];
 
     viewIds.forEach(function (id, index) {
       var panel = document.createElement('div');
@@ -532,9 +528,6 @@ export const App = {
    */
   openSettings: function () {
     if (this._settingsVisible) return;
-
-    // 关闭可能已打开的右键菜单
-    this._hideContextMenu();
 
     var modal = document.getElementById('settings-modal');
     if (!modal) return;
@@ -848,10 +841,7 @@ export const App = {
       p.classList.remove('active');
     });
 
-    var titleScreen = document.getElementById('title-screen');
-    if (titleScreen) {
-      titleScreen.classList.remove('hidden');
-    }
+    TitleScreen.show();
 
     // 移除侧边栏 active 状态
     var navItems = document.querySelectorAll('#sidebar .nav-item');
@@ -864,7 +854,6 @@ export const App = {
 
     // 重新初始化各面板
     EventPanel.init();
-    DeckPanel.init();
     CompanionsPanel.init();
     InventoryPanel.init();
     MapPanel.init();
@@ -876,176 +865,6 @@ export const App = {
 
     // 通知
     Notifications.show('success', '存档已清除', '所有游戏数据已重置', 2000);
-  },
-
-  /* ======================================================================
-     ====================== 自定义右键菜单 ================================
-     ====================================================================== */
-
-  /**
-   * _initContextMenu — 初始化全局自定义右键菜单
-   */
-  _initContextMenu: function () {
-    var self = this;
-    var contextMenuEl = document.getElementById('context-menu');
-    if (!contextMenuEl) return;
-
-    // ---- 关闭菜单：点击页面任意处 ----
-    document.addEventListener('click', function (e) {
-      var menu = document.getElementById('context-menu');
-      if (!menu || !menu.classList.contains('active')) return;
-
-      // 点击菜单内部不关闭（由菜单项处理）
-      if (menu.contains(e.target)) return;
-
-      self._hideContextMenu();
-    });
-
-    // ---- 关闭菜单：滚动 ----
-    document.addEventListener('scroll', function () {
-      self._hideContextMenu();
-    }, true);
-
-    // ---- 在卡组编辑界面拦截右键，显示自定义菜单 ----
-    document.addEventListener('contextmenu', function (e) {
-      var thumb = e.target.closest('.card-thumb');
-      if (!thumb) return;
-
-      // 仅在卡组面板编辑模式中触发生效
-      var panel = e.target.closest('#panel-deck');
-      if (!panel) return;
-
-      var editView = panel.querySelector('[data-view="edit"]');
-      if (!editView || !editView.classList.contains('active')) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      var isDeckCard = !!thumb.closest('.deck-current-list');
-      var cardId = thumb.dataset.cardId;
-
-      self._showContextMenu(e.clientX, e.clientY, cardId, isDeckCard ? 'deck' : 'library');
-    }, true); // capture phase — 在 deck.js 处理之前拦截
-  },
-
-  /**
-   * _showContextMenu — 在指定位置显示右键菜单
-   * @param {number} x - 鼠标 X 坐标
-   * @param {number} y - 鼠标 Y 坐标
-   * @param {string} cardId - 目标卡牌 ID
-   * @param {'library'|'deck'} context - 卡牌来源
-   */
-  _showContextMenu: function (x, y, cardId, context) {
-    this._currentContextCardId = cardId;
-    this._currentContextType = context;
-
-    var menu = document.getElementById('context-menu');
-    if (!menu) return;
-
-    // 构建菜单项
-    var html = '';
-
-    if (context === 'library') {
-      html +=
-        '<div class="context-item" data-action="context-show-detail" data-card-id="' + cardId + '">' +
-          '<i data-lucide="info" class="context-item-icon"></i> 查看详情' +
-        '</div>' +
-        '<div class="context-item" data-action="context-add-to-deck" data-card-id="' + cardId + '">' +
-          '<i data-lucide="plus-circle" class="context-item-icon"></i> 添加到卡组' +
-        '</div>';
-    } else if (context === 'deck') {
-      html +=
-        '<div class="context-item" data-action="context-show-detail" data-card-id="' + cardId + '">' +
-          '<i data-lucide="info" class="context-item-icon"></i> 查看详情' +
-        '</div>' +
-        '<div class="context-item" data-action="context-remove-from-deck" data-card-id="' + cardId + '">' +
-          '<i data-lucide="minus-circle" class="context-item-icon"></i> 从卡组移除' +
-        '</div>';
-    }
-
-    html +=
-      '<div class="context-divider"></div>' +
-      '<div class="context-item" data-action="context-cancel">' +
-        '取消' +
-      '</div>';
-
-    menu.innerHTML = html;
-
-    // 渲染 Lucide 图标
-    if (typeof lucide !== 'undefined' && lucide.createIcons) {
-      lucide.createIcons({ app: menu });
-    }
-
-    // 定位 — 确保不超出视口
-    var rect = menu.getBoundingClientRect();
-    var menuWidth = rect.width || 160;
-    var menuHeight = rect.height || 120;
-
-    var posX = Math.min(x, window.innerWidth - menuWidth - 8);
-    var posY = Math.min(y, window.innerHeight - menuHeight - 8);
-
-    menu.style.left = Math.max(8, posX) + 'px';
-    menu.style.top = Math.max(8, posY) + 'px';
-
-    // 显示菜单
-    menu.classList.add('active');
-
-    // 绑定菜单项事件
-    var self = this;
-    menu.querySelectorAll('.context-item').forEach(function (item) {
-      item.addEventListener('click', function () {
-        var action = item.dataset.action;
-        self._handleContextAction(action, item.dataset.cardId);
-      });
-    });
-  },
-
-  /**
-   * _hideContextMenu — 隐藏右键菜单
-   */
-  _hideContextMenu: function () {
-    var menu = document.getElementById('context-menu');
-    if (menu) {
-      menu.classList.remove('active');
-      menu.innerHTML = '';
-    }
-    this._currentContextCardId = null;
-    this._currentContextType = null;
-  },
-
-  /**
-   * _handleContextAction — 处理右键菜单项点击
-   * @param {string} action
-   * @param {string} cardId
-   */
-  _handleContextAction: function (action, cardId) {
-    this._hideContextMenu();
-
-    switch (action) {
-      case 'context-show-detail':
-        // 调用 DeckPanel 的详情弹出方法
-        if (typeof DeckPanel._showCardDetailByCardId === 'function' && cardId) {
-          DeckPanel._showCardDetailByCardId(cardId);
-        }
-        break;
-
-      case 'context-add-to-deck':
-        if (cardId && typeof DeckPanel._addCardToDeck === 'function') {
-          DeckPanel._addCardToDeck(cardId);
-        }
-        break;
-
-      case 'context-remove-from-deck':
-        if (cardId && typeof DeckPanel._removeCardFromDeck === 'function') {
-          DeckPanel._removeCardFromDeck(cardId);
-        }
-        break;
-
-      case 'context-cancel':
-      default:
-        // 仅关闭菜单
-        break;
-    }
   },
 
   /* ======================================================================
@@ -1061,36 +880,15 @@ export const App = {
     document.addEventListener('keydown', function (e) {
       // Escape 键处理
       if (e.key === 'Escape') {
-        // 1. 关闭设置面板
+        // 关闭设置面板
         if (self._settingsVisible) {
           self.closeSettings();
           e.preventDefault();
           return;
         }
 
-        // 2. 关闭右键菜单
-        var contextMenu = document.getElementById('context-menu');
-        if (contextMenu && contextMenu.classList.contains('active')) {
-          self._hideContextMenu();
-          e.preventDefault();
-          return;
-        }
-
-        // 3. (battle-overlay removed — Esc exits settings/context menu only)
-        {
-          e.preventDefault();
-          return;
-        }
-
-        // 4. 关闭卡牌详情弹出框
-        var detailPopup = document.getElementById('card-detail-popup');
-        if (detailPopup) {
-          if (typeof DeckPanel._hideCardDetail === 'function') {
-            DeckPanel._hideCardDetail();
-          }
-          e.preventDefault();
-          return;
-        }
+        e.preventDefault();
+        return;
       }
     });
   },

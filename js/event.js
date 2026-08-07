@@ -129,6 +129,11 @@ export const EventPanel = {
     this._renderDOM();
     this._bindEvents();
 
+    // 重置开场白侧边栏触发标志（支持清除存档后重新开始）
+    this._sidebarRevealed = false;
+    this._displayQueue = [];
+    this._isTyping = false;
+
     // 显示已有的叙事历史
     var existingHistory = AppState.get('narrativeHistory') || [];
     if (existingHistory.length > 0) {
@@ -149,6 +154,13 @@ export const EventPanel = {
       if (newItems.length > 0) {
         self._enqueueDisplay(newItems);
       }
+    });
+
+    // 监听新游戏开始事件 — 重置侧边栏触发标志
+    window.addEventListener('newgame-start', function () {
+      self._sidebarRevealed = false;
+      self._displayQueue = [];
+      self._isTyping = false;
     });
   },
 
@@ -606,6 +618,13 @@ export const EventPanel = {
 
     if (this._displayQueue.length === 0) {
       this._isTyping = false;
+
+      // 开场白播放完毕 — 触发侧边栏渐显
+      if (!this._sidebarRevealed) {
+        this._sidebarRevealed = true;
+        window.dispatchEvent(new CustomEvent('sidebar-reveal'));
+      }
+
       // 队列空闲且无待处理响应时显示建议
       if (this._pendingResponses === 0) {
         this.showSuggestions(DEFAULT_SUGGESTIONS);

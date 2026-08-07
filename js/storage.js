@@ -10,8 +10,6 @@ const SAVE_KEYS = [
   'player',
   'gamePhase',
   'companions',
-  'decks',
-  'activeDeckId',
   'inventory',
   'mapNodes',
   'settings'

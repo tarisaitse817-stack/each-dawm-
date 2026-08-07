@@ -15,7 +15,6 @@
   <link rel="stylesheet" href="css/event.css">
   <link rel="stylesheet" href="css/notifications.css">
   <link rel="stylesheet" href="css/ai.css">
-  <link rel="stylesheet" href="css/deck.css">
   <link rel="stylesheet" href="css/companions.css">
   <link rel="stylesheet" href="css/inventory.css">
   <link rel="stylesheet" href="css/map.css">
@@ -36,6 +35,8 @@
   <!-- 时间显示 -->
   <div id="time-display" class="hidden"></div>
 
+  <!-- 地点背景图层 -->
+  <div id="location-bg"></div>
   <!-- 封面轮播背景（6 张原图） -->
   <div id="cover-slideshow">
     <div class="cover-slide" style="background-image:url('assets/covers/封面一.png')"></div>
@@ -49,17 +50,15 @@
   <!-- 标题界面 -->
   <div id="title-screen"></div>
   <!-- 侧边栏 -->
-  <nav id="sidebar"></nav>
+  <nav id="sidebar" class="sidebar-hidden"></nav>
   <!-- 主内容区 -->
-  <main id="main-content"></main>
+  <main id="main-content" class="full-width"></main>
   <!-- 设置面板模态框 -->
   <div id="settings-modal" class="hidden"></div>
   <!-- 通知层 -->
   <div id="notification-container"></div>
   <!-- 粒子 Canvas -->
   <canvas id="particles-canvas"></canvas>
-  <!-- 自定义右键菜单 -->
-  <div id="context-menu"></div>
 
   <!-- Splash 独立控制（非 module，确保第一时间执行） -->
   <script>
