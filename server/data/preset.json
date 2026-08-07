@@ -74,9 +74,9 @@
     }
   ],
   "sampling": {
-    "temperature": 1,
-    "top_p": 0.99,
-    "max_tokens": 65535
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "max_tokens": 4096
   },
   "chatsquash": {
     "stop_string": "<end>",

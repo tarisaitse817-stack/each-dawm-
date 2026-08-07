@@ -190,8 +190,8 @@ def call_llm(messages, api_key, endpoint, model):
         "messages": messages,
         "temperature": preset["sampling"]["temperature"],
         "top_p": preset["sampling"]["top_p"],
-        "max_tokens": min(preset["sampling"]["max_tokens"], 8192),
-        "stop": ["<end>"]
+        "max_tokens": min(preset["sampling"]["max_tokens"], 4096),
+        "stop": ["<end>", "<maintext>", "</maintext>"]
     }).encode("utf-8")
 
     req = Request(url, data=body, headers=headers)
