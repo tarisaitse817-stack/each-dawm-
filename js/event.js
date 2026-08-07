@@ -757,11 +757,11 @@ export const EventPanel = {
     var lowerInput = (input || '').toLowerCase();
     if (lowerInput.indexOf('战斗') >= 0 || lowerInput.indexOf('决斗') >= 0 || lowerInput.indexOf('挑战') >= 0) {
       this.setAtmosphere('tense');
-      return '你察觉到空气中凝聚着一股无形的力量——这是黑暗决斗即将开启的前兆。你的决斗盘微微发热，卡组在呼唤着你。';
+      return '【离线模式 · AI 未连接】\n\n你察觉到空气中凝聚着一股无形的力量——这是黑暗决斗即将开启的前兆。你的决斗盘微微发热，卡组在呼唤着你。';
     }
 
     // 直接返回当前地点的场景叙事，不拼接玩家行动
-    return randomPick(pool);
+    return '【离线模式 · AI 未连接】\n\n' + randomPick(pool);
   },
 
   /**
