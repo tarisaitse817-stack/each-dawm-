@@ -1,6 +1,8 @@
 /**
  * 光之回响 AI 客户端 + MDPro3 对战桥接
  */
+import { AppState } from './state.js';
+
 export const AiClient = {
     endpoint: 'http://localhost:9999',
 
