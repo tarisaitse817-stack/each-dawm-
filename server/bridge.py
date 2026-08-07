@@ -179,6 +179,8 @@ def compact_state(state):
 def call_llm(messages, api_key, endpoint, model):
     """Call OpenAI-compatible API, return response text"""
     url = endpoint.rstrip("/")
+    if not url.endswith("/chat/completions"):
+        url += "/chat/completions"
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {api_key}"
@@ -348,6 +350,9 @@ class BridgeHandler(BaseHTTPRequestHandler):
         # Try /models and /v1/models
         urls = []
         base = endpoint.rstrip("/")
+        # Strip /chat/completions if present (user may have pasted full URL)
+        if base.endswith("/chat/completions"):
+            base = base[:-len("/chat/completions")]
         if base.endswith("/v1"):
             urls.append(f"{base}/models")
         else:
