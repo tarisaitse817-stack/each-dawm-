@@ -1,11 +1,39 @@
 """光之回响 AI 桥接服务器 — stdlib only, zero pip dependencies"""
-import json, os, re, sys, time, random, subprocess, traceback
+import json, os, re, sys, time, random, subprocess, traceback, ssl
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from urllib.request import Request, urlopen
+from urllib.request import Request, urlopen, ProxyHandler, build_opener, HTTPSHandler
 from urllib.error import URLError, HTTPError
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(BASE, "data")
+
+# ─── 网络层修复：绕过系统代理 + 处理 Windows schannel 吊销检查 ───
+# urllib 在 Windows 上自动读取注册表中的系统代理（Internet 选项），
+# 本地代理（Clash/V2Ray）经常干扰 Cloudflare 的 SSL 握手，导致 UNEXPECTED_EOF。
+# 用 ProxyHandler({}) 强制不走代理。
+
+# 主 opener：直连 + 默认 SSL
+_NO_PROXY_OPENER = build_opener(ProxyHandler({}))
+
+# Fallback opener：直连 + 跳过证书吊销检查（Windows schannel CRL/OCSP 不可达时）
+_FALLBACK_SSL_CTX = ssl._create_unverified_context()
+_FALLBACK_OPENER = build_opener(ProxyHandler({}), HTTPSHandler(context=_FALLBACK_SSL_CTX))
+
+def _make_request(url, data=None, headers=None, timeout=30):
+    """发起 HTTPS 请求，强制直连 + SSL 吊销降级"""
+    req = Request(url, data=data or None, headers=headers or {})
+    try:
+        return _NO_PROXY_OPENER.open(req, timeout=timeout)
+    except Exception as first_error:
+        err_str = str(first_error)
+        # 如果是 SSL/证书类错误，降级为跳过吊销检查再试一次
+        if any(kw in err_str for kw in ("SSL", "CERT", "ssl", "cert", "CRYPT_E", "revocation")):
+            try:
+                req2 = Request(url, data=data or None, headers=headers or {})
+                return _FALLBACK_OPENER.open(req2, timeout=timeout)
+            except Exception:
+                raise first_error
+        raise
 
 # ─── Load data ───
 def load_json(name):
@@ -23,6 +51,7 @@ except Exception as e:
 
 FIRST_MES = worldbook["first_mes"]
 AI_POOL = config["ai_pool"]
+CHARACTER_DECKS = config.get("character_decks", {})
 DECK_DIR = os.path.join(config["mdpro3_dir"], "Deck")
 
 # ─── Helpers ───
@@ -121,10 +150,14 @@ def build_messages(user_input, history, game_state):
 - 每次叙事不少于 800 字，目标 1000 字
 - 叙事内容必须直接回应玩家的行动意图，不能偏离或自行发挥
 - 细腻推进：环境、神态、动作、语气、内心情感、对话，缺一不可
-- battle=true 表示触发黑暗决斗/催眠决斗，end_output 写到决斗即将开始
+- battle=true 表示触发黑暗决斗/催眠决斗/卡牌对战，此时 end_output 必须只写到决斗即将开始的那一刻，绝不能描述决斗过程
+- 【battle=true 触发条件】玩家明确接受/发起决斗挑战、喊出"开始吧"/"决斗"/"DUEL"等宣言、或剧情推进到双方准备开始打牌 — 满足任一条件则 battle=true
+- 【严禁】battle=true 时不要在叙事中描写具体的出牌、召唤、攻防等决斗过程 — 这些由 MDPro3 引擎处理
 - 回复以 <end> 结束
 - thinking 可为空字符串但不能缺失
-- 用简体中文"""
+- 用简体中文
+	- 【严禁】不要输出游戏状态 JSON（player/gamePhase/companions 等）— 游戏状态由系统自动管理
+	- 【严禁】回复中只包含一个 JSON 代码块，不要输出多个 JSON"""
 
     msgs.append({"role": "system", "content": system_msg})
 
@@ -191,12 +224,12 @@ def call_llm(messages, api_key, endpoint, model):
         "temperature": preset["sampling"]["temperature"],
         "top_p": preset["sampling"]["top_p"],
         "max_tokens": min(preset["sampling"]["max_tokens"], 4096),
-        "stop": ["<end>", "<maintext>", "</maintext>"]
+        "stop": ["<end>"]
     }).encode("utf-8")
 
-    req = Request(url, data=body, headers=headers)
     try:
-        resp = urlopen(req, timeout=config.get("llm_timeout", 180))
+        resp = _make_request(url, data=body, headers=headers,
+                            timeout=config.get("llm_timeout", 180))
         data = json.loads(resp.read().decode("utf-8"))
         usage = data.get("usage", {})
         return data["choices"][0]["message"]["content"], {
@@ -213,10 +246,57 @@ def call_llm(messages, api_key, endpoint, model):
         else:
             raise RuntimeError(f"upstream_error: API 返回 {e.code}\n{body[:300]}")
     except URLError as e:
-        raise RuntimeError(f"timeout: API 连接超时 — {e.reason}")
+        raise RuntimeError(f"timeout: 连接 {url} 超时 — {e.reason}")
     except Exception as e:
         raise RuntimeError(f"llm_error: {str(e)[:200]}")
     return "", {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}  # unreachable
+
+# 决斗触发关键词 — 叙事中出现 ≥2 个即强制 battle=true
+_BATTLE_KEYWORDS = [
+    "决斗即将开始", "DUEL", "抽牌", "我的回合", "你的回合",
+    "决斗盘", "召唤怪兽", "发动魔法", "盖放", "战斗阶段",
+    "结束回合", "通常召唤", "场地魔法", "来吧", "开始吧"
+]
+
+def _detect_battle_intent(narrative):
+    """即使 AI 没设 battle=true，叙事里命中 ≥2 个决斗关键词也触发"""
+    if not narrative:
+        return False
+    hits = sum(1 for kw in _BATTLE_KEYWORDS if kw in narrative)
+    return hits >= 2
+
+def _sanitize_json(text):
+    """修复 AI 输出的 JSON 中未转义的控制字符（如裸换行符）"""
+    result = []
+    in_string = False
+    escape_next = False
+    for ch in text:
+        if escape_next:
+            result.append(ch)
+            escape_next = False
+            continue
+        if ch == '\\':
+            result.append(ch)
+            escape_next = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            result.append(ch)
+            continue
+        if in_string:
+            if ch == '\n':
+                result.append('\\n')
+            elif ch == '\r':
+                result.append('\\r')
+            elif ch == '\t':
+                result.append('\\t')
+            elif ord(ch) < 32:
+                result.append(' ')  # 其他控制字符替换为空格
+            else:
+                result.append(ch)
+        else:
+            result.append(ch)
+    return ''.join(result)
 
 def parse_output(raw_text):
     """Parse AI output — extract JSON, fallback gracefully"""
@@ -224,73 +304,158 @@ def parse_output(raw_text):
     battle = False
     thinking = ""
 
-    # Try ```json fence
-    m = re.search(r'```json\s*([\s\S]*?)\s*```', raw_text)
-    if m:
-        try:
-            obj = json.loads(m.group(1))
-            thinking = obj.get("thinking", "")
-            narrative = obj.get("end_output", raw_text)
-            battle = obj.get("battle", False)
-        except json.JSONDecodeError:
-            pass
-    else:
-        # Try bare JSON
-        for match in re.finditer(r'\{[^{}]*"thinking"[^{}]*"end_output"[^{}]*\}', raw_text):
+    # Try to find the FIRST valid JSON with thinking/end_output fields.
+    # Strategy: find the first `{` that looks like our response JSON, then
+    # use a brace counter to extract the complete object (handles nested {} in text).
+    start_idx = None
+    for m in re.finditer(r'\{\s*"thinking"', raw_text):
+        start_idx = m.start()
+        break
+
+    if start_idx is not None:
+        # Brace-count from start_idx to find matching closing brace
+        depth = 0
+        end_idx = -1
+        for i in range(start_idx, len(raw_text)):
+            if raw_text[i] == '{':
+                depth += 1
+            elif raw_text[i] == '}':
+                depth -= 1
+                if depth == 0:
+                    end_idx = i + 1
+                    break
+        if end_idx > 0:
+            json_candidate = raw_text[start_idx:end_idx]
             try:
-                obj = json.loads(match.group())
+                obj = json.loads(_sanitize_json(json_candidate))
+                if "thinking" in obj or "end_output" in obj:
+                    thinking = obj.get("thinking", "")
+                    narrative = obj.get("end_output", raw_text)
+                    battle = obj.get("battle", False)
+            except json.JSONDecodeError:
+                pass
+
+    # Fallback: try ```json fence
+    if thinking == "" and narrative == raw_text:
+        m = re.search(r'`{1,3}json\s*([\s\S]*?)\s*`{1,3}', raw_text)
+        if m:
+            try:
+                obj = json.loads(_sanitize_json(m.group(1)))
                 thinking = obj.get("thinking", "")
                 narrative = obj.get("end_output", raw_text)
                 battle = obj.get("battle", False)
-                break
             except json.JSONDecodeError:
-                continue
+                pass
 
     # Strip format tags
     narrative = re.sub(r'</?maintext>', '', narrative)
     narrative = re.sub(r'</?Status_block>', '', narrative)
     narrative = re.sub(r'<end>', '', narrative)
+    # Strip any remaining ```json blocks inside the narrative (AI sometimes echoes game state)
+    narrative = re.sub(r'`{1,3}json\s*[\s\S]*?\s*`{1,3}', '', narrative)
+    # Strip bare JSON-like objects that look like game state (player/gamePhase/companions)
+    narrative = re.sub(r'\{\s*"[^"]*player"[^}]*\}', '', narrative)
     narrative = narrative.strip()
 
     return narrative, battle, thinking
 
 # ─── Battle Launcher ───
 _battle_running = False
+_last_battle_proc = None
 
-def launch_battle(deck):
-    """Launch MDPro3 with given player deck, random AI opponent"""
-    global _battle_running
+def launch_battle(deck, opponent=None):
+    """Start local ygopro server + WindBot AI + MDPro3 for a full local duel."""
+    global _battle_running, _last_battle_proc
     if _battle_running:
-        return {"ok": False, "error": "already_running", "message": "MDPro3 已经在运行中"}
+        try:
+            if _last_battle_proc is not None and _last_battle_proc.poll() is not None:
+                _battle_running = False
+        except Exception:
+            _battle_running = False
+    if _battle_running:
+        return {"ok": False, "error": "already_running", "message": "Duel already in progress"}
 
-    # Validate deck
     deck_path = os.path.join(DECK_DIR, f"{deck}.ydk")
     if not os.path.exists(deck_path):
         available = get_decks()[:10]
-        return {"ok": False, "error": "deck_not_found", "message": f"卡组 '{deck}' 不存在", "available": available}
+        return {"ok": False, "error": "deck_not_found", "message": f"Deck '{deck}' not found", "available": available}
 
-    ai_name = pick_random_ai()
-    exe = config["mdpro3_exe"]
-    cwd = config["mdpro3_dir"]
-    server = config["windbot_server"]
-    port = config["windbot_port"]
+    # Resolve opponent
+    if opponent and opponent in CHARACTER_DECKS:
+        windbot_deck = CHARACTER_DECKS[opponent]
+        display_name = opponent
+    else:
+        windbot_deck = "MalissOCG"
+        display_name = opponent or windbot_deck
+
+    mdpro3_exe = config["mdpro3_exe"]
+    mdpro3_dir = config["mdpro3_dir"]
+    ygopro_exe = "C:/Users/Administrator/ygopro-server.exe"
+    ygopro_cwd = "C:/Users/Administrator"
+    windbot_exe = config.get("windbot_local_exe", "C:/Users/Administrator/windbot-local/WindBot/WindBot.exe")
+    windbot_dir = config.get("windbot_local_dir", "C:/Users/Administrator/windbot-local/WindBot")
+
+    # Map character to dialog
+    dialog_map = {"柳月": "Liuyue.zh-CN", "白月": "mokey.zh-CN", "林仪": "smart.zh-CN", "苏昀": "cirno.zh-CN", "艾克利西娅": "ecclesia.zh-CN", "塞壬": "Xiaoye.zh-CN"}
+    dialog = dialog_map.get(opponent, "zh-CN") if opponent else "zh-CN"
 
     try:
-        proc = subprocess.Popen(
-            [exe, "-h", server, "-p", port, "-w", f"AI#{ai_name}", "-n", "玩家", "-d", deck, "-j"],
-            cwd=cwd
+        procs = []
+
+        # 1. Start ygopro server
+        print("[bridge] Starting ygopro server...")
+        server_proc = subprocess.Popen(
+            [ygopro_exe, "7911", "0", "5", "0", "5", "F", "F", "8000", "5", "1", "180", "0"],
+            cwd=ygopro_cwd
         )
+        procs.append(server_proc)
+        time.sleep(1.5)  # Wait for server to start
+
+        # 2. Start WindBot as AI
+        print(f"[bridge] Starting WindBot (deck={windbot_deck})")
+        windbot_proc = subprocess.Popen(
+            [windbot_exe, f"Name={display_name}", f"Deck={windbot_deck}", f"Dialog={dialog}",
+             "Host=127.0.0.1", "Port=7911"],
+            cwd=windbot_dir
+        )
+        procs.append(windbot_proc)
+        time.sleep(1.5)
+
+        # 3. Start MDPro3
+        print("[bridge] Launching MDPro3...")
+        old_cwd = os.getcwd()
+        os.chdir(mdpro3_dir)
+        try:
+            mdpro3_proc = subprocess.Popen(
+                [mdpro3_exe, "-h", "127.0.0.1", "-p", "7911", "-n", "Player", "-d", deck, "-j"]
+            )
+        finally:
+            os.chdir(old_cwd)
+        procs.append(mdpro3_proc)
+
         _battle_running = True
-        # Background monitor: clear flag when process exits
+        _last_battle_proc = mdpro3_proc
+
+        # Monitor thread: clean up when MDPro3 exits
         import threading
         def monitor():
-            global _battle_running
-            proc.wait()
+            global _battle_running, _last_battle_proc
+            mdpro3_proc.wait()
             _battle_running = False
+            _last_battle_proc = None
+            # Clean up server and WindBot
+            for p in procs:
+                try: p.terminate()
+                except: pass
         threading.Thread(target=monitor, daemon=True).start()
 
-        return {"ok": True, "launched": True, "ai": ai_name, "pid": proc.pid}
+        return {"ok": True, "launched": True, "ai": display_name, "mode": "local",
+                "message": f"Local duel started: you vs {display_name}", "pid": mdpro3_proc.pid}
     except Exception as e:
+        # Clean up on failure
+        for p in procs:
+            try: p.terminate()
+            except: pass
         return {"ok": False, "error": "launch_failed", "message": str(e)[:200]}
 
 # ─── HTTP Handler ───
@@ -326,8 +491,26 @@ class BridgeHandler(BaseHTTPRequestHandler):
             self.reply(404, {"ok": False, "error": "not_found"})
 
     def do_POST(self):
+        try:
+            self._do_POST_impl()
+        except Exception as e:
+            print(f"[bridge] FATAL in do_POST: {e}")
+            traceback.print_exc()
+            try:
+                self.reply(500, {"ok": False, "error": "internal_error", "message": str(e)[:200]})
+            except Exception:
+                pass
+
+    def _do_POST_impl(self):
         length = int(self.headers.get("Content-Length", 0))
-        raw = self.rfile.read(length).decode("utf-8") if length else "{}"
+        if length:
+            data = self.rfile.read(length)
+            try:
+                raw = data.decode("utf-8")
+            except UnicodeDecodeError:
+                raw = data.decode("utf-8", errors="replace")
+        else:
+            raw = "{}"
         body = json.loads(raw)
 
         if self.path == "/chat":
@@ -368,8 +551,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
         last_error = None
         for url in urls:
             try:
-                req = Request(url, headers=headers)
-                resp = urlopen(req, timeout=15)
+                resp = _make_request(url, headers=headers, timeout=15)
                 data = json.loads(resp.read().decode("utf-8"))
                 raw_models = data.get("data", data.get("models", []))
                 for m in raw_models:
@@ -409,6 +591,14 @@ class BridgeHandler(BaseHTTPRequestHandler):
 
             raw, usage = call_llm(msgs, body["api_key"], body["endpoint"], body["model"])
             narrative, battle, thinking = parse_output(raw)
+            print(f"[bridge] parse result: battle={battle}, narrative_len={len(narrative)}, thinking_len={len(thinking)}")
+
+            # 服务端兜底检测：即使 AI 没设 battle=true，叙事里有决斗关键词也强制触发
+            if not battle and _detect_battle_intent(narrative):
+                battle = True
+                print(f"[bridge] 兜底检测触发: 叙事命中决斗关键词, 强制 battle=true")
+            elif not battle:
+                print(f"[bridge] battle=false, 关键词未命中")
 
             self.reply(200, {
                 "ok": True,
@@ -430,7 +620,8 @@ class BridgeHandler(BaseHTTPRequestHandler):
 
     def handle_battle(self, body):
         deck = body.get("deck", "PlayerInsect")
-        result = launch_battle(deck)
+        opponent = body.get("opponent", None)  # 角色名如"柳月"，为 None 则随机
+        result = launch_battle(deck, opponent=opponent)
         if result["ok"]:
             self.reply(200, result)
         else:

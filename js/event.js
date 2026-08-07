@@ -409,6 +409,7 @@ export const EventPanel = {
     try {
       var result = await AiClient.chat(text);
       this._hideThinking();
+      console.log('[EventPanel] AI result — battle:', result.battle, '| narrative_len:', (result.narrative||'').length, '| detectIntent:', self._detectBattleIntent(result.narrative));
       // 累积 token 统计
       this._accumulateTokenUsage(result.usage);
       self._isInternalUpdate = true;
@@ -417,7 +418,9 @@ export const EventPanel = {
       self._addNarratorText(result.narrative, undefined, function () {
         self._pendingResponses--;
         self._isSubmitting = false;
-        if (result.battle) { self._showBattleTrigger(); }
+        if (result.battle || self._detectBattleIntent(result.narrative)) {
+          self._showBattleTrigger(self._extractOpponentName(result.narrative));
+        }
         else if (self._pendingResponses === 0) { self.showSuggestions(getLocationSuggestions()); }
       });
     } catch (err) {
@@ -452,7 +455,7 @@ export const EventPanel = {
   },
 
   _showThinking() {
-    var c = document.querySelector('#panel-event .narrative-container');
+    var c = document.querySelector('#panel-event .narrative-text');
     if (!c) return;
     var el = document.createElement('div');
     el.className = 'ai-thinking';
@@ -465,27 +468,64 @@ export const EventPanel = {
     if (this._thinkingEl) { this._thinkingEl.remove(); this._thinkingEl = null; }
   },
 
-  _showBattleTrigger() {
-    var c = document.querySelector('#panel-event .narrative-container');
+  /**
+   * 从叙事文本中提取对手角色名
+   */
+  _extractOpponentName(narrative) {
+    if (!narrative) return null;
+    var chars = ['柳月', '白月', '林仪', '苏昀', '艾克利西娅', '塞壬'];
+    for (var i = 0; i < chars.length; i++) {
+      if (narrative.indexOf(chars[i]) >= 0) return chars[i];
+    }
+    return null;
+  },
+
+  /**
+   * 兜底检测：即使 AI 没设 battle=true，只要叙事中提到决斗触发词，也弹出对战按钮
+   */
+  _detectBattleIntent(narrative) {
+    if (!narrative) return false;
+    var keywords = ['决斗即将开始', 'DUEL', '抽牌', '我的回合', '你的回合',
+                    '决斗盘', '召唤怪兽', '发动魔法', '盖放', '战斗阶段',
+                    '结束回合', '通常召唤', '场地魔法'];
+    var count = 0;
+    for (var i = 0; i < keywords.length; i++) {
+      if (narrative.indexOf(keywords[i]) >= 0) count++;
+    }
+    return count >= 2;  // 至少命中 2 个关键词才触发
+  },
+
+  _showBattleTrigger(opponentName) {
+    var c = document.querySelector('#panel-event .narrative-text');
     if (!c) return;
     var deck = BattleBridge.getDeckName();
+    var opponent = opponentName || '???';
     var el = document.createElement('div');
     el.className = 'battle-trigger-container';
-    el.innerHTML = '<div class="battle-trigger-card"><div class="battle-trigger-glow"></div><div class="battle-trigger-text">黑暗决斗即将开始</div><div class="battle-trigger-deck">使用卡组: ' + deck + '</div><button class="battle-trigger-btn" id="battle-trigger-btn">开始对战</button></div>';
+    el.innerHTML = '<div class="battle-trigger-card"><div class="battle-trigger-glow"></div><div class="battle-trigger-text">黑暗决斗即将开始</div><div class="battle-trigger-deck">对手: ' + opponent + ' | 使用卡组: ' + deck + '</div><button class="battle-trigger-btn" id="battle-trigger-btn">开始对战</button></div>';
     c.appendChild(el); this._battleTriggerEl = el;
     c.scrollTop = c.scrollHeight;
     var btn = el.querySelector('#battle-trigger-btn');
-    if (btn) { btn.addEventListener('click', function () { self._launchBattle(btn); }); }
+    if (btn) { var that = this; btn.addEventListener('click', function () { that._launchBattle(btn, opponent); }); }
   },
 
-  async _launchBattle(btn) {
-    btn.disabled = true; btn.textContent = '正在启动 MDPro3\u2026';
-    var result = await BattleBridge.launch(BattleBridge.getDeckName());
-    if (result.ok) {
-      btn.textContent = '决斗已开启 (对手: ' + result.ai + ')';
-      btn.className = 'battle-trigger-btn launched';
-    } else { btn.textContent = '启动失败，请手动运行 MDPro3'; btn.disabled = false; }
+  async _launchBattle(btn, opponent) {
+    btn.disabled = true; btn.textContent = '正在启动 MDPro3…';
+    console.log('[EventPanel] _launchBattle: sending /battle, deck:', BattleBridge.getDeckName(), 'opponent:', opponent);
+    try {
+      var result = await BattleBridge.launch(BattleBridge.getDeckName(), opponent);
+      console.log('[EventPanel] _launchBattle result:', JSON.stringify(result));
+      if (result.ok) {
+        btn.textContent = '决斗已开启 (对手: ' + result.ai + ')';
+        btn.className = 'battle-trigger-btn launched';
+      } else { btn.textContent = '启动失败，请手动运行 MDPro3'; btn.disabled = false; }
+    } catch (err) {
+      console.error('[EventPanel] _launchBattle error:', err);
+      btn.textContent = '启动出错，请重试'; btn.disabled = false;
+    }
   },
+
+
 
   _callFallback(text) {
     var self = this;

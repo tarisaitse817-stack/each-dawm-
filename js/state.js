@@ -109,15 +109,12 @@ function createDefaultState() {
 
     /* --- 背包物品 --- */
     inventory: [
-      { id: 'item-cons-001', name: '光之露滴', type: 'consumable', rarity: 'rare', count: 3, effect: '恢复300LP' },
-      { id: 'item-cons-002', name: '森林药草', type: 'consumable', rarity: 'common', count: 5, effect: '恢复100LP' },
-      { id: 'item-cons-003', name: '星辉粉尘', type: 'consumable', rarity: 'rare', count: 8, effect: '清除所有异常状态' },
-      { id: 'item-key-001', name: '神殿碎片', type: 'key', rarity: 'common', count: 2, effect: '记载着失落神殿的秘密碎片' },
-      { id: 'item-mat-001', name: '暗影结晶', type: 'material', rarity: 'rare', count: 1, effect: '蕴含着暗影能量的结晶' },
-      { id: 'item-mat-002', name: '古老卷轴', type: 'material', rarity: 'legendary', count: 1, effect: '记载着远古咒文的卷轴' },
-      { id: 'item-mat-003', name: '风之羽', type: 'material', rarity: 'common', count: 3, effect: '轻盈的风元素羽毛' },
-      { id: 'item-mat-004', name: '大地结晶', type: 'material', rarity: 'common', count: 2, effect: '大地的力量凝聚而成' },
-      { id: 'item-pack-001', name: '基础卡包', type: 'pack', rarity: 'common', count: 2, effect: '打开获得随机卡牌' }
+      { id: 'item-key-001', name: '房屋钥匙', type: 'key', rarity: 'common', count: 1, effect: '公寓房间的钥匙，上面挂着一个褪色的企鹅挂件' },
+      { id: 'item-elec-001', name: '手机', type: 'tool', rarity: 'common', count: 1, effect: '一部屏幕边角有裂纹的智能手机，桌面壁纸是某个卡牌游戏的立绘' },
+      { id: 'item-elec-002', name: '充电宝', type: 'tool', rarity: 'common', count: 1, effect: '10000mAh 快充充电宝，侧面的指示灯只剩一格了' },
+      { id: 'item-elec-003', name: '耳机', type: 'tool', rarity: 'common', count: 1, effect: '蓝牙降噪耳机，戴上后世界瞬间安静，只剩下BGM和你自己' },
+      { id: 'item-wallet-001', name: '钱包', type: 'tool', rarity: 'common', count: 1, effect: '棕色皮质钱包，里面塞着身份证、银行卡和几张皱巴巴的零钱' },
+      { id: 'item-card-001', name: '备用卡组盒', type: 'tool', rarity: 'rare', count: 1, effect: '黑色卡盒，装着几套备用的对战卡组，盒面有磨损的痕迹' }
     ],
 
     /* --- 地图节点 --- */

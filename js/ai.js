@@ -71,12 +71,12 @@ export const AiClient = {
 };
 
 export const BattleBridge = {
-    async launch(deck) {
+    async launch(deck, opponent) {
         try {
             const resp = await fetch(`${AiClient.endpoint}/battle`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ deck })
+                body: JSON.stringify({ deck: deck, opponent: opponent || null })
             });
             const data = await resp.json();
             return data;
