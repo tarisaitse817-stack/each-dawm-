@@ -5,6 +5,7 @@
 import { AppState } from './state.js';
 import { StorageManager } from './storage.js';
 import { Navigation } from './navigation.js';
+import { showInitialBackground } from './map.js';
 
 /* 开场叙事文本（3 段话） */
 /**
@@ -162,6 +163,7 @@ export const TitleScreen = {
         }
       });
     }
+    showInitialBackground();
     this._hideCover();
     Navigation.navigateTo('event');
     this.hide();

@@ -12,7 +12,7 @@ import { EventPanel } from './event.js';
 import { AiClient, BattleBridge } from './ai.js';
 import { CompanionsPanel } from './companions.js';
 import { InventoryPanel } from './inventory.js';
-import { MapPanel } from './map.js';
+import { MapPanel, showInitialBackground } from './map.js';
 import { Notifications } from './notifications.js';
 
 export const App = {
@@ -117,12 +117,13 @@ export const App = {
     this._timeEl = document.getElementById('time-display');
     this.updateTimeDisplay();
 
-    // 21. 监听开场白结束事件 — 侧边栏渐显
+    // 21. 监听开场白结束事件 — 侧边栏渐显 + 地点背景显示
     window.addEventListener('sidebar-reveal', function () {
       var sidebar = document.getElementById('sidebar');
       if (sidebar) sidebar.classList.remove('sidebar-hidden');
       var mainContent = document.getElementById('main-content');
       if (mainContent) mainContent.classList.remove('full-width');
+      showInitialBackground();
     });
   },
 

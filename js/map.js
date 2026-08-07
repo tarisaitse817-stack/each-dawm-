@@ -49,11 +49,15 @@ var LOCATIONS = [
 
 var _currentLocation = 'card_shop';
 
+/** 供外部调用：激活初始地点背景 */
+export function showInitialBackground() {
+  setLocationBg(_currentLocation);
+}
+
 export var MapPanel = {
   init: function () {
     this.render();
-    // 显示初始地点背景
-    setLocationBg(_currentLocation);
+    // 初始地点背景在 _hideCover 时才显示，init 不激活
     // 同步到 state（保持兼容）
     var nodes = LOCATIONS.map(function (l) {
       return { id: l.id, name: l.name, type: 'city', x: l.x, y: l.y, status: l.id === _currentLocation ? 'completed' : 'available', connections: [], desc: '' };
