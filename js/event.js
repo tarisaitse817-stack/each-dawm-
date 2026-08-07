@@ -12,13 +12,106 @@ import { AiClient, BattleBridge } from './ai.js';
 /** 玩家行动的前缀标记 */
 var PLAYER_PREFIX = '【玩家】';
 
-/** 默认建议选项（AI 离线时） */
-var DEFAULT_SUGGESTIONS = [
-  '去鱼缸看看塞壬',
-  '准备出门上班',
-  '查看手机消息',
-  '去厨房弄点吃的'
-];
+/* ==========================================================================
+   行动建议系统 — 按当前位置 + 四分类生成
+   正经 / 恶作剧 / 色色(有女主角时显示) / 跑路
+   ========================================================================== */
+
+/** 每个地点存在的女主角（用于判断色色分类是否显示） */
+var LOCATION_HEROINES = {
+  'home':      ['白月'],
+  'company':   ['林仪', '柳月'],
+  'market':    ['苏昀'],
+  'food':      ['艾克利西娅'],
+  'card_shop': [],
+  'mall':      [],
+  'suburb':    []
+};
+
+/** 各地点的四分类行动（每个分类随机抽一条） */
+var LOCATION_ACTIONS = {
+  'home': {
+    '正经':   ['整理一下杂乱的客厅', '去厨房做点吃的', '把堆积的衣服洗了', '清理鱼缸换水', '认真整理卡组构筑', '看看窗外的天色'],
+    '恶作剧': ['偷吃白月藏在冰箱里的布丁', '把她的校服裙子藏到衣柜深处', '在她追剧时突然换到新闻台', '趁她不注意把空调调低两度', '在她的拖鞋里塞一张冰凉的湿纸巾', '在沙发上故意占满所有位置'],
+    '色色':   ['从背后轻轻环住窝在沙发上的白月', '夸她"今天穿的白丝很可爱"', '故意只围着浴巾走出浴室', '假装睡着，等她偷偷靠近时一把拉住她', '在她耳边低声问"今晚要不要一起看恐怖片"'],
+    '跑路':   ['借口买酱油溜出家门', '躲进卧室反锁房门戴上耳机', '假装已经睡熟了怎么叫都不醒', '"突然想起来还有个快递要取"']
+  },
+  'company': {
+    '正经':   ['专心写完堆积的报告', '整理桌面杂乱的文件和报表', '回复积压了一周的邮件', '准备下周的汇报PPT', '泡杯咖啡继续埋头工作'],
+    '恶作剧': ['趁柳月去洗手间把她的鼠标灵敏度调到最低', '偷偷往林仪的咖啡里多加三块糖', '把复印机操作语言改成日语', '在茶水间贴一张"本月零食免费"的假通知', '给柳月发消息"林总找你"然后看她慌张跑上楼'],
+    '色色':   ['去林仪办公室敲门说"想和你单独谈谈"', '经过柳月工位时低头在她耳边说"今天的香水很好闻"', '给林仪发消息"关于上次那个提案，下班后私下聊聊？"', '在无人的楼梯间等柳月经过'],
+    '跑路':   ['借口头疼提前下班回家', '趁林仪开会时从侧门偷偷溜走', '"突然胃不舒服，今天先回去了"', '躲进消防通道刷手机熬到下班']
+  },
+  'market': {
+    '正经':   ['挑选今晚做饭要用的食材', '看看有没有新到的零食和饮料', '帮苏昀把新到的货品搬上货架', '买点纸巾牙膏之类的日用品', '跟苏昀聊聊最近街坊的趣事'],
+    '恶作剧': ['故意拿起一箱最重的饮料让她帮忙搬', '在她专心整理货架时突然从背后"哇"一声', '把她刚摆好的薯片偷偷换到隔壁货架', '假装找不到自己的钱包看她着急翻找的样子'],
+    '色色':   ['在她踮脚够高层货架时走到身后帮她拿', '夸她"今天身上的味道很好闻，换了新洗发水吗"', '在狭窄的货架间不经意贴近她，轻声问"最近有没有想我"', '结账时指尖轻轻擦过她的手心，假装不经意'],
+    '跑路':   ['买完东西头也不回地走了', '假装接了个紧急电话快步离开', '"啊我忘了带钱包，下次再来！"', '趁她招呼其他客人时悄悄放下东西溜走']
+  },
+  'food': {
+    '正经':   ['买两个刚出笼的热腾腾的肉包子', '坐下来慢慢吃一顿午饭', '看看今天有没有推出新口味', '帮艾克利西娅收拾隔壁桌的碗筷', '跟隔壁摊位的大叔打个招呼'],
+    '恶作剧': ['趁她转身时从笼屉里多顺走一个包子', '故意板着脸说"今天的馅儿没上次好吃"然后看她慌张', '在她忙得团团转的时候点菜单上最复杂的那道小吃', '偷偷往她的围裙口袋里塞了一张写着"加油"的小纸条'],
+    '色色':   ['目不转睛地看她认真干活的样子，被她发现后笑着说"你比包子好看"', '从她手里接过包子时指尖轻轻碰触她的手指', '"今天的包子特别甜……是不是你偷偷加了料？"', '夸她吃东西的样子很可爱，呆毛都竖起来了'],
+    '跑路':   ['改成打包带走，不坐店里吃了', '"突然想起来还有个会，先走了"', '趁她进后厨端蒸笼时悄悄放下钱离开', '假装接到催命电话快步消失在人群里']
+  },
+  'card_shop': {
+    '正经':   ['看看橱窗里新到的卡包', '跟老板聊聊最近的环境和禁卡表', '坐下来研究新卡组的构筑思路', '翻翻柜台里的二手卡册看有没有好货', '拿出卡组测试一下起手手感'],
+    '恶作剧': ['跟老板开一个关于栗子球的冷到爆的冷笑话', '假装是纯新手问老板"青眼白龙厉害吗"', '跟旁边常客吹牛说昨天一包开出白龙', '偷偷把展示柜里几张卡的价格标签对调位置'],
+    '色色':   [],
+    '跑路':   ['收起卡组起身离开', '"今天手气不好，改天再来"', '假装手机响了说有约会匆匆告别', '趁老板跟别的客人聊得火热时悄悄溜走']
+  },
+  'mall': {
+    '正经':   ['逛逛新开的服装店看看有没有合适的衣服', '在咖啡店买杯拿铁坐下来歇会儿', '在书店翻翻新出的漫画和轻小说', '看看有没有打折的日用品和家电', '找个安静的角落刷会儿手机'],
+    '恶作剧': ['在自动扶梯上倒着站，看路人诧异的眼神', '在甜品店点一个最匪夷所思的口味组合', '在抓娃娃机前花光所有零钱然后气急败坏', '假装是神秘顾客给导购提一些离谱的问题'],
+    '色色':   [],
+    '跑路':   ['逛了一圈觉得无聊直接坐地铁回家了', '"人太多了喘不过气，还是回家吧"', '假装收到紧急工作消息快步离开商场', '从侧门溜出去避免在正门碰到熟人']
+  },
+  'suburb': {
+    '正经':   ['沿着河边的碎石小路慢慢散步', '在草地上坐下来看天上的云缓缓飘过', '蹲下来仔细观察路边的野花和草丛', '做几个深呼吸，感受郊外的新鲜空气', '找一棵大树靠着坐下，闭上眼睛放空'],
+    '恶作剧': ['往平静的河面上打几个水漂', '对着水边的草丛自言自语，假装在跟看不见的人对话', '故意在河边来回踱步，踩出很大的脚步声', '学青蛙"呱呱"叫，然后等着看有没有回应'],
+    '色色':   [],
+    '跑路':   ['散够了步，拍拍裤子上的草屑回城', '"风越来越大了，还是早点回去吧"', '假装接了个电话借故匆匆返回', '天色渐暗，快步往车站走去']
+  }
+};
+
+/** 分类的视觉配置 */
+var CATEGORY_STYLES = {
+  '正经':   { emoji: '📋', cssClass: 'cat-serious',  label: '正经' },
+  '恶作剧': { emoji: '😜', cssClass: 'cat-prank',   label: '恶作剧' },
+  '色色':   { emoji: '💋', cssClass: 'cat-lewd',    label: '色色' },
+  '跑路':   { emoji: '🚪', cssClass: 'cat-escape',  label: '跑路' }
+};
+
+/** 从当前位置生成分类建议列表 */
+function getLocationSuggestions() {
+  var state = AppState.get();
+  var locId = state.currentLocation || 'card_shop';
+  var actions = LOCATION_ACTIONS[locId] || LOCATION_ACTIONS['card_shop'];
+  var heroines = LOCATION_HEROINES[locId] || [];
+
+  var result = [];
+  var categories = ['正经', '恶作剧', '色色', '跑路'];
+
+  categories.forEach(function (cat) {
+    var pool = actions[cat];
+    // 色色：没有女主角时不显示
+    if (cat === '色色' && heroines.length === 0) return;
+    // 该分类没有行动时跳过
+    if (!pool || pool.length === 0) return;
+
+    var text = pool[Math.floor(Math.random() * pool.length)];
+    var style = CATEGORY_STYLES[cat];
+    result.push({
+      category: cat,
+      emoji: style.emoji,
+      cssClass: style.cssClass,
+      label: style.label,
+      text: text
+    });
+  });
+
+  return result;
+}
 
 /** 打字机速度映射（毫秒/字） */
 var SPEED_MAP = {
@@ -296,7 +389,7 @@ export const EventPanel = {
       self._addNarratorText(result.narrative, undefined, function () {
         self._pendingResponses--;
         if (result.battle) { self._showBattleTrigger(); }
-        else if (self._pendingResponses === 0) { self.showSuggestions(DEFAULT_SUGGESTIONS); }
+        else if (self._pendingResponses === 0) { self.showSuggestions(getLocationSuggestions()); }
       });
     } catch (err) {
       this._hideThinking();
@@ -369,7 +462,7 @@ export const EventPanel = {
       self._isInternalUpdate = false;
       self._addNarratorText(response, undefined, function () {
         self._pendingResponses--;
-        if (self._pendingResponses === 0) { self.showSuggestions(DEFAULT_SUGGESTIONS); }
+        if (self._pendingResponses === 0) { self.showSuggestions(getLocationSuggestions()); }
       });
     }, 600 + Math.random() * 400);
   },
@@ -482,35 +575,35 @@ export const EventPanel = {
   },
 
   /**
-   * 展开建议选项
-   * @param {string[]} options - 建议文本数组（2-4 个）
+   * 展开建议选项 — 分类卡片样式
+   * @param {Array<{category:string, emoji:string, cssClass:string, label:string, text:string}>} options
    */
-  showSuggestions(options) {
+  showSuggestions: function (options) {
     if (!options || options.length === 0) return;
 
     this._suggestionsPanel.innerHTML = '';
 
     var self = this;
 
-    options.slice(0, 4).forEach(function (text, index) {
+    options.forEach(function (opt, index) {
       var card = document.createElement('div');
-      card.className = 'suggestion-card';
-      card.textContent = text;
-      // 交错入场延迟（递增 60ms）
+      card.className = 'suggestion-card ' + (opt.cssClass || '');
       card.style.animationDelay = (index * 60) + 'ms';
 
+      card.innerHTML =
+        '<span class="suggestion-cat">' + opt.emoji + ' ' + opt.label + '</span>' +
+        '<span class="suggestion-text">' + opt.text + '</span>';
+
       card.addEventListener('click', function () {
-        // 单击：填入输入框
-        self._inputEl.value = text;
+        self._inputEl.value = opt.text;
         self._inputEl.style.height = 'auto';
         self._inputEl.style.height = Math.min(self._inputEl.scrollHeight, 120) + 'px';
         self._inputEl.focus();
       });
 
       card.addEventListener('dblclick', function () {
-        // 双击：直接提交
-        self._inputEl.value = text;
-        self.submitAction(text);
+        self._inputEl.value = opt.text;
+        self.submitAction(opt.text);
       });
 
       self._suggestionsPanel.appendChild(card);
@@ -576,18 +669,8 @@ export const EventPanel = {
    * 根据场景关键词更新建议选项
    */
   _updateSuggestions: function (matchedKeywords) {
-    var kw = matchedKeywords.join('');
-    var suggestions;
-    if (kw.indexOf('塞壬') >= 0 || kw.indexOf('鱼缸') >= 0 || kw.indexOf('水') >= 0) {
-      suggestions = ['摸摸塞壬的头', '喂她吃小鱼干', '跟她聊聊天', '坐在鱼缸旁边'];
-    } else if (kw.indexOf('出门') >= 0 || kw.indexOf('上班') >= 0 || kw.indexOf('下班') >= 0) {
-      suggestions = ['去便利店看看', '买点晚饭回家', '路过包子铺', '回家找塞壬'];
-    } else if (kw.indexOf('客厅') >= 0 || kw.indexOf('房间') >= 0 || kw.indexOf('家里') >= 0) {
-      suggestions = ['去鱼缸看看塞壬', '在沙发上休息一会', '准备出门上班', '看看窗外的风景'];
-    } else {
-      suggestions = DEFAULT_SUGGESTIONS;
-    }
-    this.showSuggestions(suggestions);
+    // 统一使用基于当前位置的分类建议
+    this.showSuggestions(getLocationSuggestions());
   },
 
   /* ===================================================================
@@ -627,7 +710,7 @@ export const EventPanel = {
 
       // 队列空闲且无待处理响应时显示建议
       if (this._pendingResponses === 0) {
-        this.showSuggestions(DEFAULT_SUGGESTIONS);
+        this.showSuggestions(getLocationSuggestions());
       }
       return;
     }

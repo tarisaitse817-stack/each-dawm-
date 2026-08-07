@@ -43,7 +43,7 @@ def strip_macros(text):
     text = re.sub(r'\{\{setvar::[^}]*\}\}', '', text)
     text = re.sub(r'\{\{getvar::[^}]*\}\}', '', text)
     text = re.sub(r'\{\{trim\}\}', '', text)
-    text = re.sub(r'\{\{user\}\}', '可爱的小粉丝', text)
+    text = re.sub(r'\{\{user\}\}', '玩家', text)
     # Broken/partial macro remnants
     text = re.sub(r'^\s*\}\}', '', text)  # orphaned }} closers
     text = re.sub(r'^\s*"[^"]*"\s*', '', text)  # orphaned quoted instructions at start
@@ -66,15 +66,28 @@ def build_messages(user_input, history, game_state):
 
     # Role instruction — direct and prominent
     system_msg += """【你的角色】
-你是这个世界的说书人。你的任务是根据【世界设定】中的世界观、角色信息、规则，
-以主角（可爱的小粉丝/玩家）的第一人称视角，续写互动叙事。
+你是一个严格遵循玩家指令的互动叙事引擎。你的唯一任务是根据【世界设定】中的世界观、
+角色信息与规则，将玩家的每一次行动输入作为剧情的【唯一驱动力】，以主角的第一人称
+视角推进叙事。
 
-【核心要求】
-- 主角是玩家扮演的"可爱的小粉丝"，一个普通社畜，是卡片精灵们的master
-- 回应玩家输入时，从主角的视角出发，描写他所看到、听到、感受到的一切
-- 精灵角色必须严格遵循她们的角色卡设定（性格、说话方式、行为习惯）
-- 修罗场吃醋规则必须生效：当主角和其他精灵亲密互动时，其他精灵会积累醋意值
-- 叙事风格：温馨日常、恋爱喜剧，带轻微色气但舒缓温柔"""
+【核心规则 — 必须严格遵守，优先级从高到低】
+1. 玩家输入即指令 — 玩家的每条输入都是对剧情走向的直接指令。你必须忠实地执行玩家
+   描述的每一个动作、每一个意图。如果玩家说"去便利店"，你就描写去便利店的场景；
+   如果玩家说"和塞壬聊天"，你就描写和塞壬对话的场景。绝不自行改变玩家的行动。
+2. 禁止叙事惯性 — 不要因为上一段写了什么就继续往那个方向写。每一轮都以玩家最新
+   输入为唯一依据，重新判断剧情走向。玩家的新输入可以完全改变之前的叙事方向。
+3. 世界设定是约束框架 —【世界设定】定义了世界的规则和角色的性格，你必须在此框架
+   内推进叙事。但世界设定不能凌驾于玩家输入之上：玩家决定去哪里、见谁、做什么，
+   世界设定只决定这些事情如何发生。
+4. 角色行为一致性 — 精灵/角色必须严格遵循她们的角色卡设定（性格、说话方式、行为
+   习惯）。当玩家与某个角色互动时，该角色的反应必须符合其设定。当玩家与其他角色
+   亲密互动时，修罗场吃醋规则生效。
+
+【叙事风格】
+- 从主角的第一人称视角出发，描写他所看到、听到、感受到的一切
+- 细腻推进：环境、神态、动作、语气、内心情感、对话，缺一不可
+- 风格基调：现代都市、生存智斗与温馨同居交织，带轻微色气但舒缓自然
+- 杜绝系统化/数据化描述，用文学性的语言展现角色的内心感受和生理反应"""
 
     # Add cleaned preset instructions (non-Cat-God parts only)
     style_parts = []
@@ -100,13 +113,15 @@ def build_messages(user_input, history, game_state):
     system_msg += """
 【输出格式】
 用 ```json``` 代码块输出:
-{"thinking": "思考过程(可空)", "end_output": "叙事文本(用<maintext>包裹)", "battle": false}
+{"thinking": "分析玩家意图并规划叙事方向(可空但建议填写)", "end_output": "叙事文本(用<maintext>包裹)", "battle": false}
 
 规则:
+- thinking 中先确认玩家意图："玩家想要[做什么]，涉及角色[谁]，场景[哪里]"，再据此规划叙事
 - end_output 必须用 <maintext></maintext> 包裹
 - 每次叙事不少于 800 字，目标 1000 字
+- 叙事内容必须直接回应玩家的行动意图，不能偏离或自行发挥
 - 细腻推进：环境、神态、动作、语气、内心情感、对话，缺一不可
-- battle=true 表示触发黑暗决斗，end_output 写到决斗即将开始
+- battle=true 表示触发黑暗决斗/催眠决斗，end_output 写到决斗即将开始
 - 回复以 <end> 结束
 - thinking 可为空字符串但不能缺失
 - 用简体中文"""
@@ -114,7 +129,7 @@ def build_messages(user_input, history, game_state):
     msgs.append({"role": "system", "content": system_msg})
 
     # First message: the opening scene
-    msgs.append({"role": "user", "content": "|可爱的小粉丝| 游戏开始……"})
+    msgs.append({"role": "user", "content": "【玩家行动】游戏开始……"})
     msgs.append({"role": "assistant", "content": FIRST_MES})
 
     # History (last 20 entries, max 6000 chars)
@@ -129,13 +144,13 @@ def build_messages(user_input, history, game_state):
 
     for entry in history_texts:
         if entry.startswith("【玩家】"):
-            msgs.append({"role": "user", "content": f"|可爱的小粉丝| {entry.replace('【玩家】', '').strip()}"})
+            msgs.append({"role": "user", "content": f"【玩家行动】{entry.replace('【玩家】', '').strip()}"})
         else:
             msgs.append({"role": "assistant", "content": entry})
 
     # Current input
     user_input = user_input[:200]  # safety truncate
-    msgs.append({"role": "user", "content": f"|可爱的小粉丝| {user_input}"})
+    msgs.append({"role": "user", "content": f"【玩家行动】{user_input}"})
 
     return msgs
 

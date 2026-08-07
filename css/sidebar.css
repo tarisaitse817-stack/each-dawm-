@@ -210,7 +210,15 @@
 }
 
 .view-panel.active {
-  visibility: visible;
+  display: block;
+  visibility: visible !important;
   position: relative;
   z-index: 2;
+  opacity: 1;
+}
+
+/* 需要 flex 布局的面板覆盖 */
+#panel-event.active,
+#panel-inventory.active {
+  display: flex;
 }

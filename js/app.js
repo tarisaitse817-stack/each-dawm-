@@ -312,6 +312,26 @@ export const App = {
   },
 
   /* ======================================================================
+     stopBgm — 停止 BGM（离开标题界面时调用）
+     ====================================================================== */
+  stopBgm: function () {
+    if (this._bgm) {
+      this._bgm.pause();
+      this._bgm.currentTime = 0;
+    }
+    if (this._bgmTitle) {
+      this._bgmTitle.pause();
+      this._bgmTitle.currentTime = 0;
+    }
+    if (this._bgmGame) {
+      this._bgmGame.pause();
+      this._bgmGame.currentTime = 0;
+    }
+    this._bgmStarted = false;
+    this._bgmCurrent = 'title';
+  },
+
+  /* ======================================================================
      renderPanels — 渲染主内容区的视图面板容器
      ====================================================================== */
   renderPanels() {

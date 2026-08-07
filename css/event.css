@@ -238,7 +238,6 @@
   margin-bottom: 8px;
   font-family: var(--font-ui);
   font-size: 0.95rem;
-  color: rgba(224, 224, 224, 0.85);
   cursor: pointer;
   transition:
     background var(--transition-fast),
@@ -246,15 +245,80 @@
     box-shadow var(--transition-fast),
     transform var(--transition-fast);
   user-select: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .suggestion-card:last-child {
   margin-bottom: 0;
 }
 
-.suggestion-card:hover {
-  background: rgba(212, 165, 116, 0.1);
-  border-color: rgba(212, 165, 116, 0.4);
+/* 分类标签 */
+.suggestion-cat {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+/* 行动文本 */
+.suggestion-text {
+  font-size: 0.9rem;
+  color: rgba(224, 224, 224, 0.9);
+  line-height: 1.4;
+}
+
+/* ===== 四分类配色 ===== */
+
+/* 正经 — 冷静蓝 */
+.suggestion-card.cat-serious {
+  border-left: 3px solid #64B5F6;
+}
+.suggestion-card.cat-serious .suggestion-cat {
+  color: #64B5F6;
+}
+.suggestion-card.cat-serious:hover {
+  background: rgba(100, 181, 246, 0.08);
+  border-color: rgba(100, 181, 246, 0.3);
+}
+
+/* 恶作剧 — 活泼橙 */
+.suggestion-card.cat-prank {
+  border-left: 3px solid #FFB74D;
+}
+.suggestion-card.cat-prank .suggestion-cat {
+  color: #FFB74D;
+}
+.suggestion-card.cat-prank:hover {
+  background: rgba(255, 183, 77, 0.08);
+  border-color: rgba(255, 183, 77, 0.3);
+}
+
+/* 色色 — 魅惑粉 */
+.suggestion-card.cat-lewd {
+  border-left: 3px solid #F06292;
+}
+.suggestion-card.cat-lewd .suggestion-cat {
+  color: #F06292;
+}
+.suggestion-card.cat-lewd:hover {
+  background: rgba(240, 98, 146, 0.08);
+  border-color: rgba(240, 98, 146, 0.3);
+}
+
+/* 跑路 — 冷淡灰 */
+.suggestion-card.cat-escape {
+  border-left: 3px solid #90A4AE;
+}
+.suggestion-card.cat-escape .suggestion-cat {
+  color: #90A4AE;
+}
+.suggestion-card.cat-escape:hover {
+  background: rgba(144, 164, 174, 0.08);
+  border-color: rgba(144, 164, 174, 0.3);
+}
   box-shadow:
     0 0 12px rgba(212, 165, 116, 0.15),
     inset 0 0 8px rgba(212, 165, 116, 0.05);

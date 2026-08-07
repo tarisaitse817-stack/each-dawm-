@@ -57,7 +57,8 @@ export function showInitialBackground() {
 export var MapPanel = {
   init: function () {
     this.render();
-    // 初始地点背景在 _hideCover 时才显示，init 不激活
+    // 同步初始位置到全局状态
+    AppState.set('currentLocation', _currentLocation);
     // 同步到 state（保持兼容）
     var nodes = LOCATIONS.map(function (l) {
       return { id: l.id, name: l.name, type: 'city', x: l.x, y: l.y, status: l.id === _currentLocation ? 'completed' : 'available', connections: [], desc: '' };
@@ -142,6 +143,9 @@ export var MapPanel = {
     var fromName = this._getLocName(_currentLocation);
     var toName = this._getLocName(toId);
     _currentLocation = toId;
+
+    // 同步当前位置到全局状态
+    AppState.set('currentLocation', toId);
 
     // 切换地点背景
     setLocationBg(toId);

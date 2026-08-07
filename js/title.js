@@ -148,6 +148,10 @@ export const TitleScreen = {
    * "继续冒险" — 从存档恢复并进入事件视图
    */
   _onContinue() {
+    // 停止标题 BGM
+    if (window.App && typeof window.App.stopBgm === 'function') {
+      window.App.stopBgm();
+    }
     // 立即显示侧边栏（无开场白）
     var sidebar = document.getElementById('sidebar');
     if (sidebar) sidebar.classList.remove('sidebar-hidden');
@@ -189,6 +193,10 @@ export const TitleScreen = {
    * 重置状态 → 跳转到事件视图 → 开场叙事在事件面板中以打字机展示
    */
   _startNewGame() {
+    // 停止标题 BGM
+    if (window.App && typeof window.App.stopBgm === 'function') {
+      window.App.stopBgm();
+    }
     // 通知事件面板：新游戏开始（重置侧边栏渐显触发标志）
     window.dispatchEvent(new CustomEvent('newgame-start'));
 

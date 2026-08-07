@@ -113,15 +113,22 @@ export const Navigation = {
       item.classList.toggle('active', item.dataset.view === viewId);
     });
 
-    // 隐藏所有视图面板，显示目标面板
+    // 隐藏所有视图面板
     var panels = document.querySelectorAll('.view-panel');
     panels.forEach(function (panel) {
       panel.classList.remove('active');
+      panel.style.visibility = 'hidden';
+      panel.style.position = 'absolute';
     });
 
+    // 显示目标面板
     var targetPanel = document.getElementById('panel-' + viewId);
     if (targetPanel) {
       targetPanel.classList.add('active');
+      targetPanel.style.visibility = 'visible';
+      targetPanel.style.position = 'relative';
+      // 强制重绘，确保过渡动画触发
+      void targetPanel.offsetHeight;
     } else {
       console.warn('[Navigation] 面板不存在: #panel-' + viewId);
     }

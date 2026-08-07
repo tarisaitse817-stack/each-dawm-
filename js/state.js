@@ -158,6 +158,9 @@ function createDefaultState() {
       minute: 0
     },
 
+    /* --- 当前位置 --- */
+    currentLocation: 'card_shop',
+
     /* --- Token 统计 --- */
     tokenStats: {
       promptTokens: 0,
