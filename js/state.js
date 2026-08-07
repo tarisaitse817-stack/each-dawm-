@@ -258,10 +258,13 @@ export const AppState = {
 
   /**
    * 重置状态为默认值，并触发所有键的监听器
+   * 注意：settings（含 API 配置）会被保留，不会被重置
    */
   reset() {
     const oldState = _state;
+    const savedSettings = deepClone(oldState['settings']);
     _state = createDefaultState();
+    _state['settings'] = savedSettings;
 
     _ALL_KEYS.forEach(function (key) {
       const subscribers = _subscribers[key];
