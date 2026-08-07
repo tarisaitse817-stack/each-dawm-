@@ -424,7 +424,12 @@ export const EventPanel = {
       this._hideThinking();
       this._pendingResponses--;
       this._isSubmitting = false;
-      this._callFallback(text);
+      // 显示错误信息，帮助排查
+      var errMsg = err.message || String(err);
+      console.error('[EventPanel] AI 调用失败:', errMsg);
+      this._addNarratorText('⚠️ AI 错误：' + errMsg + '\n\n（回退到离线模式）', 0, function () {
+        self._callFallback(text);
+      });
     }
   },
 
@@ -757,11 +762,11 @@ export const EventPanel = {
     var lowerInput = (input || '').toLowerCase();
     if (lowerInput.indexOf('战斗') >= 0 || lowerInput.indexOf('决斗') >= 0 || lowerInput.indexOf('挑战') >= 0) {
       this.setAtmosphere('tense');
-      return '【离线模式 · AI 未连接】\n\n你察觉到空气中凝聚着一股无形的力量——这是黑暗决斗即将开启的前兆。你的决斗盘微微发热，卡组在呼唤着你。';
+      return '你察觉到空气中凝聚着一股无形的力量——这是黑暗决斗即将开启的前兆。你的决斗盘微微发热，卡组在呼唤着你。';
     }
 
-    // 直接返回当前地点的场景叙事，不拼接玩家行动
-    return '【离线模式 · AI 未连接】\n\n' + randomPick(pool);
+    // 直接返回当前地点的场景叙事
+    return randomPick(pool);
   },
 
   /**
