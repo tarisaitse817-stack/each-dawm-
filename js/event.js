@@ -215,6 +215,7 @@ export const EventPanel = {
   /* --- 状态 --- */
   _isTyping: false,
   _isSkipping: false,
+  _isSubmitting: false,
   _typewriterTimer: null,
   _suggestionsOpen: false,
   _displayQueue: [],
@@ -368,12 +369,11 @@ export const EventPanel = {
    * 提交输入框内容
    */
   _onSubmit() {
-    if (this._isTyping || this._pendingResponses > 0) return;
-
+    if (this._isTyping || this._pendingResponses > 0 || this._isSubmitting) return;
     var text = this._inputEl.value.trim();
     if (!text) return;
 
-    // 清空输入框，重置高度
+    this._isSubmitting = true;
     this._inputEl.value = '';
     this._inputEl.style.height = 'auto';
 
@@ -416,12 +416,14 @@ export const EventPanel = {
       self._isInternalUpdate = false;
       self._addNarratorText(result.narrative, undefined, function () {
         self._pendingResponses--;
+        self._isSubmitting = false;
         if (result.battle) { self._showBattleTrigger(); }
         else if (self._pendingResponses === 0) { self.showSuggestions(getLocationSuggestions()); }
       });
     } catch (err) {
       this._hideThinking();
       this._pendingResponses--;
+      this._isSubmitting = false;
       this._callFallback(text);
     }
   },
@@ -490,6 +492,7 @@ export const EventPanel = {
       self._isInternalUpdate = false;
       self._addNarratorText(response, undefined, function () {
         self._pendingResponses--;
+        self._isSubmitting = false;
         if (self._pendingResponses === 0) { self.showSuggestions(getLocationSuggestions()); }
       });
     }, 600 + Math.random() * 400);
@@ -739,7 +742,7 @@ export const EventPanel = {
      =================================================================== */
 
   /**
-   * 生成兜底叙事 — 根据当前位置和玩家输入产生合理的叙事
+   * 生成兜底叙事 — 根据当前位置返回合理的场景叙事
    * @param {string} input - 玩家输入
    * @returns {string} 响应文本
    */
@@ -750,19 +753,15 @@ export const EventPanel = {
 
     this.setAtmosphere('calm');
 
-    // 构建响应：承认玩家行动 + 当前位置的叙事
-    var ack = randomPick(ACTION_ACKNOWLEDGMENTS);
-    var ackText = ack.replace('{action}', input || '环顾四周');
-    var scene = randomPick(pool);
-
-    // 如果玩家输入包含"战斗""决斗"等，生成战斗提示
+    // 战斗关键词
     var lowerInput = (input || '').toLowerCase();
     if (lowerInput.indexOf('战斗') >= 0 || lowerInput.indexOf('决斗') >= 0 || lowerInput.indexOf('挑战') >= 0) {
       this.setAtmosphere('tense');
-      return ackText + '然而，你察觉到空气中似乎凝聚着一股无形的力量——这是黑暗决斗即将开启的前兆。你的决斗盘微微发热，卡组在呼唤着你。';
+      return '你察觉到空气中凝聚着一股无形的力量——这是黑暗决斗即将开启的前兆。你的决斗盘微微发热，卡组在呼唤着你。';
     }
 
-    return ackText + '\n\n' + scene;
+    // 直接返回当前地点的场景叙事，不拼接玩家行动
+    return randomPick(pool);
   },
 
   /**
