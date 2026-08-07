@@ -194,6 +194,7 @@ export const EventPanel = {
   /* --- DOM 引用 --- */
   _el: null,
   _narrativeEl: null,
+  _skipBtn: null,
   _suggestToggle: null,
   _suggestionsPanel: null,
   _suggestArrow: null,
@@ -202,6 +203,8 @@ export const EventPanel = {
 
   /* --- 状态 --- */
   _isTyping: false,
+  _isSkipping: false,
+  _typewriterTimer: null,
   _suggestionsOpen: false,
   _displayQueue: [],
   _lastDisplayedIndex: 0,
@@ -254,6 +257,11 @@ export const EventPanel = {
       self._sidebarRevealed = false;
       self._displayQueue = [];
       self._isTyping = false;
+      self._isSkipping = false;
+      if (self._typewriterTimer) {
+        clearTimeout(self._typewriterTimer);
+        self._typewriterTimer = null;
+      }
     });
   },
 
@@ -269,6 +277,7 @@ export const EventPanel = {
       '<div class="event-atmosphere"></div>' +
       '<div class="event-dialog">' +
         '<div class="narrative-text"></div>' +
+        '<button class="skip-intro-btn hidden" id="skip-intro-btn">跳过 ▸▸</button>' +
         '<div class="divider-glow"></div>' +
         '<div class="suggest-toggle">' +
           '<span>展开建议</span>' +
@@ -285,6 +294,7 @@ export const EventPanel = {
 
     // 缓存 DOM 引用
     this._narrativeEl = this._el.querySelector('.narrative-text');
+    this._skipBtn = document.getElementById('skip-intro-btn');
     this._suggestToggle = this._el.querySelector('.suggest-toggle');
     this._suggestArrow = this._el.querySelector('.suggest-arrow');
     this._suggestionsPanel = this._el.querySelector('.suggestions-panel');
@@ -330,6 +340,13 @@ export const EventPanel = {
     this._sendBtn.addEventListener('click', function () {
       self._onSubmit();
     });
+
+    // --- 跳过开场白按钮 ---
+    if (this._skipBtn) {
+      this._skipBtn.addEventListener('click', function () {
+        self._skipIntro();
+      });
+    }
   },
 
   /* ===================================================================
@@ -494,10 +511,25 @@ export const EventPanel = {
 
     var self = this;
 
+    // 跳过模式：瞬间完成，无打字机
+    if (this._isSkipping) {
+      var p = document.createElement('p');
+      p.textContent = text;
+      this._narrativeEl.appendChild(p);
+      this._scrollToBottom();
+      if (doneCallback) doneCallback();
+      return;
+    }
+
     // 确定打字速度
     if (speed === undefined || speed === null) {
       var settings = AppState.get('settings');
       speed = SPEED_MAP[settings.textSpeed] || SPEED_MAP.normal;
+    }
+
+    // 显示跳过按钮（仅开场阶段）
+    if (!this._sidebarRevealed && this._skipBtn) {
+      this._skipBtn.classList.remove('hidden');
     }
 
     var p = document.createElement('p');
@@ -508,13 +540,22 @@ export const EventPanel = {
     var index = 0;
 
     function typeChar() {
+      if (self._isSkipping) {
+        // 跳过：直接填满剩余文字
+        p.textContent = text;
+        p.classList.remove('typing-cursor');
+        self._scrollToBottom();
+        if (doneCallback) doneCallback();
+        return;
+      }
       if (index < text.length) {
         p.textContent += text[index];
         index++;
         self._scrollToBottom();
-        setTimeout(typeChar, speed);
+        self._typewriterTimer = setTimeout(typeChar, speed);
       } else {
         p.classList.remove('typing-cursor');
+        self._typewriterTimer = null;
         if (doneCallback) {
           doneCallback();
         }
@@ -542,6 +583,60 @@ export const EventPanel = {
     p.textContent = truncate(text, 200);
     this._narrativeEl.appendChild(p);
     this._scrollToBottom();
+  },
+
+  /* ===================================================================
+     跳过开场白
+     =================================================================== */
+
+  /**
+   * 跳过开场白 — 瞬间显示所有剩余文本，立即触发侧边栏
+   */
+  _skipIntro: function () {
+    this._isSkipping = true;
+
+    // 清除正在进行的打字机计时器
+    if (this._typewriterTimer) {
+      clearTimeout(this._typewriterTimer);
+      this._typewriterTimer = null;
+    }
+
+    // 移除当前段落的打字光标
+    var cursors = this._narrativeEl.querySelectorAll('.typing-cursor');
+    cursors.forEach(function (el) {
+      el.classList.remove('typing-cursor');
+    });
+
+    // 瞬间渲染队列中所有剩余文本
+    while (this._displayQueue.length > 0) {
+      var text = this._displayQueue.shift();
+      if (text.indexOf(PLAYER_PREFIX) === 0) {
+        this._addPlayerActionText(text.substring(PLAYER_PREFIX.length));
+      } else {
+        var p = document.createElement('p');
+        p.textContent = text;
+        this._narrativeEl.appendChild(p);
+      }
+    }
+
+    // 立即触发侧边栏显示
+    if (!this._sidebarRevealed) {
+      this._sidebarRevealed = true;
+      window.dispatchEvent(new CustomEvent('sidebar-reveal'));
+    }
+
+    this._isTyping = false;
+    this._scrollToBottom();
+
+    // 隐藏跳过按钮
+    if (this._skipBtn) {
+      this._skipBtn.classList.add('hidden');
+    }
+
+    // 显示建议
+    if (this._pendingResponses === 0) {
+      this.showSuggestions(getLocationSuggestions());
+    }
   },
 
   /* ===================================================================
@@ -702,6 +797,11 @@ export const EventPanel = {
     if (this._displayQueue.length === 0) {
       this._isTyping = false;
 
+      // 隐藏跳过按钮
+      if (this._skipBtn) {
+        this._skipBtn.classList.add('hidden');
+      }
+
       // 开场白播放完毕 — 触发侧边栏渐显
       if (!this._sidebarRevealed) {
         this._sidebarRevealed = true;
@@ -722,14 +822,16 @@ export const EventPanel = {
       // 玩家行动 — 直接显示，无需打字机
       this._addPlayerActionText(text.substring(PLAYER_PREFIX.length));
       // 继续处理下一项
+      var delay = this._isSkipping ? 0 : 200;
       setTimeout(function () {
         self._processQueue();
-      }, 200);
+      }, delay);
     } else {
       // 叙事文本 — 打字机效果
       this._addNarratorText(text, undefined, function () {
         self._scrollToBottom();
-        // 每段之间稍作停顿
+        // 每段之间稍作停顿（跳过模式无延迟）
+        var delay = self._isSkipping ? 0 : 300;
         setTimeout(function () {
           self._processQueue();
         }, 300);

@@ -9,7 +9,7 @@ DATA = os.path.join(BASE, "data")
 
 # ─── Load data ───
 def load_json(name):
-    with open(os.path.join(DATA, name), "r", encoding="utf-8") as f:
+    with open(os.path.join(DATA, name), "r", encoding="utf-8-sig") as f:
         return json.load(f)
 
 try:
