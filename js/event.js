@@ -426,8 +426,8 @@ export const EventPanel = {
       this._isSubmitting = false;
       var errMsg = err.message || String(err);
       console.error('[EventPanel] AI 调用失败:', errMsg);
-      // 显示友好提示，走离线兜底
-      this._addNarratorText('💬 API 连不上哦，再检查一下网站和密钥吧\n（已切换到离线模式）', 0, function () {
+      // 显示错误原因 + 友好提示，再走离线兜底
+      this._addNarratorText('💬 API 连不上哦，再检查一下网站和密钥吧\n（' + errMsg + '）', 0, function () {
         self._callFallback(text);
       });
     }

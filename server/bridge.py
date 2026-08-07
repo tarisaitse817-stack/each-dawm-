@@ -420,6 +420,8 @@ class BridgeHandler(BaseHTTPRequestHandler):
                     err_type = prefix.rstrip(":")
                     break
             self.reply(502, {"ok": False, "error": err_type, "message": msg})
+        except Exception as e:
+            self.reply(502, {"ok": False, "error": "internal_error", "message": f"Bridge 内部错误: {str(e)[:200]}"})
 
     def handle_battle(self, body):
         deck = body.get("deck", "PlayerInsect")
