@@ -142,7 +142,7 @@ def build_messages(user_input, history, game_state):
     system_msg += """
 【输出格式】
 用 ```json``` 代码块输出:
-{"thinking": "分析玩家意图并规划叙事方向(可空但建议填写)", "end_output": "叙事文本(用<maintext>包裹)", "battle": false}
+{"thinking": "分析玩家意图并规划叙事方向(可空但建议填写)", "end_output": "叙事文本(用<maintext>包裹)", "battle": false, "suggestions": ["建议行动1", "建议行动2", "建议行动3", "建议行动4"]}
 
 规则:
 - thinking 中先确认玩家意图："玩家想要[做什么]，涉及角色[谁]，场景[哪里]"，再据此规划叙事
@@ -153,6 +153,7 @@ def build_messages(user_input, history, game_state):
 - battle=true 表示触发黑暗决斗/催眠决斗/卡牌对战，此时 end_output 必须只写到决斗即将开始的那一刻，绝不能描述决斗过程
 - 【battle=true 触发条件】玩家明确接受/发起决斗挑战、喊出"开始吧"/"决斗"/"DUEL"等宣言、或剧情推进到双方准备开始打牌 — 满足任一条件则 battle=true
 - 【严禁】battle=true 时不要在叙事中描写具体的出牌、召唤、攻防等决斗过程 — 这些由 MDPro3 引擎处理
+- suggestions 提供4个基于当前叙事的自然行动建议，应该是玩家在当前情境下可能想做或说的事情。必须贴合刚发生的剧情，不要泛泛而谈
 - 回复以 <end> 结束
 - thinking 可为空字符串但不能缺失
 - 用简体中文
@@ -303,6 +304,7 @@ def parse_output(raw_text):
     narrative = raw_text
     battle = False
     thinking = ""
+    suggestions = []
 
     # Try to find the FIRST valid JSON with thinking/end_output fields.
     # Strategy: find the first `{` that looks like our response JSON, then
@@ -332,6 +334,7 @@ def parse_output(raw_text):
                     thinking = obj.get("thinking", "")
                     narrative = obj.get("end_output", raw_text)
                     battle = obj.get("battle", False)
+                    suggestions = obj.get("suggestions", [])
             except json.JSONDecodeError:
                 pass
 
@@ -344,6 +347,7 @@ def parse_output(raw_text):
                 thinking = obj.get("thinking", "")
                 narrative = obj.get("end_output", raw_text)
                 battle = obj.get("battle", False)
+                suggestions = obj.get("suggestions", [])
             except json.JSONDecodeError:
                 pass
 
@@ -357,15 +361,44 @@ def parse_output(raw_text):
     narrative = re.sub(r'\{\s*"[^"]*player"[^}]*\}', '', narrative)
     narrative = narrative.strip()
 
-    return narrative, battle, thinking
+    return narrative, battle, thinking, suggestions, suggestions
+
+# ─── MDPro3 Config Helper ───
+def _update_mdpro3_config(mdpro3_dir, protector_id, field_id):
+    """Set opponent appearance in MDPro3 config.conf before launching."""
+    conf_path = os.path.join(mdpro3_dir, "Data", "config.conf")
+    if not os.path.exists(conf_path):
+        return
+    with open(conf_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    updated = []
+    for line in lines:
+        line = line.rstrip("\n").rstrip("\r")
+        if line.startswith("DuelProtector0->"):
+            updated.append(f"DuelProtector0->{protector_id}")
+        elif line.startswith("DuelProtector0Tag->"):
+            updated.append(f"DuelProtector0Tag->{protector_id}")
+        elif line.startswith("DuelField0->"):
+            updated.append(f"DuelField0->{field_id}")
+        elif line.startswith("OverrideDeckAppearance->"):
+            updated.append("OverrideDeckAppearance->1")
+        else:
+            updated.append(line)
+
+    with open(conf_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(updated) + "\n")
 
 # ─── Battle Launcher ───
 _battle_running = False
 _last_battle_proc = None
+_duel_result = None  # {winner, result, reason, text, botName, opponentName, timestamp}
 
 def launch_battle(deck, opponent=None):
     """Start local ygopro server + WindBot AI + MDPro3 for a full local duel."""
-    global _battle_running, _last_battle_proc
+    global _battle_running, _last_battle_proc, _duel_result
+    ygopro_port = config.get("ygopro_port", 7911)
+    # Clear stale state: if ygopro port is not in use, reset flag
     if _battle_running:
         try:
             if _last_battle_proc is not None and _last_battle_proc.poll() is not None:
@@ -373,62 +406,82 @@ def launch_battle(deck, opponent=None):
         except Exception:
             _battle_running = False
     if _battle_running:
+        import socket
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(1)
+        if s.connect_ex(('127.0.0.1', ygopro_port)) != 0:
+            _battle_running = False
+        s.close()
+    if _battle_running:
         return {"ok": False, "error": "already_running", "message": "Duel already in progress"}
+
+    # Reset previous result
+    _duel_result = None
 
     deck_path = os.path.join(DECK_DIR, f"{deck}.ydk")
     if not os.path.exists(deck_path):
         available = get_decks()[:10]
         return {"ok": False, "error": "deck_not_found", "message": f"Deck '{deck}' not found", "available": available}
 
-    # Resolve opponent
-    if opponent and opponent in CHARACTER_DECKS:
-        windbot_deck = CHARACTER_DECKS[opponent]
-        display_name = opponent
-    else:
-        windbot_deck = "MalissOCG"
-        display_name = opponent or windbot_deck
+    # Resolve opponent from config
+    char_info = CHARACTER_DECKS.get(opponent, CHARACTER_DECKS.get("default", {"name": "AI", "deck": "Blue-Eyes", "dialog": "default"}))
+    display_name = opponent or "AI"
 
+    ygopro_exe = config.get("ygopro_exe", "C:/Users/Administrator/ygopro-server.exe")
+    ygopro_cwd = config.get("ygopro_cwd", "C:/Users/Administrator")
+    ygopro_port = config.get("ygopro_port", 7911)
+    ygopro_args = config.get("ygopro_args", ["7911", "0", "2", "0", "5", "T", "F", "8000", "5", "1", "180", "0"])
+    windbot_exe = config.get("windbot_exe")
+    windbot_dir = config.get("windbot_dir")
     mdpro3_exe = config["mdpro3_exe"]
     mdpro3_dir = config["mdpro3_dir"]
-    ygopro_exe = "C:/Users/Administrator/ygopro-server.exe"
-    ygopro_cwd = "C:/Users/Administrator"
-    windbot_exe = config.get("windbot_local_exe", "C:/Users/Administrator/windbot-local/WindBot/WindBot.exe")
-    windbot_dir = config.get("windbot_local_dir", "C:/Users/Administrator/windbot-local/WindBot")
 
-    # Map character to dialog
-    dialog_map = {"柳月": "Liuyue.zh-CN", "白月": "mokey.zh-CN", "林仪": "smart.zh-CN", "苏昀": "cirno.zh-CN", "艾克利西娅": "ecclesia.zh-CN", "塞壬": "Xiaoye.zh-CN"}
-    dialog = dialog_map.get(opponent, "zh-CN") if opponent else "zh-CN"
+    if not os.path.exists(windbot_exe):
+        return {"ok": False, "error": "windbot_missing", "message": f"WindBot.exe not found: {windbot_exe}"}
 
     try:
         procs = []
 
         # 1. Start ygopro server
-        print("[bridge] Starting ygopro server...")
+        print(f"[bridge] Starting ygopro server on port {ygopro_port}...")
         server_proc = subprocess.Popen(
-            [ygopro_exe, "7911", "0", "5", "0", "5", "F", "F", "8000", "5", "1", "180", "0"],
-            cwd=ygopro_cwd
+            [ygopro_exe] + ygopro_args,
+            cwd=ygopro_cwd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT
         )
         procs.append(server_proc)
-        time.sleep(1.5)  # Wait for server to start
+        # Read server startup output — should print the port number, or "0" on failure
+        time.sleep(2.0)
+        if server_proc.poll() is not None:
+            out = server_proc.stdout.read().decode("utf-8", errors="replace").strip()
+            print(f"[bridge] ygopro server exited early: {out}")
+            return {"ok": False, "error": "server_died", "message": f"ygopro server failed: {out}"}
 
         # 2. Start WindBot as AI
-        print(f"[bridge] Starting WindBot (deck={windbot_deck})")
+        windbot_deck = char_info["deck"]
+        windbot_dialog = char_info["dialog"]
+        print(f"[bridge] Starting WindBot: Name={display_name} Deck={windbot_deck} Dialog={windbot_dialog}")
         windbot_proc = subprocess.Popen(
-            [windbot_exe, f"Name={display_name}", f"Deck={windbot_deck}", f"Dialog={dialog}",
-             "Host=127.0.0.1", "Port=7911"],
+            [windbot_exe, f"Host=127.0.0.1", f"Port={ygopro_port}",
+             f"Name={display_name}", f"Deck={windbot_deck}", f"Dialog={windbot_dialog}"],
             cwd=windbot_dir
         )
         procs.append(windbot_proc)
-        time.sleep(1.5)
+        time.sleep(2.0)
 
-        # 3. Start MDPro3
-        print("[bridge] Launching MDPro3...")
+        # 3. Apply character appearance to MDPro3 config
+        protector_id = char_info.get("protector", "1070001")
+        field_id = char_info.get("field", "1090001")
+        _update_mdpro3_config(mdpro3_dir, protector_id, field_id)
+        print(f"[bridge] Set opponent appearance: protector={protector_id} field={field_id}")
+
+        # 4. Launch MDPro3 — opens to main menu, user clicks 传统联机 → 127.0.0.1:PORT
+        print(f"[bridge] Launching MDPro3... (connect to 127.0.0.1:{ygopro_port})")
         old_cwd = os.getcwd()
         os.chdir(mdpro3_dir)
         try:
-            mdpro3_proc = subprocess.Popen(
-                [mdpro3_exe, "-h", "127.0.0.1", "-p", "7911", "-n", "Player", "-d", deck, "-j"]
-            )
+            mdpro3_proc = subprocess.Popen([mdpro3_exe])
         finally:
             os.chdir(old_cwd)
         procs.append(mdpro3_proc)
@@ -450,9 +503,8 @@ def launch_battle(deck, opponent=None):
         threading.Thread(target=monitor, daemon=True).start()
 
         return {"ok": True, "launched": True, "ai": display_name, "mode": "local",
-                "message": f"Local duel started: you vs {display_name}", "pid": mdpro3_proc.pid}
+                "message": f"本地对战已启动: 你 vs {display_name}", "pid": mdpro3_proc.pid}
     except Exception as e:
-        # Clean up on failure
         for p in procs:
             try: p.terminate()
             except: pass
@@ -487,6 +539,18 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 "mdpro3_found": os.path.exists(config["mdpro3_exe"]),
                 "decks": get_decks()
             })
+        elif self.path == "/debug-chars":
+            self.reply(200, {
+                "character_decks": CHARACTER_DECKS,
+                "opponent_keys": list(CHARACTER_DECKS.keys())
+            })
+        elif self.path == "/duel-status":
+            global _duel_result, _battle_running
+            self.reply(200, {
+                "ok": True,
+                "battle_running": _battle_running,
+                "result": _duel_result
+            })
         else:
             self.reply(404, {"ok": False, "error": "not_found"})
 
@@ -519,6 +583,8 @@ class BridgeHandler(BaseHTTPRequestHandler):
             self.handle_battle(body)
         elif self.path == "/models":
             self.handle_models(body)
+        elif self.path == "/duel-result":
+            self.handle_duel_result(body)
         else:
             self.reply(404, {"ok": False, "error": "not_found"})
 
@@ -590,7 +656,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 return
 
             raw, usage = call_llm(msgs, body["api_key"], body["endpoint"], body["model"])
-            narrative, battle, thinking = parse_output(raw)
+            narrative, battle, thinking, suggestions = parse_output(raw)
             print(f"[bridge] parse result: battle={battle}, narrative_len={len(narrative)}, thinking_len={len(thinking)}")
 
             # 服务端兜底检测：即使 AI 没设 battle=true，叙事里有决斗关键词也强制触发
@@ -605,6 +671,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 "narrative": narrative,
                 "battle": battle,
                 "thinking": thinking,
+                "suggestions": suggestions,
                 "usage": usage
             })
         except RuntimeError as e:
@@ -617,6 +684,24 @@ class BridgeHandler(BaseHTTPRequestHandler):
             self.reply(502, {"ok": False, "error": err_type, "message": msg})
         except Exception as e:
             self.reply(502, {"ok": False, "error": "internal_error", "message": f"Bridge 内部错误: {str(e)[:200]}"})
+
+    def handle_duel_result(self, body):
+        """Receive duel result from WindBot callback"""
+        global _duel_result, _battle_running
+        _duel_result = {
+            "winner": body.get("winner", "unknown"),
+            "result": body.get("result", -1),
+            "reason": body.get("reason", 0),
+            "text": body.get("text", ""),
+            "botName": body.get("botName", ""),
+            "opponentName": body.get("opponentName", ""),
+            "timestamp": time.time()
+        }
+        _battle_running = False
+        reason_names = {0: "认输", 1: "LP归零", 2: "卡组抽空", 3: "特殊胜利", 4: "连接断开"}
+        reason_str = reason_names.get(_duel_result["reason"], f"原因{_duel_result['reason']}")
+        print(f"[bridge] ⚔️ 决斗结束: {_duel_result['text']} | 胜者={_duel_result['winner']} | {reason_str}")
+        self.reply(200, {"ok": True, "received": True})
 
     def handle_battle(self, body):
         deck = body.get("deck", "PlayerInsect")

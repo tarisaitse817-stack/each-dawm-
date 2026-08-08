@@ -4,7 +4,7 @@
 import { AppState } from './state.js';
 
 export const AiClient = {
-    endpoint: 'http://localhost:9999',
+    endpoint: 'http://127.0.0.1:9999',
 
     async chat(input) {
         const state = AppState.get();

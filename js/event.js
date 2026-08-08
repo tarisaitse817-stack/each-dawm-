@@ -415,13 +415,18 @@ export const EventPanel = {
       self._isInternalUpdate = true;
       AppState.push('narrativeHistory', result.narrative);
       self._isInternalUpdate = false;
+      self._lastAISuggestions = result.suggestions || [];
       self._addNarratorText(result.narrative, undefined, function () {
         self._pendingResponses--;
         self._isSubmitting = false;
         if (result.battle || self._detectBattleIntent(result.narrative)) {
           self._showBattleTrigger(self._extractOpponentName(result.narrative));
         }
-        else if (self._pendingResponses === 0) { self.showSuggestions(getLocationSuggestions()); }
+        else if (self._pendingResponses === 0) {
+          self.showSuggestions(self._lastAISuggestions.length > 0 ? self._lastAISuggestions : getLocationSuggestions());
+          // Add regenerate button
+          self._addRegenerateBtn();
+        }
       });
     } catch (err) {
       this._hideThinking();
@@ -518,11 +523,102 @@ export const EventPanel = {
       if (result.ok) {
         btn.textContent = '决斗已开启 (对手: ' + result.ai + ')';
         btn.className = 'battle-trigger-btn launched';
+        self._pollDuelResult(btn, opponent);
       } else { btn.textContent = '启动失败，请手动运行 MDPro3'; btn.disabled = false; }
     } catch (err) {
       console.error('[EventPanel] _launchBattle error:', err);
       btn.textContent = '启动出错，请重试'; btn.disabled = false;
     }
+  },
+
+  _addRegenerateBtn() {
+    var self = this;
+    var container = this._el.querySelector('.narrative-text');
+    if (!container) return;
+    // Remove existing regenerate buttons
+    var existing = container.querySelectorAll('.regenerate-btn');
+    existing.forEach(function (e) { e.remove(); });
+
+    var btn = document.createElement('button');
+    btn.className = 'regenerate-btn';
+    btn.textContent = '🔄 重新生成';
+    btn.style.cssText = 'display:block;margin:12px auto 0;padding:6px 16px;font-size:13px;border:1px solid #666;border-radius:20px;background:transparent;color:#aaa;cursor:pointer;transition:all 0.2s;';
+    btn.addEventListener('mouseenter', function () { btn.style.color = '#fff'; btn.style.borderColor = '#ccc'; });
+    btn.addEventListener('mouseleave', function () { btn.style.color = '#aaa'; btn.style.borderColor = '#666'; });
+    btn.addEventListener('click', function () { self._regenerate(); });
+    container.appendChild(btn);
+  },
+
+  _regenerate() {
+    var self = this;
+    if (this._isSubmitting || this._pendingResponses > 0) return;
+    var state = AppState.get();
+    var history = state.narrativeHistory || [];
+    // Remove last AI response
+    while (history.length > 0) {
+      var last = history[history.length - 1];
+      if (last.startsWith('【玩家】')) break;
+      history.pop();
+    }
+    // Get last player action
+    var lastPlayer = history.length > 0 ? history[history.length - 1] : '';
+    history.pop(); // Remove player action too
+    AppState.set('narrativeHistory', history);
+    // Remove last narrative bubble
+    var container = this._el.querySelector('.narrative-text');
+    if (container) {
+      var bubbles = container.querySelectorAll('.narrative-bubble.ai');
+      if (bubbles.length > 0) { bubbles[bubbles.length - 1].remove(); }
+      var playerBubbles = container.querySelectorAll('.narrative-bubble.player');
+      if (playerBubbles.length > 0) { playerBubbles[playerBubbles.length - 1].remove(); }
+      var regenBtns = container.querySelectorAll('.regenerate-btn');
+      regenBtns.forEach(function (e) { e.remove(); });
+    }
+    // Re-submit
+    var text = lastPlayer.replace('【玩家】', '').trim();
+    if (text) {
+      self._isSubmitting = true;
+      self._callAI(text);
+    }
+  },
+
+  _pollDuelResult(btn, opponent) {
+    var self = this;
+    var pollCount = 0;
+    var maxPolls = 600;
+    var interval = setInterval(async function () {
+      pollCount++;
+      if (pollCount > maxPolls) { clearInterval(interval); return; }
+      try {
+        var resp = await fetch(AiClient.endpoint + '/duel-status');
+        var data = await resp.json();
+        if (data.ok && data.result) {
+          clearInterval(interval);
+          var r = data.result;
+          var reasonNames = {0: '认输', 1: '生命值归零', 2: '卡组抽空', 3: '特殊胜利', 4: '连接断开'};
+          var reasonText = reasonNames[r.reason] || ('原因#' + r.reason);
+          var playerWon = r.winner === 'player';
+          console.log('[EventPanel] Duel result:', r);
+          btn.textContent = playerWon ? '胜利！' : '败北…';
+          btn.className = 'battle-trigger-btn finished';
+          btn.disabled = true;
+          var resultMsg = playerWon
+            ? '你击败了' + r.botName + '（' + reasonText + '）'
+            : '你败给了' + r.botName + '（' + reasonText + '）';
+          self._addNarratorText('⚔️ 决斗结束 — ' + resultMsg, null, function () {
+            self.submitAction('决斗结束了，我' + (playerWon ? '赢了' : '输了') + '，生成我' + (playerWon ? '赢了' : '输了') + '的后续叙事');
+          });
+        } else if (!data.battle_running && pollCount > 10) {
+          clearInterval(interval);
+          console.log('[EventPanel] Battle ended without result');
+          btn.textContent = '决斗已结束';
+          btn.className = 'battle-trigger-btn finished';
+          btn.disabled = true;
+        }
+      } catch (pollErr) {
+        console.error('[EventPanel] Poll error:', pollErr);
+      }
+    }, 2000);
   },
 
 
@@ -739,7 +835,15 @@ export const EventPanel = {
 
     var self = this;
 
-    options.forEach(function (opt, index) {
+    // AI suggestions come as strings, legacy format as objects
+    var items = options.map(function (opt) {
+        if (typeof opt === 'string') {
+            return { text: opt, emoji: '💬', label: '建议', cssClass: '' };
+        }
+        return opt;
+    });
+
+    items.forEach(function (opt, index) {
       var card = document.createElement('div');
       card.className = 'suggestion-card ' + (opt.cssClass || '');
       card.style.animationDelay = (index * 60) + 'ms';
