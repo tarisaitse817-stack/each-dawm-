@@ -1,6 +1,10 @@
 """光之回响 AI 桥接服务器 — stdlib only, zero pip dependencies"""
 import json, os, re, sys, time, random, subprocess, traceback, ssl
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from socketserver import ThreadingMixIn
+
+class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
+    daemon_threads = True
 from urllib.request import Request, urlopen, ProxyHandler, build_opener, HTTPSHandler
 from urllib.error import URLError, HTTPError
 
@@ -361,7 +365,7 @@ def parse_output(raw_text):
     narrative = re.sub(r'\{\s*"[^"]*player"[^}]*\}', '', narrative)
     narrative = narrative.strip()
 
-    return narrative, battle, thinking, suggestions, suggestions
+    return narrative, battle, thinking, suggestions
 
 # ─── MDPro3 Config Helper ───
 def _update_mdpro3_config(mdpro3_dir, protector_id, field_id):
@@ -546,10 +550,14 @@ class BridgeHandler(BaseHTTPRequestHandler):
             })
         elif self.path == "/duel-status":
             global _duel_result, _battle_running
+            result = _duel_result
+            # Clear after reading so it won't trigger again on next page load
+            if result is not None:
+                _duel_result = None
             self.reply(200, {
                 "ok": True,
                 "battle_running": _battle_running,
-                "result": _duel_result
+                "result": result
             })
         else:
             self.reply(404, {"ok": False, "error": "not_found"})
@@ -735,7 +743,7 @@ if __name__ == "__main__":
         print(f"Total messages: {len(msgs)}")
         sys.exit(0)
 
-    server = HTTPServer((host, port), BridgeHandler)
+    server = ThreadingHTTPServer((host, port), BridgeHandler)
     print(f"[bridge] 光之回响 AI Bridge v1.0")
     print(f"[bridge] Listening on http://{host}:{port}")
     print(f"[bridge] Endpoints: GET /health | POST /chat | POST /battle")

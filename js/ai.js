@@ -71,6 +71,8 @@ export const AiClient = {
 };
 
 export const BattleBridge = {
+    _pollTimer: null,
+
     async launch(deck, opponent) {
         try {
             const resp = await fetch(`${AiClient.endpoint}/battle`, {
@@ -88,5 +90,32 @@ export const BattleBridge = {
     getDeckName() {
         const state = AppState.get();
         return state.settings.mdpro3Deck || 'PlayerInsect';
+    },
+
+    startPolling(onResult) {
+        var self = this;
+        this.stopPolling();
+        var count = 0;
+        console.log('[BattleBridge] Polling started');
+        this._pollTimer = setInterval(async function () {
+            count++;
+            if (count > 600) { console.log('[BattleBridge] Poll timeout'); self.stopPolling(); return; }
+            try {
+                var resp = await fetch(AiClient.endpoint + '/duel-status');
+                var data = await resp.json();
+                if (count % 3 === 0) console.log('[BattleBridge] Poll #' + count + ': running=' + data.battle_running + ' result=' + (data.result ? 'YES' : 'no'));
+                if (data.ok && data.result) {
+                    console.log('[BattleBridge] GOT RESULT!', data.result);
+                    self.stopPolling();
+                    if (onResult) onResult(data.result);
+                } else if (!data.battle_running && count > 10) {
+                    self.stopPolling();
+                }
+            } catch (e) { console.log('[BattleBridge] poll:', e.message); }
+        }, 2000);
+    },
+
+    stopPolling() {
+        if (this._pollTimer) { clearInterval(this._pollTimer); this._pollTimer = null; }
     }
 };

@@ -3,7 +3,7 @@
    ========================================================================== */
 
 import { AppState } from './state.js';
-import { AiClient, BattleBridge } from './ai.js';
+import { AiClient, BattleBridge } from './ai.js?v=10';
 
 /* ==========================================================================
    常量
@@ -264,6 +264,9 @@ export const EventPanel = {
       }
     });
 
+    // Check for pending duel result on load
+    this._checkPendingDuelResult();
+
     // 监听新游戏开始事件 — 重置侧边栏触发标志
     window.addEventListener('newgame-start', function () {
       self._sidebarRevealed = false;
@@ -520,11 +523,30 @@ export const EventPanel = {
     try {
       var result = await BattleBridge.launch(BattleBridge.getDeckName(), opponent);
       console.log('[EventPanel] _launchBattle result:', JSON.stringify(result));
+      console.log('[EventPanel] BattleBridge.launch returned:', JSON.stringify(result));
       if (result.ok) {
         btn.textContent = '决斗已开启 (对手: ' + result.ai + ')';
         btn.className = 'battle-trigger-btn launched';
-        self._pollDuelResult(btn, opponent);
-      } else { btn.textContent = '启动失败，请手动运行 MDPro3'; btn.disabled = false; }
+        BattleBridge.startPolling(function(r) {
+          console.log('[EventPanel] Duel callback fired:', r);
+          var playerWon = r.winner === 'player';
+          var reasonNames = {0: '认输', 1: '生命值归零', 2: '卡组抽空', 3: '特殊胜利', 4: '连接断开'};
+          var reasonText = reasonNames[r.reason] || ('原因#' + r.reason);
+          var resultMsg = playerWon
+            ? '你击败了' + r.botName + '（' + reasonText + '）'
+            : '你败给了' + r.botName + '（' + reasonText + '）';
+          btn.textContent = playerWon ? '胜利！' : '败北…';
+          btn.className = 'battle-trigger-btn finished';
+          btn.disabled = true;
+          EventPanel._addNarratorText('⚔️ 决斗结束 — ' + resultMsg, null, function () {
+            EventPanel.submitAction('决斗结束了，我' + (playerWon ? '赢了' : '输了') + '，生成后续叙事');
+          });
+        });
+      } else {
+        console.error('[EventPanel] Battle launch FAILED:', result.error, result.message);
+        btn.textContent = '启动失败: ' + (result.message || result.error || '未知');
+        btn.disabled = false;
+      }
     } catch (err) {
       console.error('[EventPanel] _launchBattle error:', err);
       btn.textContent = '启动出错，请重试'; btn.disabled = false;
@@ -551,35 +573,63 @@ export const EventPanel = {
 
   _regenerate() {
     var self = this;
-    if (this._isSubmitting || this._pendingResponses > 0) return;
+    if (this._isSubmitting || this._pendingResponses > 0) {
+      console.log('[Regenerate] Blocked: submitting=' + this._isSubmitting + ' pending=' + this._pendingResponses);
+      return;
+    }
+    console.log('[Regenerate] Starting...');
     var state = AppState.get();
     var history = state.narrativeHistory || [];
+    console.log('[Regenerate] History before pop:', history.length, 'entries');
     // Remove last AI response
     while (history.length > 0) {
       var last = history[history.length - 1];
       if (last.startsWith('【玩家】')) break;
+      console.log('[Regenerate] Popping AI:', last.substring(0, 50));
       history.pop();
     }
     // Get last player action
     var lastPlayer = history.length > 0 ? history[history.length - 1] : '';
-    history.pop(); // Remove player action too
+    console.log('[Regenerate] Last player:', lastPlayer ? lastPlayer.substring(0, 50) : '(none)');
+    history.pop();
     AppState.set('narrativeHistory', history);
-    // Remove last narrative bubble
+    // Remove UI bubbles
     var container = this._el.querySelector('.narrative-text');
     if (container) {
       var bubbles = container.querySelectorAll('.narrative-bubble.ai');
       if (bubbles.length > 0) { bubbles[bubbles.length - 1].remove(); }
       var playerBubbles = container.querySelectorAll('.narrative-bubble.player');
       if (playerBubbles.length > 0) { playerBubbles[playerBubbles.length - 1].remove(); }
-      var regenBtns = container.querySelectorAll('.regenerate-btn');
-      regenBtns.forEach(function (e) { e.remove(); });
+      container.querySelectorAll('.regenerate-btn').forEach(function (e) { e.remove(); });
     }
-    // Re-submit
     var text = lastPlayer.replace('【玩家】', '').trim();
+    console.log('[Regenerate] Resubmitting:', text ? text.substring(0, 50) : '(empty)');
     if (text) {
       self._isSubmitting = true;
+      self._showThinking();
       self._callAI(text);
     }
+  },
+
+  _checkPendingDuelResult() {
+    var self = this;
+    fetch(AiClient.endpoint + '/duel-status')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.ok && data.result && !data.battle_running) {
+          var r = data.result;
+          var playerWon = r.winner === 'player';
+          var reasonNames = {0: '认输', 1: '生命值归零', 2: '卡组抽空', 3: '特殊胜利', 4: '连接断开'};
+          var reasonText = reasonNames[r.reason] || ('原因#' + r.reason);
+          var resultMsg = playerWon
+            ? '你击败了' + r.botName + '（' + reasonText + '）'
+            : '你败给了' + r.botName + '（' + reasonText + '）';
+          console.log('[EventPanel] Found pending duel result:', r);
+          self._addNarratorText('⚔️ 决斗结束 — ' + resultMsg, null, function () {
+            self.submitAction('决斗结束了，我' + (playerWon ? '赢了' : '输了') + '，生成后续叙事');
+          });
+        }
+      }).catch(function (e) { console.log('[EventPanel] No pending result'); });
   },
 
   _pollDuelResult(btn, opponent) {
