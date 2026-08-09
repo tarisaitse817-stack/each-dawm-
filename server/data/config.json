@@ -13,19 +13,19 @@
   "windbot_port": "7210",
   "lan_mode": true,
   "ai_pool": [
-    "悠悠", "悠悠王", "琪露诺", "谜之剑士LV4", "复制植物",
-    "尼亚", "永远之魂", "比特机灵", "复制梁龙",
-    "奇異果", "奇魔果", "MAX龍果", "幻煌果",
-    "燃血鬥士", "報社鬥士", "我太帅了", "玻璃女巫"
+    "牌店常客·黑羽使", "公司后辈·电子龙使", "超市顾客·转生炎兽使",
+    "小吃街食客·淘气仙星使", "商业街路人·斩机使", "城郊少年·相剑使",
+    "路过的决斗者·闪刀姬使", "神秘旅人·雷龙使", "流浪卡牌师·魔女术使",
+    "街头艺人·十二兽使", "退休老伯·帝王使", "高中生·机壳使"
   ],
   "character_decks": {
     "柳月":       { "name": "LiuYue",   "deck": "Maliss",      "dialog": "Liuyue",   "protector": "1073001", "field": "1090001" },
-    "白月":       { "name": "BaiYue",   "deck": "MokeyMokey",  "dialog": "mokey",    "protector": "1073002", "field": "1090002" },
-    "林仪":       { "name": "LinYi",    "deck": "Smart",       "dialog": "smart",    "protector": "1073003", "field": "1090003" },
-    "苏昀":       { "name": "SuYun",    "deck": "Cirno",       "dialog": "cirno",    "protector": "1073004", "field": "1090004" },
-    "艾克利西娅": { "name": "Ecclesia", "deck": "ecclesia",     "dialog": "ecclesia", "protector": "1073005", "field": "1090005" },
-    "塞壬":       { "name": "Siren",    "deck": "xiaoye",      "dialog": "Xiaoye",   "protector": "1073006", "field": "1090006" },
-    "default":    { "name": "AI",       "deck": "Blue-Eyes",   "dialog": "default",  "protector": "1070001", "field": "1090001" }
+    "白月":       { "name": "BaiYue",   "deck": "Labrynth",    "dialog": "default",  "protector": "1073002", "field": "1090002" },
+    "林仪":       { "name": "LinYi",    "deck": "Ryzeal",      "dialog": "default",  "protector": "1073003", "field": "1090003" },
+    "苏昀":       { "name": "SuYun",    "deck": "Orcust",      "dialog": "default",  "protector": "1073004", "field": "1090004" },
+    "艾克利西娅": { "name": "Ecclesia", "deck": "Albaz",       "dialog": "ecclesia", "protector": "1073005", "field": "1090005" },
+    "塞壬":       { "name": "Siren",    "deck": "Tearlaments", "dialog": "Xiaoye",   "protector": "1073006", "field": "1090006" },
+    "default":    { "name": "路人",     "deck": "random",      "dialog": "default",  "protector": "1070001", "field": "1090001" }
   },
   "llm_timeout": 300
 }

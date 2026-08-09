@@ -489,6 +489,45 @@ export const EventPanel = {
   },
 
   /**
+   * 查找角色对战配置：优先匹配伙伴，否则生成随机 NPC
+   */
+  _resolveBattleOpponent(opponentName) {
+    var companions = AppState.get('companions');
+    for (var i = 0; i < companions.length; i++) {
+      if (companions[i].name === opponentName) {
+        var c = companions[i];
+        return {
+          name: c.name,
+          deck: c.deck || 'BlueEyes',
+          battleLines: c.battleLines || { opening: '', victory: '', defeat: '' }
+        };
+      }
+    }
+    // 随机 NPC
+    var NPC_NAMES = ['牌店常客', '路过的决斗者', '公司后辈', '超市顾客', '小吃街食客',
+                     '商业街路人', '城郊少年', '神秘旅人', '流浪卡牌师', '街头艺人',
+                     '退休老伯', '高中生', '竞技场新手', '卡店老板', '深夜牌友'];
+    var NPC_DECKS = ['Blackwing','CyberDragon','DarkMagician','BlueEyes','Salamangreat',
+                     'Trickstar','Mathmech','Swordsoul','SkyStriker','ThunderDragon',
+                     'Witchcraft','Zoodiac','Monarch506','Qliphort','Nekroz',
+                     'SuperheavySamurai','Dragunity','Evilswarm','Gravekeeper','Yosenju',
+                     'Exosister','Dogmatika','Horus','Kashtira','Altergeist',
+                     'PureWinds','Timethief','Trickstar','Yubel','Zefra',
+                     'Frog','Graydle','Phantasm','ChainBurn','Burn'];
+    var name = NPC_NAMES[Math.floor(Math.random() * NPC_NAMES.length)];
+    var deck = NPC_DECKS[Math.floor(Math.random() * NPC_DECKS.length)];
+    return {
+      name: name,
+      deck: deck,
+      battleLines: {
+        opening: '来一局决斗吧！让我看看你的实力！',
+        victory: '不错的决斗，承让了！',
+        defeat: '学到了很多，你果然很强！'
+      }
+    };
+  },
+
+  /**
    * 兜底检测：即使 AI 没设 battle=true，只要叙事中提到决斗触发词，也弹出对战按钮
    */
   _detectBattleIntent(narrative) {
@@ -506,15 +545,26 @@ export const EventPanel = {
   _showBattleTrigger(opponentName) {
     var c = document.querySelector('#panel-event .narrative-text');
     if (!c) return;
-    var deck = BattleBridge.getDeckName();
-    var opponent = opponentName || '???';
+    var opp = this._resolveBattleOpponent(opponentName);
+    var playerDeck = BattleBridge.getDeckName();
     var el = document.createElement('div');
     el.className = 'battle-trigger-container';
-    el.innerHTML = '<div class="battle-trigger-card"><div class="battle-trigger-glow"></div><div class="battle-trigger-text">黑暗决斗即将开始</div><div class="battle-trigger-deck">对手: ' + opponent + ' | 使用卡组: ' + deck + '</div><button class="battle-trigger-btn" id="battle-trigger-btn">开始对战</button></div>';
+    var lineHtml = opp.battleLines && opp.battleLines.opening
+      ? '<div class="battle-trigger-line">"' + opp.battleLines.opening + '"</div>'
+      : '';
+    el.innerHTML =
+      '<div class="battle-trigger-card">' +
+        '<div class="battle-trigger-glow"></div>' +
+        '<div class="battle-trigger-text">黑暗决斗即将开始</div>' +
+        '<div class="battle-trigger-deck">对手: ' + opp.name + ' | 使用卡组: ' + playerDeck + '</div>' +
+        lineHtml +
+        '<button class="battle-trigger-btn" id="battle-trigger-btn">开始对战</button>' +
+      '</div>';
     c.appendChild(el); this._battleTriggerEl = el;
     c.scrollTop = c.scrollHeight;
+    var that = this;
     var btn = el.querySelector('#battle-trigger-btn');
-    if (btn) { var that = this; btn.addEventListener('click', function () { that._launchBattle(btn, opponent); }); }
+    if (btn) { btn.addEventListener('click', function () { that._launchBattle(btn, opp.name); }); }
   },
 
   async _launchBattle(btn, opponent) {
@@ -535,10 +585,18 @@ export const EventPanel = {
           var resultMsg = playerWon
             ? '你击败了' + r.botName + '（' + reasonText + '）'
             : '你败给了' + r.botName + '（' + reasonText + '）';
+          // 注入角色胜负台词
+          var opp = EventPanel._resolveBattleOpponent(opponent);
+          var charLine = '';
+          if (opp && opp.battleLines) {
+            charLine = playerWon ? opp.battleLines.defeat : opp.battleLines.victory;
+          }
+          var fullMsg = '⚔️ 决斗结束 — ' + resultMsg;
+          if (charLine) fullMsg += '\n\n「' + charLine + '」';
           btn.textContent = playerWon ? '胜利！' : '败北…';
           btn.className = 'battle-trigger-btn finished';
           btn.disabled = true;
-          EventPanel._addNarratorText('⚔️ 决斗结束 — ' + resultMsg, null, function () {
+          EventPanel._addNarratorText(fullMsg, null, function () {
             EventPanel.submitAction('决斗结束了，我' + (playerWon ? '赢了' : '输了') + '，生成后续叙事');
           });
         });

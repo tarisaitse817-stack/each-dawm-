@@ -429,7 +429,20 @@ def launch_battle(deck, opponent=None):
 
     # Resolve opponent from config
     char_info = CHARACTER_DECKS.get(opponent, CHARACTER_DECKS.get("default", {"name": "AI", "deck": "Blue-Eyes", "dialog": "default"}))
-    display_name = opponent or "AI"
+    display_name = opponent or char_info.get("name", "路人")
+
+    # Handle "random" deck: pick from available WindBot decks, excluding assigned character decks
+    if char_info.get("deck") == "random":
+        assigned = {c["deck"] for c in CHARACTER_DECKS.values() if c.get("deck") and c["deck"] != "random"}
+        available = [d for d in get_decks() if d not in assigned]
+        if available:
+            picked = random.choice(available)
+            char_info = dict(char_info)  # don't mutate the original
+            char_info["deck"] = picked
+            print(f"[bridge] Random deck for '{display_name}': {picked} (from {len(available)} available)")
+        else:
+            char_info = dict(char_info)
+            char_info["deck"] = "BlueEyes"
 
     ygopro_exe = config.get("ygopro_exe", "C:/Users/Administrator/ygopro-server.exe")
     ygopro_cwd = config.get("ygopro_cwd", "C:/Users/Administrator")

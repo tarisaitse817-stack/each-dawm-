@@ -48,7 +48,12 @@
 }
 .battle-trigger-deck {
   font-size: 0.85em; color: var(--color-spirit); opacity: 0.7;
-  margin-bottom: 16px; position: relative; z-index: 1;
+  margin-bottom: 8px; position: relative; z-index: 1;
+}
+.battle-trigger-line {
+  font-size: 0.95em; color: rgba(255,255,255,0.85); font-style: italic;
+  margin-bottom: 14px; position: relative; z-index: 1;
+  padding: 0 8px; line-height: 1.6;
 }
 .battle-trigger-btn {
   position: relative; z-index: 1;
