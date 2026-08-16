@@ -5,7 +5,7 @@
 import { AppState } from './state.js';
 import { StorageManager } from './storage.js';
 import { Navigation } from './navigation.js';
-import { showInitialBackground } from './map.js';
+import { showInitialBackground } from './scene.js?v=10';
 
 /* 开场叙事文本（3 段话） */
 /**

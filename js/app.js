@@ -12,7 +12,8 @@ import { EventPanel } from './event.js?v=10';
 import { AiClient, BattleBridge } from './ai.js?v=10';
 import { CompanionsPanel } from './companions.js';
 import { InventoryPanel } from './inventory.js';
-import { MapPanel, showInitialBackground } from './map.js';
+import { MapPanel } from './map.js';
+import { SceneView, showInitialBackground } from './scene.js?v=10';
 import { Notifications } from './notifications.js';
 
 export const App = {
@@ -97,6 +98,9 @@ export const App = {
 
     // 16. 初始化地图面板
     MapPanel.init();
+
+    // 16.5 初始化场景视图
+    SceneView.init();
 
     // 17. 注册视图切换订阅
     AppState.subscribe('currentView', function (newView) {
@@ -343,8 +347,8 @@ export const App = {
 
     if (mainContent.querySelector('.view-panel')) return;
 
-    var viewIds = ['event', 'inventory', 'companions', 'map'];
-    var viewNames = ['事件', '背包', '伙伴', '地图'];
+    var viewIds = ['scene', 'inventory', 'companions', 'map'];
+    var viewNames = ['场景', '背包', '伙伴', '地图'];
 
     viewIds.forEach(function (id, index) {
       var panel = document.createElement('div');
