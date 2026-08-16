@@ -85,9 +85,7 @@ export const App = {
     // 10. 初始化标题界面
     TitleScreen.init();
 
-    // 11. 初始化事件对话面板
-    EventPanel.init();
-
+    // 11. 事件对话引擎懒初始化：首次打开特写（closeup-open）或新游戏（newgame-start）时渲染
     // 12. 对战由 MDPro3 处理
     // 13. 卡组由玩家在 MDPro3 中设定
 
@@ -106,9 +104,20 @@ export const App = {
     // 16.6 初始化近景特写层
     CloseupView.init();
 
-    // 16.7 监听场景立绘点击 → 打开特写层
+    // 16.7 监听场景立绘点击 → 打开特写层（首次打开时懒初始化对话引擎）
     window.addEventListener('closeup-open', function (e) {
       CloseupView.open(e.detail.characterId);
+      EventPanel.init();
+    });
+
+    // 16.8 「⚔ 提出决斗」按钮 → 以当前特写角色为对手直接启动对战
+    window.addEventListener('closeup-duel', function (e) {
+      EventPanel.triggerDuelByButton(e.detail.characterId);
+    });
+
+    // 16.9 新游戏开始 → 懒初始化对话引擎（无头渲染开场叙事，队列完成触发侧边栏渐显）
+    window.addEventListener('newgame-start', function () {
+      EventPanel.init();
     });
 
     // 17. 注册视图切换订阅
@@ -356,8 +365,8 @@ export const App = {
 
     if (mainContent.querySelector('.view-panel')) return;
 
-    var viewIds = ['scene', 'inventory', 'companions', 'map'];
-    var viewNames = ['场景', '背包', '伙伴', '地图'];
+    var viewIds = ['scene', 'inventory', 'companions'];
+    var viewNames = ['场景', '背包', '伙伴'];
 
     viewIds.forEach(function (id, index) {
       var panel = document.createElement('div');
@@ -886,8 +895,8 @@ export const App = {
     // 重新渲染全部面板（重置内容）
     this.renderPanels();
 
-    // 重新初始化各面板
-    EventPanel.init();
+    // 重新初始化各面板（对话引擎随特写懒初始化，此处关闭特写即可）
+    CloseupView.close();
     CompanionsPanel.init();
     InventoryPanel.init();
     MapPanel.init();

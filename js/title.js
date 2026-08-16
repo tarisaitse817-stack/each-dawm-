@@ -169,7 +169,7 @@ export const TitleScreen = {
     }
     showInitialBackground();
     this._hideCover();
-    Navigation.navigateTo('event');
+    Navigation.navigateTo('scene');
     this.hide();
   },
 
@@ -202,9 +202,9 @@ export const TitleScreen = {
 
     AppState.reset();
     this._hideCover();
-    Navigation.navigateTo('event');
+    Navigation.navigateTo('scene');
 
-    // 开场叙事直接在事件面板中以打字机效果展示
+    // 开场叙事写入历史，由对话引擎以打字机效果渲染（队列完成触发侧边栏渐显）
     var history = AppState.get('narrativeHistory') || [];
     history = history.concat(OPENING_NARRATIVE);
     AppState.set('narrativeHistory', history);

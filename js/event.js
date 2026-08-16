@@ -1,9 +1,12 @@
 ﻿/* ==========================================================================
-   光之回响 (Echoes of Light) — EventPanel 事件对话界面
+   光之回响 (Echoes of Light) — EventPanel 对话引擎
+   渲染进近景特写层的对话区（CloseupView.getDialogEl()），对外 API 保持不变
    ========================================================================== */
 
 import { AppState } from './state.js';
 import { AiClient, BattleBridge } from './ai.js?v=10';
+import { CloseupView } from './closeup.js';
+import { CHARACTERS } from './scenes-data.js';
 
 /* ==========================================================================
    常量
@@ -213,6 +216,7 @@ export const EventPanel = {
   _sendBtn: null,
 
   /* --- 状态 --- */
+  _initialized: false,
   _isTyping: false,
   _isSkipping: false,
   _isSubmitting: false,
@@ -224,18 +228,17 @@ export const EventPanel = {
   _isInternalUpdate: false,
 
   /**
-   * 初始化事件面板
-   * 渲染 DOM、绑定事件、显示已有叙事历史
+   * 初始化对话引擎（懒初始化：首次打开特写或新游戏开始时调用）
+   * 渲染 DOM 到近景特写的对话容器、绑定事件、显示已有叙事历史
    */
   init() {
-    this._el = document.getElementById('panel-event');
-    if (!this._el) {
-      console.error('[EventPanel] #panel-event 元素不存在');
-      return;
-    }
+    if (this._initialized) return;
+    this._el = CloseupView.getDialogEl();
+    if (!this._el) return;
 
     this._renderDOM();
     this._bindEvents();
+    this._initialized = true;
 
     // 重置开场白侧边栏触发标志（支持清除存档后重新开始）
     this._sidebarRevealed = false;
@@ -267,7 +270,7 @@ export const EventPanel = {
     // Check for pending duel result on load
     this._checkPendingDuelResult();
 
-    // 监听新游戏开始事件 — 重置侧边栏触发标志
+    // 监听新游戏开始事件 — 重置侧边栏触发标志 + 清空对话区
     window.addEventListener('newgame-start', function () {
       self._sidebarRevealed = false;
       self._displayQueue = [];
@@ -277,6 +280,7 @@ export const EventPanel = {
         clearTimeout(self._typewriterTimer);
         self._typewriterTimer = null;
       }
+      if (self._narrativeEl) self._narrativeEl.innerHTML = '';
     });
   },
 
@@ -285,13 +289,14 @@ export const EventPanel = {
      =================================================================== */
 
   /**
-   * 渲染事件对话界面 HTML
+   * 渲染对话引擎 HTML 到近景特写的对话容器（#closeup-dialog）
+   * 叙事区 / 建议 / 输入区 / 对战卡片均渲染在 .event-dialog 内部
    */
   _renderDOM() {
     this._el.innerHTML =
       '<div class="event-atmosphere"></div>' +
       '<div class="event-dialog">' +
-        '<div class="narrative-text"></div>' +
+        '<div class="narrative-text" id="narrative-text"></div>' +
         '<button class="skip-intro-btn hidden" id="skip-intro-btn">跳过 ▸▸</button>' +
         '<div class="divider-glow"></div>' +
         '<div class="suggest-toggle">' +
@@ -463,7 +468,7 @@ export const EventPanel = {
   },
 
   _showThinking() {
-    var c = document.querySelector('#panel-event .narrative-text');
+    var c = this._narrativeEl;
     if (!c) return;
     var el = document.createElement('div');
     el.className = 'ai-thinking';
@@ -543,7 +548,7 @@ export const EventPanel = {
   },
 
   _showBattleTrigger(opponentName) {
-    var c = document.querySelector('#panel-event .narrative-text');
+    var c = this._narrativeEl;
     if (!c) return;
     var opp = this._resolveBattleOpponent(opponentName);
     var playerDeck = BattleBridge.getDeckName();
@@ -568,15 +573,20 @@ export const EventPanel = {
   },
 
   async _launchBattle(btn, opponent) {
-    btn.disabled = true; btn.textContent = '正在启动 MDPro3…';
+    // btn 为 null 时（⚔ 提出决斗按钮路径）跳过按钮态，直接启动对战
+    var isBtnMode = !!btn;
+    if (isBtnMode) { btn.disabled = true; btn.textContent = '正在启动 MDPro3…'; }
     console.log('[EventPanel] _launchBattle: sending /battle, deck:', BattleBridge.getDeckName(), 'opponent:', opponent);
     try {
       var result = await BattleBridge.launch(BattleBridge.getDeckName(), opponent);
       console.log('[EventPanel] _launchBattle result:', JSON.stringify(result));
-      console.log('[EventPanel] BattleBridge.launch returned:', JSON.stringify(result));
       if (result.ok) {
-        btn.textContent = '决斗已开启 (对手: ' + result.ai + ')';
-        btn.className = 'battle-trigger-btn launched';
+        if (isBtnMode) {
+          btn.textContent = '决斗已开启 (对手: ' + result.ai + ')';
+          btn.className = 'battle-trigger-btn launched';
+        } else {
+          this._addNarratorText('⚔️ 黑暗决斗开始——' + opponent + ' 接受了你的挑战！');
+        }
         BattleBridge.startPolling(function(r) {
           console.log('[EventPanel] Duel callback fired:', r);
           var playerWon = r.winner === 'player';
@@ -593,22 +603,45 @@ export const EventPanel = {
           }
           var fullMsg = '⚔️ 决斗结束 — ' + resultMsg;
           if (charLine) fullMsg += '\n\n「' + charLine + '」';
-          btn.textContent = playerWon ? '胜利！' : '败北…';
-          btn.className = 'battle-trigger-btn finished';
-          btn.disabled = true;
+          if (isBtnMode) {
+            btn.textContent = playerWon ? '胜利！' : '败北…';
+            btn.className = 'battle-trigger-btn finished';
+            btn.disabled = true;
+          }
           EventPanel._addNarratorText(fullMsg, null, function () {
             EventPanel.submitAction('决斗结束了，我' + (playerWon ? '赢了' : '输了') + '，生成后续叙事');
           });
         });
       } else {
         console.error('[EventPanel] Battle launch FAILED:', result.error, result.message);
-        btn.textContent = '启动失败: ' + (result.message || result.error || '未知');
-        btn.disabled = false;
+        if (isBtnMode) {
+          btn.textContent = '启动失败: ' + (result.message || result.error || '未知');
+          btn.disabled = false;
+        } else {
+          this._addNarratorText('⚠️ 决斗启动失败：' + (result.message || result.error || '未知'));
+        }
       }
     } catch (err) {
       console.error('[EventPanel] _launchBattle error:', err);
-      btn.textContent = '启动出错，请重试'; btn.disabled = false;
+      if (isBtnMode) {
+        btn.textContent = '启动出错，请重试'; btn.disabled = false;
+      } else {
+        this._addNarratorText('⚠️ 决斗启动出错，请重试。');
+      }
     }
+  },
+
+  /**
+   * 公共 API — 「⚔ 提出决斗」按钮触发
+   * 以当前特写角色为对手（卡组取 companions 绑定），跳过对战卡片直接启动
+   * @param {string} characterId - 特写角色 id（如 'baiyue'）
+   */
+  triggerDuelByButton(characterId) {
+    var meta = CHARACTERS[characterId] || null;
+    var opponentName = meta ? meta.name : characterId;
+    var opponent = this._resolveBattleOpponent(opponentName);
+    console.log('[EventPanel] triggerDuelByButton: opponent =', opponent.name, '| deck =', opponent.deck);
+    this._launchBattle(null, opponent.name);
   },
 
   _addRegenerateBtn() {
@@ -689,47 +722,6 @@ export const EventPanel = {
         }
       }).catch(function (e) { console.log('[EventPanel] No pending result'); });
   },
-
-  _pollDuelResult(btn, opponent) {
-    var self = this;
-    var pollCount = 0;
-    var maxPolls = 600;
-    var interval = setInterval(async function () {
-      pollCount++;
-      if (pollCount > maxPolls) { clearInterval(interval); return; }
-      try {
-        var resp = await fetch(AiClient.endpoint + '/duel-status');
-        var data = await resp.json();
-        if (data.ok && data.result) {
-          clearInterval(interval);
-          var r = data.result;
-          var reasonNames = {0: '认输', 1: '生命值归零', 2: '卡组抽空', 3: '特殊胜利', 4: '连接断开'};
-          var reasonText = reasonNames[r.reason] || ('原因#' + r.reason);
-          var playerWon = r.winner === 'player';
-          console.log('[EventPanel] Duel result:', r);
-          btn.textContent = playerWon ? '胜利！' : '败北…';
-          btn.className = 'battle-trigger-btn finished';
-          btn.disabled = true;
-          var resultMsg = playerWon
-            ? '你击败了' + r.botName + '（' + reasonText + '）'
-            : '你败给了' + r.botName + '（' + reasonText + '）';
-          self._addNarratorText('⚔️ 决斗结束 — ' + resultMsg, null, function () {
-            self.submitAction('决斗结束了，我' + (playerWon ? '赢了' : '输了') + '，生成我' + (playerWon ? '赢了' : '输了') + '的后续叙事');
-          });
-        } else if (!data.battle_running && pollCount > 10) {
-          clearInterval(interval);
-          console.log('[EventPanel] Battle ended without result');
-          btn.textContent = '决斗已结束';
-          btn.className = 'battle-trigger-btn finished';
-          btn.disabled = true;
-        }
-      } catch (pollErr) {
-        console.error('[EventPanel] Poll error:', pollErr);
-      }
-    }, 2000);
-  },
-
-
 
   _callFallback(text) {
     var self = this;
