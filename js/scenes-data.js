@@ -4,13 +4,18 @@
 export const EMOTION_LIST = ['neutral', 'smile', 'happy', 'blushing', 'angry', 'sad', 'surprised', 'desire'];
 
 export const CHARACTERS = {
-  baiyue:   { name: '白月',       fullbody: 'assets/characters/baiyue/fullbody.png' },
-  linyi:    { name: '林仪',       fullbody: 'assets/characters/linyi/fullbody.png' },
-  liuyue:   { name: '柳月',       fullbody: 'assets/characters/liuyue/fullbody.png' },
-  suyun:    { name: '苏昀',       fullbody: 'assets/characters/suyun/fullbody.png' },
-  siren:    { name: '塞壬',       fullbody: 'assets/characters/siren/fullbody.png' },
-  ecclesia: { name: '艾克利西娅', fullbody: 'assets/characters/ecclesia/fullbody.png' },
+  baiyue:   { name: '白月',       portrait: 'assets/characters/baiyue/neutral.png' },
+  linyi:    { name: '林仪',       portrait: 'assets/characters/linyi/neutral.png' },
+  liuyue:   { name: '柳月',       portrait: 'assets/characters/liuyue/neutral.png' },
+  suyun:    { name: '苏昀',       portrait: 'assets/characters/suyun/neutral.png' },
+  siren:    { name: '塞壬',       portrait: 'assets/characters/siren/neutral.png' },
+  ecclesia: { name: '艾克利西娅', portrait: 'assets/characters/ecclesia/neutral.png' },
 };
+
+/** 头像锚点：站位坐标上抬 12%（头部位置），y 下界夹 0；纯函数供 scene.js 与校验脚本复用 */
+export function avatarAnchor(spot) {
+  return { x: spot.x, y: Math.max(0, spot.y - 0.12) };
+}
 
 export function emotionFile(charId, emotion) {
   return `assets/characters/${charId}/${emotion}.png`;

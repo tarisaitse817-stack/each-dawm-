@@ -1,5 +1,5 @@
 // 校验场景数据完整性：node scripts/validate-scenes.mjs
-import { SCENES, CHARACTERS, EMOTION_LIST, getScene, emotionFile } from '../js/scenes-data.js';
+import { SCENES, CHARACTERS, EMOTION_LIST, getScene, emotionFile, avatarAnchor } from '../js/scenes-data.js';
 
 let errors = [];
 const ids = Object.keys(SCENES);
@@ -26,6 +26,17 @@ for (const [id, s] of Object.entries(SCENES)) {
     if (o.x < 0 || o.x > 1 || o.y < 0 || o.y > 1) errors.push(`${id}: 物件 ${o.id} 坐标越界`);
   }
 }
+// CHARACTERS 字段：portrait 路径合法 + fullbody 已删除
+for (const [cid, meta] of Object.entries(CHARACTERS)) {
+  const want = `assets/characters/${cid}/neutral.png`;
+  if (!meta.portrait || meta.portrait !== want) errors.push(`${cid}: portrait 应为 ${want}`);
+  if ('fullbody' in meta) errors.push(`${cid}: fullbody 字段应已删除`);
+}
+// avatarAnchor 纯函数：站位上抬 12%，y 下界夹 0
+const anchor = avatarAnchor({ x: 0.5, y: 0.5, scale: 0.8 });
+if (anchor.x !== 0.5 || Math.abs(anchor.y - 0.38) > 1e-9) errors.push(`avatarAnchor 计算错误: ${JSON.stringify(anchor)}`);
+const anchorLow = avatarAnchor({ x: 0.3, y: 0.05 });
+if (anchorLow.y !== 0) errors.push(`avatarAnchor 应夹到 0: ${JSON.stringify(anchorLow)}`);
 if (EMOTION_LIST.length !== 8) errors.push('表情数应为 8');
 for (const e of EMOTION_LIST) {
   const f = emotionFile('liuyue', e);
