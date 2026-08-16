@@ -1,0 +1,11 @@
+/* 近景特写层：全屏覆盖，背景模糊压暗 */
+#closeup-overlay { position: fixed; inset: 0; z-index: 90; display: none; }
+#closeup-overlay.active { display: block; }
+.closeup-backdrop { position: absolute; inset: 0; background: rgba(10, 12, 28, .65); backdrop-filter: blur(10px); }
+.closeup-portrait { position: absolute; left: 6%; bottom: 0; height: 82vh; z-index: 2; }
+.closeup-portrait img { height: 100%; display: block; filter: drop-shadow(0 10px 24px rgba(0,0,0,.5)); transition: opacity .35s; }
+.closeup-portrait.sprite-missing { width: 240px; height: 340px; border: 1px dashed #D4A574; background: rgba(18,20,42,.6); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #F5ECD7; }
+.closeup-header { position: absolute; top: 22px; left: 6%; z-index: 3; color: #F5ECD7; }
+.closeup-header .char-name { font-size: 22px; margin-right: 14px; }
+.closeup-dialog { position: absolute; right: 5%; bottom: 9%; width: 46%; max-width: 620px; height: 62%; background: rgba(18, 20, 42, .78); border: 1px solid rgba(212, 165, 116, .35); border-radius: 14px; padding: 18px 22px; display: flex; flex-direction: column; z-index: 3; }
+.closeup-close { position: absolute; top: 18px; right: 22px; z-index: 4; background: rgba(18,20,42,.7); color: #F5ECD7; border: 1px solid rgba(212,165,116,.4); border-radius: 8px; padding: 6px 14px; cursor: pointer; }

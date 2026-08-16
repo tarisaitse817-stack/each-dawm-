@@ -14,6 +14,7 @@ import { CompanionsPanel } from './companions.js';
 import { InventoryPanel } from './inventory.js';
 import { MapPanel } from './map.js';
 import { SceneView, showInitialBackground } from './scene.js?v=10';
+import { CloseupView } from './closeup.js';
 import { Notifications } from './notifications.js';
 
 export const App = {
@@ -101,6 +102,14 @@ export const App = {
 
     // 16.5 初始化场景视图
     SceneView.init();
+
+    // 16.6 初始化近景特写层
+    CloseupView.init();
+
+    // 16.7 监听场景立绘点击 → 打开特写层
+    window.addEventListener('closeup-open', function (e) {
+      CloseupView.open(e.detail.characterId);
+    });
 
     // 17. 注册视图切换订阅
     AppState.subscribe('currentView', function (newView) {
