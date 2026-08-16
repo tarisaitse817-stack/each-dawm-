@@ -164,6 +164,7 @@ export const SCENES = {
       { dir: 'right', to: 'food_bunshop', label: '包子铺' },
       { dir: 'left',  to: 'mall_st',    label: '商业街' },
       { dir: 'bottom', to: 'suburb_st', label: '城郊方向' },
+      { dir: 'top', to: 'mall_dessert', label: '甜品店' },
     ],
     characters: [],
     characterSpots: {},
@@ -190,6 +191,7 @@ export const SCENES = {
     exits: [
       { dir: 'top',   to: 'market_hall', label: '卖场' },
       { dir: 'right', to: 'food_st',     label: '小吃街' },
+      { dir: 'left', to: 'suburb_st',    label: '城郊街道' },
     ],
     characters: [],
     characterSpots: {},
@@ -239,7 +241,7 @@ export const SCENES = {
   mall_dessert: {
     id: 'mall_dessert', name: '甜品店', bg: 'assets/scenes/mall_dessert.png',
     description: '空气里漂浮着奶油甜香的甜品店。',
-    exits: [{ dir: 'left', to: 'mall_st', label: '街道' }],
+    exits: [{ dir: 'left', to: 'food_st', label: '小吃街' }],
     characters: ['ecclesia'],
     characterSpots: { ecclesia: { x: 0.55, y: 0.52, scale: 0.85 } },
     objects: [
@@ -255,6 +257,7 @@ export const SCENES = {
       { dir: 'left',  to: 'home_door', label: '家门前' },
       { dir: 'top',   to: 'mall_st',   label: '商业街' },
       { dir: 'right', to: 'suburb_station', label: '站台' },
+      { dir: 'bottom', to: 'market_door', label: '超市' },
     ],
     characters: [],
     characterSpots: {},
@@ -320,18 +323,35 @@ for (const e of EMOTION_LIST) {
 }
 if (!getScene('home_living') || getScene('nonexistent')) errors.push('getScene 行为错误');
 
+// 连通性：从 home_living 出发 BFS，断言 16 节点全可达
+const reachable = new Set(['home_living']);
+const queue = ['home_living'];
+while (queue.length) {
+  const cur = queue.shift();
+  for (const e of SCENES[cur].exits) {
+    if (!reachable.has(e.to)) {
+      reachable.add(e.to);
+      queue.push(e.to);
+    }
+  }
+}
+if (reachable.size !== ids.length) {
+  const unreachable = ids.filter(id => !reachable.has(id));
+  errors.push(`不可达场景: ${unreachable.join(', ')}`);
+}
+
 if (errors.length) {
   console.error('FAIL');
   for (const e of errors) console.error(' -', e);
   process.exit(1);
 }
-console.log('PASS: 16 场景、出口引用、角色/物件坐标、表情路径全部有效');
+console.log('PASS: 16 场景、出口引用、角色/物件坐标、表情路径全部有效、16 节点全连通');
 ```
 
 - [ ] **Step 3: 运行校验**
 
 Run: `cd C:/Users/Administrator/each-dawm- && node scripts/validate-scenes.mjs`
-Expected: `PASS: 16 场景、出口引用、角色/物件坐标、表情路径全部有效`
+Expected: `PASS: 16 场景、出口引用、角色/物件坐标、表情路径全部有效、16 节点全连通`
 
 - [ ] **Step 4: 提交**
 

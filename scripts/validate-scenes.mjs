@@ -33,9 +33,26 @@ for (const e of EMOTION_LIST) {
 }
 if (!getScene('home_living') || getScene('nonexistent')) errors.push('getScene 行为错误');
 
+// 连通性：从 home_living 出发 BFS，断言 16 节点全可达
+const reachable = new Set(['home_living']);
+const queue = ['home_living'];
+while (queue.length) {
+  const cur = queue.shift();
+  for (const e of SCENES[cur].exits) {
+    if (!reachable.has(e.to)) {
+      reachable.add(e.to);
+      queue.push(e.to);
+    }
+  }
+}
+if (reachable.size !== ids.length) {
+  const unreachable = ids.filter(id => !reachable.has(id));
+  errors.push(`不可达场景: ${unreachable.join(', ')}`);
+}
+
 if (errors.length) {
   console.error('FAIL');
   for (const e of errors) console.error(' -', e);
   process.exit(1);
 }
-console.log('PASS: 16 场景、出口引用、角色/物件坐标、表情路径全部有效');
+console.log('PASS: 16 场景、出口引用、角色/物件坐标、表情路径全部有效、16 节点全连通');

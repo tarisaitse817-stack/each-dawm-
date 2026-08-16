@@ -117,6 +117,7 @@ export const SCENES = {
       { dir: 'right', to: 'food_bunshop', label: '包子铺' },
       { dir: 'left',  to: 'mall_st',    label: '商业街' },
       { dir: 'bottom', to: 'suburb_st', label: '城郊方向' },
+      { dir: 'top', to: 'mall_dessert', label: '甜品店' },
     ],
     characters: [],
     characterSpots: {},
@@ -143,6 +144,7 @@ export const SCENES = {
     exits: [
       { dir: 'top',   to: 'market_hall', label: '卖场' },
       { dir: 'right', to: 'food_st',     label: '小吃街' },
+      { dir: 'left', to: 'suburb_st',    label: '城郊街道' },
     ],
     characters: [],
     characterSpots: {},
@@ -192,7 +194,7 @@ export const SCENES = {
   mall_dessert: {
     id: 'mall_dessert', name: '甜品店', bg: 'assets/scenes/mall_dessert.png',
     description: '空气里漂浮着奶油甜香的甜品店。',
-    exits: [{ dir: 'left', to: 'mall_st', label: '街道' }],
+    exits: [{ dir: 'left', to: 'food_st', label: '小吃街' }],
     characters: ['ecclesia'],
     characterSpots: { ecclesia: { x: 0.55, y: 0.52, scale: 0.85 } },
     objects: [
@@ -208,6 +210,7 @@ export const SCENES = {
       { dir: 'left',  to: 'home_door', label: '家门前' },
       { dir: 'top',   to: 'mall_st',   label: '商业街' },
       { dir: 'right', to: 'suburb_station', label: '站台' },
+      { dir: 'bottom', to: 'market_door', label: '超市' },
     ],
     characters: [],
     characterSpots: {},
