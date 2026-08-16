@@ -9,3 +9,5 @@
 .closeup-header .char-name { font-size: 22px; margin-right: 14px; }
 .closeup-dialog { position: absolute; right: 5%; bottom: 9%; width: 46%; max-width: 620px; height: 62%; background: rgba(18, 20, 42, .78); border: 1px solid rgba(212, 165, 116, .35); border-radius: 14px; padding: 18px 22px; display: flex; flex-direction: column; z-index: 3; }
 .closeup-close { position: absolute; top: 18px; right: 22px; z-index: 4; background: rgba(18,20,42,.7); color: #F5ECD7; border: 1px solid rgba(212,165,116,.4); border-radius: 8px; padding: 6px 14px; cursor: pointer; }
+.closeup-duel { position: absolute; bottom: 4%; left: 6%; z-index: 4; background: rgba(18,20,42,.7); color: #D4A574; border: 1px solid rgba(212,165,116,.5); border-radius: 8px; padding: 8px 16px; cursor: pointer; }
+.closeup-duel:hover { background: rgba(18,20,42,.9); box-shadow: 0 0 10px rgba(212,165,116,.5); }

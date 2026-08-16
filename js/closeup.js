@@ -47,6 +47,7 @@ export const CloseupView = {
     img.src = emotionFile(_charId, emotion);
     img.onerror = () => { el.classList.add('sprite-missing'); el.textContent = '立绘缺失'; };
     el.appendChild(img);
+    AppState.set('closeup', { active: true, characterId: _charId, emotion });
   },
 
   getDialogEl() { return document.getElementById('closeup-dialog'); },
