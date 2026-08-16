@@ -19,7 +19,7 @@ function createDefaultState() {
   return {
 
     /* --- 视图状态 --- */
-    currentView: 'title',             // 'title' | 'event' | 'inventory' | 'companions' | 'map'
+    currentView: 'title',             // 'title' | 'scene' | 'inventory' | 'companions'
 
     /* --- 玩家数据 --- */
     player: {
@@ -30,6 +30,7 @@ function createDefaultState() {
     },
 
     /* --- 游戏进度 --- */
+    // 遗留字段：bridge 上下文仍引用，保留
     gamePhase: {
       chapter: 1,
       scene: 1,
@@ -151,22 +152,6 @@ function createDefaultState() {
       { id: 'item-elec-003', name: '耳机', type: 'tool', rarity: 'common', count: 1, effect: '蓝牙降噪耳机，戴上后世界瞬间安静，只剩下BGM和你自己' },
       { id: 'item-wallet-001', name: '钱包', type: 'tool', rarity: 'common', count: 1, effect: '棕色皮质钱包，里面塞着身份证、银行卡和几张皱巴巴的零钱' },
       { id: 'item-card-001', name: '备用卡组盒', type: 'tool', rarity: 'rare', count: 1, effect: '黑色卡盒，装着几套备用的对战卡组，盒面有磨损的痕迹' }
-    ],
-
-    /* --- 地图节点 --- */
-    mapNodes: [
-      { id: 'node-01', name: '初始之地',   type: 'start', x: 400, y: 700, status: 'completed', connections: ['node-02', 'node-03'] },
-      { id: 'node-02', name: '晨曦森林',   type: 'event', x: 200, y: 550, status: 'locked',    connections: ['node-04'] },
-      { id: 'node-03', name: '星辉湖畔',   type: 'event', x: 600, y: 550, status: 'locked',    connections: ['node-05'] },
-      { id: 'node-04', name: '风吟山谷',   type: 'battle', x: 150, y: 380, status: 'locked',   connections: ['node-06'] },
-      { id: 'node-05', name: '幻光遗迹',   type: 'event', x: 650, y: 380, status: 'locked',    connections: ['node-07'] },
-      { id: 'node-06', name: '断崖之桥',   type: 'battle', x: 300, y: 250, status: 'locked',   connections: ['node-08'] },
-      { id: 'node-07', name: '月影神殿',   type: 'rest', x: 550, y: 250, status: 'locked',     connections: ['node-08'] },
-      { id: 'node-08', name: '光之回廊',   type: 'event', x: 420, y: 150, status: 'locked',    connections: ['node-09', 'node-10'] },
-      { id: 'node-09', name: '灵辉圣殿',   type: 'rest', x: 260, y: 80, status: 'locked',      connections: ['node-11'] },
-      { id: 'node-10', name: '暗影深渊',   type: 'battle', x: 580, y: 80, status: 'locked',    connections: ['node-11'] },
-      { id: 'node-11', name: '试炼之塔',   type: 'event', x: 420, y: 40, status: 'locked',     connections: ['node-12'] },
-      { id: 'node-12', name: '终焉之庭',   type: 'boss', x: 420, y: 10, status: 'locked',      connections: [] }
     ],
 
     /* --- 设置 --- */

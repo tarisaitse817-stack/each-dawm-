@@ -12,7 +12,6 @@ import { EventPanel } from './event.js?v=10';
 import { AiClient, BattleBridge } from './ai.js?v=10';
 import { CompanionsPanel } from './companions.js';
 import { InventoryPanel } from './inventory.js';
-import { MapPanel } from './map.js';
 import { SceneView, showInitialBackground } from './scene.js?v=10';
 import { CloseupView } from './closeup.js';
 import { Notifications } from './notifications.js';
@@ -31,7 +30,7 @@ export const App = {
   /* ======================================================================
      init — 应用初始化入口（异步）
      执行顺序：存档恢复 → 粒子 → 面板容器 → 导航 → 设置面板 → 键盘快捷键 →
-     标题 → 事件 → 伙伴 → 背包 → 地图 → 订阅 → 图标 → 首屏
+     标题 → 事件 → 伙伴 → 背包 → 场景 → 特写 → 订阅 → 图标 → 首屏
      ====================================================================== */
   async init() {
     // 0. 初始化 BGM（splash 已在 HTML 中，由内联脚本控制）
@@ -95,10 +94,7 @@ export const App = {
     // 15. 初始化背包面板
     InventoryPanel.init();
 
-    // 16. 初始化地图面板
-    MapPanel.init();
-
-    // 16.5 初始化场景视图
+    // 16. 初始化场景视图
     SceneView.init();
 
     // 16.6 初始化近景特写层
@@ -365,8 +361,8 @@ export const App = {
 
     if (mainContent.querySelector('.view-panel')) return;
 
-    var viewIds = ['scene', 'inventory', 'companions'];
-    var viewNames = ['场景', '背包', '伙伴'];
+    var viewIds = ['scene', 'companions', 'inventory'];
+    var viewNames = ['场景', '伙伴', '背包'];
 
     viewIds.forEach(function (id, index) {
       var panel = document.createElement('div');
@@ -892,6 +888,9 @@ export const App = {
       item.classList.remove('active');
     });
 
+    // 重置导航状态，避免下次 navigateTo('scene') 因同视图早退而不激活面板
+    Navigation.reset();
+
     // 重新渲染全部面板（重置内容）
     this.renderPanels();
 
@@ -899,7 +898,7 @@ export const App = {
     CloseupView.close();
     CompanionsPanel.init();
     InventoryPanel.init();
-    MapPanel.init();
+    SceneView.render();
 
     // 更新 Lucide 图标
     if (typeof lucide !== 'undefined' && lucide.createIcons) {

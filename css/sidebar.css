@@ -218,7 +218,6 @@
 }
 
 /* 需要 flex 布局的面板覆盖 */
-#panel-event.active,
 #panel-inventory.active {
   display: flex;
 }

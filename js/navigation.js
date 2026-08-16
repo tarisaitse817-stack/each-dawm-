@@ -8,10 +8,9 @@ import { AppState } from './state.js';
  * 视图路由配置
  */
 const views = [
-  { id: 'event', icon: 'message-circle', label: '事件' },
-  { id: 'inventory', icon: 'backpack', label: '背包' },
-  { id: 'companions', icon: 'users', label: '伙伴' },
-  { id: 'map', icon: 'map', label: '地图' }
+  { id: 'scene',       label: '场景', icon: 'map-pin' },
+  { id: 'companions',  label: '伙伴', icon: 'heart' },
+  { id: 'inventory',   label: '背包', icon: 'briefcase' },
 ];
 
 /**
@@ -97,7 +96,7 @@ export const Navigation = {
 
   /**
    * 导航到指定视图
-   * @param {string} viewId - 视图标识（'event' | 'inventory' | 'companions' | 'map'）
+   * @param {string} viewId - 视图标识（'scene' | 'companions' | 'inventory'）
    */
   navigateTo(viewId) {
     if (!viewId || viewId === _currentViewId || _isNavigating) return;
@@ -142,6 +141,15 @@ export const Navigation = {
     if (cover) cover.classList.add('hidden');
 
     _currentViewId = viewId;
+    _isNavigating = false;
+  },
+
+  /**
+   * 重置导航状态（清档后回到标题界面时调用）
+   * 清空 _currentViewId 防止清档后 navigateTo 因同视图早退而无法重新激活面板
+   */
+  reset() {
+    _currentViewId = null;
     _isNavigating = false;
   },
 

@@ -11,7 +11,6 @@ const SAVE_KEYS = [
   'gamePhase',
   'companions',
   'inventory',
-  'mapNodes',
   'settings',
   'currentSceneId',
   'sceneCharacters',

@@ -92,11 +92,13 @@ export const SceneView = {
     _currentSceneId = sceneId;
     AppState.set('currentSceneId', sceneId);
     const bg = document.getElementById('location-bg');
-    bg.classList.remove('active');
-    requestAnimationFrame(() => {
-      bg.style.backgroundImage = _bgUrl(scene);
-      bg.classList.add('active');
-    });
+    if (bg) {
+      bg.classList.remove('active');
+      requestAnimationFrame(() => {
+        bg.style.backgroundImage = _bgUrl(scene);
+        bg.classList.add('active');
+      });
+    }
     _renderExits(scene);
     _renderObjects(scene);
     _renderCharacters(scene);

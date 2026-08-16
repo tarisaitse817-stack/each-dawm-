@@ -18,7 +18,7 @@ export const AiClient = {
                 gamePhase: state.gamePhase,
                 companions: state.companions,
                 inventory: state.inventory,
-                mapNodes: state.mapNodes
+                currentSceneId: state.currentSceneId
             },
             api_key: settings.aiApiKey || '',
             endpoint: settings.aiEndpoint || '',
