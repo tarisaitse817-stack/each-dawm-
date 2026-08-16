@@ -34,12 +34,16 @@ NEGATIVE = ("worst quality, low quality, score_1, score_2, score_3, artist name,
 # 参考图版专用：参考图是 1216x832 角色场景图，负面词加场景词防泄漏
 REF_NEGATIVE = NEGATIVE + ", desk, office, classroom, computer, window, indoor, room, furniture, background objects"
 
+# 角色专属负面词（不污染全局 NEGATIVE——全局含 smile 会压制白月/苏昀/塞壬已确认的微笑表情）
+#   linyi v4: 用户要求更冷淡（防微笑/温暖/可爱）
+NEGATIVE_EXTRA = {"linyi": ", smile, warm expression, cute"}
+
 PREFIX = "masterpiece, best quality, score_7, safe, year 2026, newest, absurdres, highres, "
 
 # 2026-08-16 用户确认的最终外观描述（勿改，勿回退到草案表）
 CHARACTER_PROMPTS = {
     "baiyue": "1girl, solo, standing, full body, front view, green hair, green eyes, sailor collar school uniform, short pleated skirt, white over-knee socks, cheeky confident smile, young girl, simple white background, plain background, character illustration, soft brush texture",
-    "linyi": "1girl, solo, standing, full body, front view, white hair, long hair, blue eyes, white and purple dress, black pantyhose, mature, cold elegant expression, standing upright, arms at sides, relaxed natural pose, simple white background, plain background, character illustration, soft brush texture",
+    "linyi": "1girl, solo, standing, full body, front view, white hair, long hair, blue eyes, black blazer jacket, white blouse, black pencil skirt, black pantyhose, black high heels, mature, cold aloof expression, emotionless eyes, stern look, looking at viewer, standing upright, arms at sides, relaxed natural pose, simple white background, plain background, character illustration, soft brush texture",
     "liuyue": "1girl, solo, standing, full body, front view, long pink hair, ahoge, black hair accessory bow, pink eyes, delicate face, soft fair skin, white long-sleeve shirt, big black bow tie, black suspender skirt, lace decorations, black over-the-knee socks, lace on over-the-knee socks, shy expression, standing upright, arms at sides, relaxed natural pose, simple white background, plain background, character illustration, soft brush texture",
     "suyun": "1girl, solo, standing, full body, front view, rainbow-colored long hair tied back, golden eyes, white dress, light apron, mature gentle smile, soft warm expression, simple white background, plain background, character illustration, soft brush texture",
     "siren": "1girl, solo, standing, full body, front view, gray twin-tails with blue-purple gradient tips, purple eyes, pointed elf ears, silver tiara, small arm fins and head fins, white sheer camisole top, pearl and seashell accessories, mermaid tail, delicate fragile smile, simple white background, plain background, character illustration, soft brush texture",
@@ -64,7 +68,7 @@ def workflow(char_id, seed):
         "4": {"class_type": "CFGNorm", "inputs": {"model": ["3", 0], "strength": 1, "pre_cfg": False}},
         "5": {"class_type": "CLIPLoader", "inputs": {"clip_name": "miaomiaoHarem_anima8Step10_txt.safetensors", "type": "qwen_image", "device": "default"}},
         "6": {"class_type": "CLIPTextEncode", "inputs": {"text": PREFIX + CHARACTER_PROMPTS[char_id], "clip": ["5", 0]}},
-        "7": {"class_type": "CLIPTextEncode", "inputs": {"text": NEGATIVE, "clip": ["5", 0]}},
+        "7": {"class_type": "CLIPTextEncode", "inputs": {"text": NEGATIVE + NEGATIVE_EXTRA.get(char_id, ""), "clip": ["5", 0]}},
         "8": {"class_type": "EmptySD3LatentImage", "inputs": {"width": 768, "height": 1344, "batch_size": 1}},
         "9": {"class_type": "KSampler", "inputs": {"model": ["4", 0], "positive": ["6", 0], "negative": ["7", 0],
               "latent_image": ["8", 0], "seed": seed, "steps": 20, "cfg": 1.0,
@@ -158,7 +162,8 @@ def char_seed(char_id):
 
 # 单角色重跑种子覆盖（用户指定，记录在案）：
 #   linyi v3: 用户对 v2(1093860) 不满意，换种子重跑，提示词/参数不变
-SEED_OVERRIDES = {"linyi": 2157431}
+#   linyi v4: 用户要求换标准 OL 服 + 冷淡表情，换种子重跑
+SEED_OVERRIDES = {"linyi": 3186572}
 
 def workflow_ref(char_id, seed):
     """参考图版（img2img）：参考图 1216x832 -> 拉伸到 768x1344 -> VAEEncode 作初始潜变量
@@ -226,6 +231,44 @@ def gen_one_ref(char_id, seed):
     print(f"  {char_id} 参考图版超时（>900s），跳过", flush=True)
     return False
 
+def whiten_if_needed(raw_png, char_dir):
+    """背景增白（条件触发，参考 linyi v3 经验）：底图背景若偏色（边界连通亮区均值 <245），
+    把背景区（含暗斑）提升至纯白并羽化边界，覆盖 raw_fullbody.png（表情 inpaint 底图用纯白版）；
+    背景已近纯白则原样返回。原图保留为 raw_fullbody_orig.png。"""
+    try:
+        import numpy as np
+        from scipy import ndimage
+    except Exception:
+        return raw_png
+    arr = np.asarray(Image.open(raw_png).convert("RGB")).astype(np.int16)
+    light = arr.max(axis=2) > 200
+    if not light.any():
+        return raw_png
+    lab, n = ndimage.label(light)
+    border = np.zeros_like(lab, bool)
+    border[0, :] = border[-1, :] = border[:, 0] = border[:, -1] = True
+    bg_ids = set(lab[border])
+    bg_ids.discard(0)
+    if not bg_ids:
+        return raw_png
+    bgmask = np.isin(lab, list(bg_ids))
+    bg_mean = float(arr[bgmask].mean(axis=0).max())
+    if bg_mean >= 245:
+        print(f"  背景已近纯白（均值 {bg_mean:.0f}），跳过增白", flush=True)
+        return raw_png
+    out = arr.copy()
+    out[bgmask] = 255
+    feather = ndimage.gaussian_filter(bgmask.astype(float), 2.0)
+    for c in range(3):
+        out[..., c] = (arr[..., c] * (1.0 - feather) + 255.0 * feather)
+    prep = os.path.join(char_dir, "raw_fullbody_w.png")
+    Image.fromarray(np.clip(out, 0, 255).astype(np.uint8)).save(prep)
+    if os.path.exists(raw_png):
+        shutil.copy(raw_png, os.path.join(char_dir, "raw_fullbody_orig.png"))
+    shutil.copy(prep, raw_png)   # raw_fullbody.png 更新为增白版（表情 inpaint 白底底图）
+    print(f"  背景增白完成（均值 {bg_mean:.0f} -> 纯白），raw_fullbody.png 已更新", flush=True)
+    return raw_png
+
 def gen_one(char_id, seed, compare_rembg=False):
     print(f"生成 {char_id} (seed {seed}) ...", flush=True)
     resp = post("/prompt", {"prompt": workflow(char_id, seed)})
@@ -246,6 +289,7 @@ def gen_one(char_id, seed, compare_rembg=False):
                     os.makedirs(char_dir, exist_ok=True)
                     raw = os.path.join(char_dir, "raw_fullbody.png")
                     shutil.copy(src, raw)
+                    raw = whiten_if_needed(raw, char_dir)          # 背景偏色则先增白再抠
                     transparent = os.path.join(char_dir, "fullbody.png")
                     pil_ok = False
                     try:
