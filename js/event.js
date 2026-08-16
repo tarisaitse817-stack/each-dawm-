@@ -6,6 +6,8 @@
 import { AppState } from './state.js';
 import { AiClient, BattleBridge } from './ai.js?v=10';
 import { CloseupView } from './closeup.js';
+import { SceneView } from './scene.js';
+import { mapEmotion } from './emotion.js';
 import { CHARACTERS } from './scenes-data.js';
 
 /* ==========================================================================
@@ -418,6 +420,11 @@ export const EventPanel = {
       var result = await AiClient.chat(text);
       this._hideThinking();
       console.log('[EventPanel] AI result — battle:', result.battle, '| narrative_len:', (result.narrative||'').length, '| detectIntent:', self._detectBattleIntent(result.narrative));
+      // 表情系统：AI 情感标签 → 立绘差分切换（每次 AI 响应都会触发）
+      const emo = mapEmotion(result.emotion);
+      CloseupView.setEmotion(emo);
+      const cs = AppState.get('closeup');
+      if (cs && cs.characterId) SceneView.setCharacterEmotion(cs.characterId, emo);
       // 累积 token 统计
       this._accumulateTokenUsage(result.usage);
       self._isInternalUpdate = true;

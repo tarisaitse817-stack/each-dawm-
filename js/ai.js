@@ -41,12 +41,16 @@ export const AiClient = {
             if (!data.ok) {
                 throw new Error(data.message || data.error || 'AI 调用失败');
             }
-            return {
+            const result = {
                 narrative: data.narrative || '',
                 battle: !!data.battle,
                 thinking: data.thinking || '',
-                usage: data.usage || { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
+                usage: data.usage || { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
+                emotion: data.emotion
             };
+            // 表情透传：bridge 无 emotion 字段时补 null（兼容旧 bridge）
+            if (result && typeof result.emotion === 'undefined') result.emotion = null;
+            return result;
         } catch (err) {
             clearTimeout(timer);
             if (err.name === 'AbortError') {
