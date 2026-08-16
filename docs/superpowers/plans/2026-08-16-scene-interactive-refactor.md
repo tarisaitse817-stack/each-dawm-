@@ -624,7 +624,7 @@ git commit -m "feat: 场景视图骨架（背景/出口/物件/旁白字幕）"
 
 **Interfaces:**
 - Consumes: `SCENES/CHARACTERS/emotionFile`（Task 1）、`AppState.sceneCharacters`（Task 2）
-- Produces: `SceneView.renderCharacters()`（新增）、`window` 事件 `'closeup-open'`（`new CustomEvent('closeup-open', { detail: { characterId } })`）
+- Produces: `SceneView.renderCharacters()`（公共包装，内部调用 `_renderCharacters`）、`window` 事件 `'closeup-open'`（`new CustomEvent('closeup-open', { detail: { characterId } })`）
 
 - [ ] **Step 1: 在 `js/scene.js` 顶部 import 行加入 `CHARACTERS`，并新增立绘渲染**
 

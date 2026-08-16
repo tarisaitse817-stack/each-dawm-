@@ -81,6 +81,11 @@ export const SceneView = {
 
   render() { this.showScene(AppState.get('currentSceneId')); },
 
+  renderCharacters() {
+    const scene = getScene(_currentSceneId);
+    if (scene) _renderCharacters(scene);
+  },
+
   showScene(sceneId) {
     const scene = getScene(sceneId);
     if (!scene) return;
