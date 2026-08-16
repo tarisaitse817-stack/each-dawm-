@@ -12,7 +12,10 @@ const SAVE_KEYS = [
   'companions',
   'inventory',
   'mapNodes',
-  'settings'
+  'settings',
+  'currentSceneId',
+  'sceneCharacters',
+  'gameTime'
 ];
 
 export const StorageManager = {

@@ -194,6 +194,18 @@ function createDefaultState() {
     /* --- 当前位置 --- */
     currentLocation: 'card_shop',
 
+    /* --- 场景状态 --- */
+    currentSceneId: 'home_living',
+    sceneCharacters: {
+      baiyue:   { present: true,  emotion: 'neutral' },
+      linyi:    { present: true,  emotion: 'neutral' },
+      liuyue:   { present: true,  emotion: 'neutral' },
+      suyun:    { present: true,  emotion: 'neutral' },
+      siren:    { present: true,  emotion: 'neutral' },
+      ecclesia: { present: true,  emotion: 'neutral' },
+    },
+    closeup: { active: false, characterId: null, emotion: 'neutral' },
+
     /* --- Token 统计 --- */
     tokenStats: {
       promptTokens: 0,
