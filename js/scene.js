@@ -1,6 +1,6 @@
 // 场景视图：背景层 + 出口 + 物件热点 + 旁白字幕 + 立绘层（立绘逻辑在 Task 4 补全）
 import { AppState } from './state.js';
-import { SCENES, CHARACTERS, getScene } from './scenes-data.js';
+import { SCENES, CHARACTERS, getScene, avatarAnchor } from './scenes-data.js';
 
 const _subtitleTimer = null;
 let _currentSceneId = 'home_living';
@@ -36,7 +36,7 @@ function _renderObjects(scene) {
   }
 }
 
-function _renderCharacters(scene) {
+function _renderAvatars(scene) {
   const layer = document.getElementById('scene-character-layer');
   layer.innerHTML = '';
   const sc = AppState.get('sceneCharacters') || {};
@@ -46,24 +46,23 @@ function _renderCharacters(scene) {
     if (!meta || !st || !st.present) continue;
     const spot = (scene.characterSpots || {})[charId];
     if (!spot) continue;
-    const sprite = document.createElement('div');
-    sprite.className = 'scene-sprite';
-    sprite.style.left = `${spot.x * 100}%`;
-    sprite.style.top = `${spot.y * 100}%`;
+    const anchor = avatarAnchor(spot);
+    const div = document.createElement('div');
+    div.className = 'scene-avatar';
+    div.style.left = `${anchor.x * 100}%`;
+    div.style.top = `${anchor.y * 100}%`;
+    div.style.setProperty('--avatar-size', `${15 * (spot.scale || 0.85)}vh`);
     const img = new Image();
-    img.className = 'sprite-img';
-    img.src = meta.fullbody;
-    img.onload = () => {
-      if (spot.scale) img.style.height = `${55 * spot.scale}vh`;
-    };
-    img.onerror = () => { sprite.classList.add('sprite-missing'); img.remove(); };
-    sprite.appendChild(img);
-    sprite.insertAdjacentHTML('beforeend',
-      `<span class="sprite-shadow"></span><span class="sprite-name">${meta.name}</span>`);
-    sprite.addEventListener('click', () => {
+    img.className = 'avatar-img';
+    img.alt = meta.name;
+    img.src = meta.portrait;
+    img.onerror = () => { div.classList.add('avatar-missing'); img.remove(); };
+    div.appendChild(img);
+    div.insertAdjacentHTML('beforeend', `<span class="avatar-name">${meta.name}</span>`);
+    div.addEventListener('click', () => {
       window.dispatchEvent(new CustomEvent('closeup-open', { detail: { characterId: charId } }));
     });
-    layer.appendChild(sprite);
+    layer.appendChild(div);
   }
 }
 
@@ -83,7 +82,7 @@ export const SceneView = {
 
   renderCharacters() {
     const scene = getScene(_currentSceneId);
-    if (scene) _renderCharacters(scene);
+    if (scene) _renderAvatars(scene);
   },
 
   showScene(sceneId) {
@@ -101,7 +100,7 @@ export const SceneView = {
     }
     _renderExits(scene);
     _renderObjects(scene);
-    _renderCharacters(scene);
+    _renderAvatars(scene);
     this.showSubtitle(`${scene.name} · ${scene.description}`);
   },
 
