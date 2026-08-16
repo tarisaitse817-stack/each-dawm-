@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-"""生成 6 角色全身立绘（白底 768x1344，Anima Base 配方）→ rembg 抠透明
-   -> assets/characters/<id>/fullbody.png（透明 PNG）
-   -> Desktop\\场景审查\\全身_<id>.png（白底不透明合成版，便于审查）
+"""生成 6 角色全身立绘（白底 768x1344，Anima Base 配方）
+   -> assets/characters/<id>/fullbody.png（透明 PNG，PIL 白底阈值抠图主方案）
+   -> Desktop\\场景审查\\全身_<id>.png（灰底不透明合成版，便于审查）
+抠图：PIL 阈值 + 边缘羽化 + 白边清理为主方案，rembg 为备选/对比。
 用法：
-  python -X utf8 scripts/gen_fullbody.py            # 全量 6 角色
-  python -X utf8 scripts/gen_fullbody.py <char_id>  # 单角色重跑
+  python -X utf8 scripts/gen_fullbody.py            # 全量 6 角色（批次种子）
+  python -X utf8 scripts/gen_fullbody.py <char_id>  # 单角色（固定角色种子）+ PIL/rembg 双方案对比图
 """
 import json, time, urllib.request, os, shutil, sys
 try:
@@ -13,7 +14,7 @@ try:
 except Exception as _e:  # 网络/安装失败时降级
     print(f"[WARN] rembg 不可用（{_e}），使用 PIL 白底阈值抠图降级", flush=True)
     HAS_REMBG = False
-from PIL import Image, ImageChops
+from PIL import Image, ImageChops, ImageFilter
 
 HOST = "http://127.0.0.1:8188"
 OUTPUT_DIR = r"H:\Comfy-Desktop\ComfyUI-Shared\output"
@@ -23,7 +24,8 @@ os.makedirs(CHAR_DIR, exist_ok=True)
 os.makedirs(REVIEW_DIR, exist_ok=True)
 
 NEGATIVE = ("worst quality, low quality, score_1, score_2, score_3, artist name, jpeg artifacts, "
-            "ugly, deformed, blurry, bad anatomy, bad hands, extra fingers, text, watermark, signature, logo")
+            "ugly, deformed, blurry, bad anatomy, bad hands, extra fingers, text, watermark, signature, logo"
+            ", missing fingers, stiff pose, leaning")
 
 PREFIX = "masterpiece, best quality, score_7, safe, year 2026, newest, absurdres, highres, "
 
@@ -31,7 +33,7 @@ PREFIX = "masterpiece, best quality, score_7, safe, year 2026, newest, absurdres
 CHARACTER_PROMPTS = {
     "baiyue": "1girl, solo, standing, full body, front view, green hair, green eyes, sailor collar school uniform, short pleated skirt, white over-knee socks, cheeky confident smile, young girl, simple white background, plain background, character illustration, soft brush texture",
     "linyi": "1girl, solo, standing, full body, front view, white hair, long hair, blue eyes, white and purple dress, black pantyhose, mature, cold elegant expression, simple white background, plain background, character illustration, soft brush texture",
-    "liuyue": "1girl, solo, standing, full body, front view, long pink hair, ahoge, black hair accessory bow, pink eyes, delicate face, soft fair skin, white long-sleeve shirt, big black bow tie, black suspender skirt, lace decorations, black over-the-knee socks, lace on over-the-knee socks, shy expression, simple white background, plain background, character illustration, soft brush texture",
+    "liuyue": "1girl, solo, standing, full body, front view, long pink hair, ahoge, black hair accessory bow, pink eyes, delicate face, soft fair skin, white long-sleeve shirt, big black bow tie, black suspender skirt, lace decorations, black over-the-knee socks, lace on over-the-knee socks, shy expression, standing upright, arms at sides, relaxed natural pose, simple white background, plain background, character illustration, soft brush texture",
     "suyun": "1girl, solo, standing, full body, front view, rainbow-colored long hair tied back, golden eyes, white dress, light apron, mature gentle smile, soft warm expression, simple white background, plain background, character illustration, soft brush texture",
     "siren": "1girl, solo, standing, full body, front view, gray twin-tails with blue-purple gradient tips, purple eyes, pointed elf ears, silver tiara, small arm fins and head fins, white sheer camisole top, pearl and seashell accessories, mermaid tail, delicate fragile smile, simple white background, plain background, character illustration, soft brush texture",
     "ecclesia": "1girl, solo, standing, full body, front view, very long blonde hair, twin hair buns, blue ribbons, flower hairpin, metal horns, silver eyes, white dress with gold trim, golden stigmata marks, pure innocent smile, simple white background, plain background, character illustration, soft brush texture",
@@ -75,6 +77,51 @@ def _fallback_transparent(src_png, dst_png):
     im.putalpha(alpha)
     im.save(dst_png)
 
+def make_transparent_pil(src_png, dst_png):
+    """PIL 白底阈值抠图（主方案）：
+    1) R/G/B 均 > 235 判为背景 -> 前景 alpha 通道
+    2) 边缘抗锯齿羽化：alpha 高斯模糊 1px（背景/前景交界 1~2px 渐变过渡）
+    3) 白边清理：羽化带内不透明且近白（max>235）的像素，颜色向 3px 半径内最近的非白
+       像素靠拢；半径内无参照（白色衣物边缘等）时向自身灰度降饱和（50% 混合）
+    rembg 对动漫线稿易出毛边/白边，故本方案为主，rembg 仅作备选/对比"""
+    im = Image.open(src_png).convert("RGBA")
+    r, g, b, _ = im.split()
+    maxch = ImageChops.lighter(ImageChops.lighter(r, g), b)
+    fgm = maxch.point(lambda v: 255 if v <= 235 else 0)        # 前景=255
+    alpha = fgm.filter(ImageFilter.GaussianBlur(1.0))          # 羽化 1~2px
+    im.putalpha(alpha)
+    try:
+        import numpy as np
+        from scipy import ndimage
+        arr = np.asarray(im).copy()
+        rgb = arr[..., :3].astype(np.int16)
+        al = arr[..., 3]
+        maxc = rgb.max(axis=2)
+        residue = (al > 0) & (al < 255) & (maxc > 235)         # 羽化带内的白色残留
+        if residue.any():
+            inner = maxc <= 235
+            if inner.any():
+                dist, idx = ndimage.distance_transform_edt(~inner, return_indices=True)
+                near = (dist <= 3.0) & residue
+                if near.any():
+                    arr[..., :3][near] = rgb[idx[0][near], idx[1][near], :]
+                rem = residue & ~near                          # 半径内无参照 -> 降饱和
+                if rem.any():
+                    gy = np.round(0.299 * rgb[..., 0] + 0.587 * rgb[..., 1] + 0.114 * rgb[..., 2]).astype(np.int16)
+                    arr[..., :3][rem] = (rgb[rem] + gy[rem, None]) // 2
+        im = Image.fromarray(arr)
+    except Exception:
+        # 降级（无 numpy/scipy）：羽化带内近白像素向自身灰度降饱和
+        px = im.load()
+        w, h = im.size
+        for y in range(h):
+            for x in range(w):
+                rr, gg, bb, aa = px[x, y]
+                if 0 < aa < 255 and max(rr, gg, bb) > 235:
+                    gy = int(0.299 * rr + 0.587 * gg + 0.114 * bb)
+                    px[x, y] = ((rr + gy) // 2, (gg + gy) // 2, (bb + gy) // 2, aa)
+    im.save(dst_png)
+
 def make_transparent(src_png, dst_png):
     if HAS_REMBG:
         im = Image.open(src_png).convert("RGBA")
@@ -98,8 +145,11 @@ def make_review_copy(transparent_png, dst_png):
     bg.alpha_composite(im)
     bg.convert("RGB").save(dst_png)
 
-def gen_one(char_id):
-    seed = 20260816 + list(CHARACTER_PROMPTS.keys()).index(char_id)
+def char_seed(char_id):
+    """1000000 + hash 风格固定种子（确定性派生，跨进程稳定，重跑同角色同种子）"""
+    return 1000000 + (sum(char_id.encode("utf-8")) * 10007 + 17) % 900000
+
+def gen_one(char_id, seed, compare_rembg=False):
     print(f"生成 {char_id} (seed {seed}) ...", flush=True)
     resp = post("/prompt", {"prompt": workflow(char_id, seed)})
     pid = resp["prompt_id"]
@@ -115,18 +165,31 @@ def gen_one(char_id):
             for out in h.get("outputs", {}).values():
                 for img in out.get("images", []):
                     src = os.path.join(OUTPUT_DIR, img.get("subfolder", ""), img["filename"])
-                    os.makedirs(os.path.join(CHAR_DIR, char_id), exist_ok=True)
-                    raw = os.path.join(CHAR_DIR, char_id, "raw_fullbody.png")
+                    char_dir = os.path.join(CHAR_DIR, char_id)
+                    os.makedirs(char_dir, exist_ok=True)
+                    raw = os.path.join(char_dir, "raw_fullbody.png")
                     shutil.copy(src, raw)
+                    transparent = os.path.join(char_dir, "fullbody.png")
+                    pil_ok = False
                     try:
-                        make_transparent(raw, os.path.join(CHAR_DIR, char_id, "fullbody.png"))
-                        make_review_copy(os.path.join(CHAR_DIR, char_id, "fullbody.png"),
-                                         os.path.join(REVIEW_DIR, f"全身_{char_id}.png"))
-                        print(f"  {char_id} 完成 -> assets/characters/{char_id}/fullbody.png + 审查副本", flush=True)
-                        return True
+                        make_transparent_pil(raw, transparent)   # 主方案：PIL 阈值 + 羽化 + 白边清理
+                        pil_ok = True
+                        print("  PIL 抠图完成（羽化+白边清理）", flush=True)
                     except Exception as e:
-                        print(f"  {char_id} 抠图失败（{e}），raw 保留 {raw}", flush=True)
-                        return False
+                        print(f"  PIL 抠图失败（{e}），降级 rembg", flush=True)
+                        make_transparent(raw, transparent)        # 备选：rembg
+                    make_review_copy(transparent, os.path.join(REVIEW_DIR, f"全身_{char_id}.png"))
+                    if compare_rembg:                             # 单角色模式：双方案对比
+                        if pil_ok:
+                            make_review_copy(transparent, os.path.join(REVIEW_DIR, f"全身_{char_id}_pil.png"))
+                        tmp = os.path.join(char_dir, "fullbody_rembg.png")
+                        try:
+                            make_transparent(raw, tmp)
+                            make_review_copy(tmp, os.path.join(REVIEW_DIR, f"全身_{char_id}_rembg.png"))
+                        except Exception as e:
+                            print(f"  rembg 对比图失败（{e}）", flush=True)
+                    print(f"  {char_id} 完成 -> assets/characters/{char_id}/fullbody.png + 审查副本", flush=True)
+                    return True
                 else:
                     continue
                 break
@@ -134,12 +197,16 @@ def gen_one(char_id):
     return False
 
 def main(start_from=None):
+    # 单角色模式 = 只处理该角色（试验/重跑用，不得连带后续角色）
     ids = list(CHARACTER_PROMPTS.keys())
+    single = bool(start_from)
     if start_from:
-        ids = ids[ids.index(start_from):]
+        ids = [start_from] if start_from in CHARACTER_PROMPTS else []
     failed = []
     for char_id in ids:
-        if not gen_one(char_id):
+        # 批量模式用批次种子；单角色（试验/重跑）用 1000000+hash 风格固定种子
+        seed = char_seed(char_id) if single else (20260816 + list(CHARACTER_PROMPTS.keys()).index(char_id))
+        if not gen_one(char_id, seed, compare_rembg=single):
             failed.append(char_id)
     print(f"全部完成；失败: {failed if failed else '无'}", flush=True)
 
