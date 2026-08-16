@@ -17,6 +17,14 @@
       "marker": false
     },
     {
+      "name": "情感标签要求",
+      "identifier": "emotion-tag",
+      "role": "system",
+      "content": "情感标签要求：每段回复必须以 [emotion:标签] 开头，标签只能取以下之一：neutral/smile/happy/blushing/angry/sad/surprised/desire。标签必须符合当前叙事中出场角色的情绪。除标签外不得输出任何额外格式。标签放在 end_output 叙事文本的最前面，JSON 结构与其余格式要求保持不变。",
+      "system_prompt": false,
+      "marker": false
+    },
+    {
       "name": "😸情绪别太激烈",
       "identifier": "3682cbc5-2edd-46ab-9466-a670908b67e7",
       "role": "system",

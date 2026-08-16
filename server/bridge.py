@@ -367,6 +367,17 @@ def parse_output(raw_text):
 
     return narrative, battle, thinking, suggestions
 
+# ─── 情感标签协议 — 与前端 EMOTION_LIST 一致 ───
+EMOTION_WHITELIST = {'neutral', 'smile', 'happy', 'blushing', 'angry', 'sad', 'surprised', 'desire'}
+
+def split_emotion(text):
+    """解析 AI 回复开头的 [emotion:标签] 前缀。
+    命中白名单 → 剥离前缀并返回小写标签；无标签/未知标签 → 原文不动 + 'neutral'。"""
+    m = re.match(r'^\s*\[emotion:([a-zA-Z]+)\]\s*', text or '')
+    if m and m.group(1).lower() in EMOTION_WHITELIST:
+        return text[m.end():].strip(), m.group(1).lower()
+    return text, 'neutral'
+
 # ─── MDPro3 Config Helper ───
 def _update_mdpro3_config(mdpro3_dir, protector_id, field_id):
     """Set opponent appearance in MDPro3 config.conf before launching."""
@@ -662,7 +673,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
         required = ["input", "api_key", "endpoint", "model"]
         for k in required:
             if k not in body:
-                self.reply(400, {"ok": False, "error": "missing_field", "message": f"缺少必填字段: {k}"})
+                self.reply(400, {"ok": False, "error": "missing_field", "message": f"缺少必填字段: {k}", "emotion": "neutral"})
                 return
 
         try:
@@ -678,7 +689,9 @@ class BridgeHandler(BaseHTTPRequestHandler):
 
             raw, usage = call_llm(msgs, body["api_key"], body["endpoint"], body["model"])
             narrative, battle, thinking, suggestions = parse_output(raw)
-            print(f"[bridge] parse result: battle={battle}, narrative_len={len(narrative)}, thinking_len={len(thinking)}")
+            # 情感标签协议：剥掉 [emotion:xxx] 前缀（必须在 battle 检测/响应构造之前）
+            narrative, emotion = split_emotion(narrative)
+            print(f"[bridge] parse result: battle={battle}, emotion={emotion}, narrative_len={len(narrative)}, thinking_len={len(thinking)}")
 
             # 服务端兜底检测：即使 AI 没设 battle=true，叙事里有决斗关键词也强制触发
             if not battle and _detect_battle_intent(narrative):
@@ -690,6 +703,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
             self.reply(200, {
                 "ok": True,
                 "narrative": narrative,
+                "emotion": emotion,
                 "battle": battle,
                 "thinking": thinking,
                 "suggestions": suggestions,
@@ -702,9 +716,9 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 if msg.startswith(prefix):
                     err_type = prefix.rstrip(":")
                     break
-            self.reply(502, {"ok": False, "error": err_type, "message": msg})
+            self.reply(502, {"ok": False, "error": err_type, "message": msg, "emotion": "neutral"})
         except Exception as e:
-            self.reply(502, {"ok": False, "error": "internal_error", "message": f"Bridge 内部错误: {str(e)[:200]}"})
+            self.reply(502, {"ok": False, "error": "internal_error", "message": f"Bridge 内部错误: {str(e)[:200]}", "emotion": "neutral"})
 
     def handle_duel_result(self, body):
         """Receive duel result from WindBot callback"""
