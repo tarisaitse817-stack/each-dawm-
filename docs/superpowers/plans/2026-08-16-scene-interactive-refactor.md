@@ -22,6 +22,8 @@
 - 热区/锚点坐标一律百分比（0~1）
 - 现有 `window.App` / `'splashdone'` / `'sidebar-reveal'` / `'newgame-start'` 契约保持不动
 - 生成参数（Anima Base 配方）：UNETLoader(Harem anima15, default) → LoraLoaderModelOnly(jirai_v2, 1) → ModelSamplingAuraFlow(3.6) → CFGNorm(1, False) → KSampler(cfg 1, 20 步, euler, simple) → VAEDecodeTiled(512,64,64,8)；CLIP 用 `qwen_image` 类型；VAE 用 `qwenImage_qwenImageVAE.safetensors`
+- **画风统一（硬性约束）：场景图、全身立绘、表情差分必须用同一个模型（miaomiaoHarem_anima15）+ 同一工作流（Anima Base 配方，表情差分仅加 ControlNet img2img 环节）+ 同一 LoRA（jirai_v2, 1.0）。禁止换用 Realskin/Illustrious 等其他模型或工作流**
+- **表情差分的提示词必须完整包含该角色的全身外观描述**（与 fullbody 生成时完全一致），仅追加表情标签；ControlNet 负责锁构图
 
 ---
 
@@ -1407,8 +1409,11 @@ Run: `python -X utf8 scripts/gen_fullbody.py`
 
 ```python
 # -*- coding: utf-8 -*-
-"""表情差分：定稿全身图 → HED + softedge ControlNet + 表情标签 → 8 变体/角色"""
+"""表情差分：定稿全身图 → HED + softedge ControlNet + 表情标签 → 8 变体/角色
+画风统一硬约束：同模型（Harem）+ 同 LoRA（jirai_v2, 1.0）+ 同工作流；
+表情提示词 = 完整外观描述（与 fullbody 完全一致，复用 CHARACTER_PROMPTS）+ 表情标签"""
 import json, time, urllib.request, os, shutil, sys
+from gen_fullbody import CHARACTER_PROMPTS, NEGATIVE, PREFIX
 
 HOST = "http://127.0.0.1:8188"
 OUTPUT_DIR = r"H:\Comfy-Desktop\ComfyUI-Shared\output"
@@ -1424,19 +1429,19 @@ EMOTION_TAGS = {
     "surprised": "surprised expression, wide eyes",
     "desire":    "blush, half-closed eyes, lustful expression, heavy breathing",
 }
-NEGATIVE = ("worst quality, low quality, score_1, score_2, score_3, artist name, jpeg artifacts, "
-            "ugly, deformed, blurry, bad anatomy, bad hands, extra fingers, text, watermark, signature, logo")
-PREFIX = "masterpiece, best quality, score_7, safe, year 2026, newest, absurdres, highres, "
 
 def workflow(char_id, emotion, seed):
     base = os.path.join(CHAR_DIR, char_id, "fullbody.png")
+    # 表情提示词 = 完整外观 + 表情标签（外观与 fullbody 生成时逐字一致，保证同一人物）
+    positive = PREFIX + CHARACTER_PROMPTS[char_id].replace("simple white background, plain background, ", "") \
+               + ", " + EMOTION_TAGS[emotion] + ", same character"
     return {
         "1": {"class_type": "UNETLoader", "inputs": {"unet_name": "miaomiaoHarem_anima15.safetensors", "weight_dtype": "default"}},
         "2": {"class_type": "LoraLoaderModelOnly", "inputs": {"model": ["1", 0], "lora_name": "jirai_v2.safetensors", "strength_model": 1.0}},
         "3": {"class_type": "ModelSamplingAuraFlow", "inputs": {"model": ["2", 0], "shift": 3.6}},
         "4": {"class_type": "CFGNorm", "inputs": {"model": ["3", 0], "strength": 1, "pre_cfg": False}},
         "5": {"class_type": "CLIPLoader", "inputs": {"clip_name": "miaomiaoHarem_anima8Step10_txt.safetensors", "type": "qwen_image", "device": "default"}},
-        "6": {"class_type": "CLIPTextEncode", "inputs": {"text": PREFIX + EMOTION_TAGS[emotion] + ", same character, same clothes, same hairstyle", "clip": ["5", 0]}},
+        "6": {"class_type": "CLIPTextEncode", "inputs": {"text": positive, "clip": ["5", 0]}},
         "7": {"class_type": "CLIPTextEncode", "inputs": {"text": NEGATIVE, "clip": ["5", 0]}},
         "8": {"class_type": "LoadImage", "inputs": {"image": base}},
         "9": {"class_type": "ImageScaleToTotalPixels", "inputs": {"image": ["8", 0], "upscale_method": "nearest-exact", "megapixels": 1.0}},
