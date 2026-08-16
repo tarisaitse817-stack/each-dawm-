@@ -4,8 +4,9 @@
    -> Desktop\\场景审查\\全身_<id>.png（灰底不透明合成版，便于审查）
 抠图：PIL 阈值 + 边缘羽化 + 白边清理为主方案，rembg 为备选/对比。
 用法：
-  python -X utf8 scripts/gen_fullbody.py            # 全量 6 角色（批次种子）
-  python -X utf8 scripts/gen_fullbody.py <char_id>  # 单角色（固定角色种子）+ PIL/rembg 双方案对比图
+  python -X utf8 scripts/gen_fullbody.py                # 全量 6 角色（批次种子）
+  python -X utf8 scripts/gen_fullbody.py <char_id>      # 单角色（固定角色种子）+ PIL/rembg 双方案对比图
+  python -X utf8 scripts/gen_fullbody.py <char_id> --ref  # 参考图版（Desktop\\角色\\ 参考图 + ControlNet 链路）
 """
 import json, time, urllib.request, os, shutil, sys
 try:
@@ -18,14 +19,20 @@ from PIL import Image, ImageChops, ImageFilter
 
 HOST = "http://127.0.0.1:8188"
 OUTPUT_DIR = r"H:\Comfy-Desktop\ComfyUI-Shared\output"
+INPUT_DIR = r"H:\Comfy-Desktop\ComfyUI-Installs\ComfyUI\ComfyUI\input"  # 服务器 --input-directory
 CHAR_DIR = r"C:\Users\Administrator\each-dawm-\assets\characters"
 REVIEW_DIR = r"C:\Users\Administrator\Desktop\场景审查"
+REF_DIR = r"C:\Users\Administrator\Desktop\角色"                       # 用户提供的角色参考图
+REF_MAP = {"linyi": "林仪.png", "liuyue": "柳月.png", "suyun": "苏昀.png",
+           "siren": "塞壬.png", "ecclesia": "艾克利西亚.png"}           # baiyue 无参考图
 os.makedirs(CHAR_DIR, exist_ok=True)
 os.makedirs(REVIEW_DIR, exist_ok=True)
 
 NEGATIVE = ("worst quality, low quality, score_1, score_2, score_3, artist name, jpeg artifacts, "
             "ugly, deformed, blurry, bad anatomy, bad hands, extra fingers, text, watermark, signature, logo"
             ", missing fingers, stiff pose, leaning")
+# 参考图版专用：参考图是 1216x832 角色场景图，负面词加场景词防泄漏
+REF_NEGATIVE = NEGATIVE + ", desk, office, classroom, computer, window, indoor, room, furniture, background objects"
 
 PREFIX = "masterpiece, best quality, score_7, safe, year 2026, newest, absurdres, highres, "
 
@@ -149,6 +156,72 @@ def char_seed(char_id):
     """1000000 + hash 风格固定种子（确定性派生，跨进程稳定，重跑同角色同种子）"""
     return 1000000 + (sum(char_id.encode("utf-8")) * 10007 + 17) % 900000
 
+def workflow_ref(char_id, seed):
+    """参考图版（img2img）：参考图 1216x832 -> 拉伸到 768x1344 -> VAEEncode 作初始潜变量
+    -> KSampler 45步 euler_ancestral cfg1 denoise 0.7（参考图是场景图，需较高重绘把背景洗成纯白）
+    [已实测] HED + illustriousXLSoftedge_v10 ControlNet 链路在此栈不可行：SDXL 级 ControlNet
+    无法用于 Anima/SD3.5 UNET（comfy/cldm/cldm.py: "y is None, did you try using a controlnet
+    for SDXL on SD1?"），且服务器无 SD3 级 ControlNet 可用 -> 改用同 denoise 0.7 的纯 img2img"""
+    return {
+        "1": {"class_type": "UNETLoader", "inputs": {"unet_name": "miaomiaoHarem_anima15.safetensors", "weight_dtype": "default"}},
+        "2": {"class_type": "LoraLoaderModelOnly", "inputs": {"model": ["1", 0], "lora_name": "jirai_v2.safetensors", "strength_model": 1.0}},
+        "3": {"class_type": "ModelSamplingAuraFlow", "inputs": {"model": ["2", 0], "shift": 3.6}},
+        "4": {"class_type": "CFGNorm", "inputs": {"model": ["3", 0], "strength": 1, "pre_cfg": False}},
+        "5": {"class_type": "CLIPLoader", "inputs": {"clip_name": "miaomiaoHarem_anima8Step10_txt.safetensors", "type": "qwen_image", "device": "default"}},
+        "6": {"class_type": "CLIPTextEncode", "inputs": {"text": PREFIX + CHARACTER_PROMPTS[char_id], "clip": ["5", 0]}},
+        "7": {"class_type": "CLIPTextEncode", "inputs": {"text": REF_NEGATIVE, "clip": ["5", 0]}},
+        "8": {"class_type": "LoadImage", "inputs": {"image": f"{char_id}_ref.png"}},
+        "9": {"class_type": "ImageScale", "inputs": {"image": ["8", 0], "upscale_method": "bicubic", "width": 768, "height": 1344, "crop": "disabled"}},
+        "10": {"class_type": "VAEEncode", "inputs": {"pixels": ["9", 0], "vae": ["12", 0]}},
+        "11": {"class_type": "KSampler", "inputs": {"model": ["4", 0], "positive": ["6", 0], "negative": ["7", 0],
+               "latent_image": ["10", 0], "seed": seed, "steps": 45, "cfg": 1.0,
+               "sampler_name": "euler_ancestral", "scheduler": "simple", "denoise": 0.7}},
+        "12": {"class_type": "VAELoader", "inputs": {"vae_name": "qwenImage_qwenImageVAE.safetensors"}},
+        "13": {"class_type": "VAEDecodeTiled", "inputs": {"samples": ["11", 0], "vae": ["12", 0],
+               "tile_size": 512, "overlap": 64, "temporal_size": 64, "temporal_overlap": 8}},
+        "14": {"class_type": "SaveImage", "inputs": {"images": ["13", 0], "filename_prefix": f"fullbody_{char_id}_ref"}},
+    }
+
+def gen_one_ref(char_id, seed):
+    """参考图版生成：参考图拷入 ComfyUI input 目录（ASCII 文件名避免编码问题）-> 生成
+    -> PIL 抠图 -> assets/characters/<id>/fullbody_ref.png + 桌面 全身_<id>_参考图版.png"""
+    ref_file = REF_MAP[char_id]
+    in_name = f"{char_id}_ref.png"
+    shutil.copy(os.path.join(REF_DIR, ref_file), os.path.join(INPUT_DIR, in_name))
+    print(f"参考图版 {char_id} (seed {seed}, 参考 {ref_file}) ...", flush=True)
+    resp = post("/prompt", {"prompt": workflow_ref(char_id, seed)})
+    pid = resp["prompt_id"]
+    deadline = time.time() + 900
+    while time.time() < deadline:
+        time.sleep(5)
+        hist = get(f"/history/{pid}")
+        if pid in hist:
+            h = hist[pid]
+            if h.get("status", {}).get("status_str") == "error":
+                print(f"  {char_id} 参考图版执行错误，跳过", flush=True)
+                return False
+            for out in h.get("outputs", {}).values():
+                for img in out.get("images", []):
+                    src = os.path.join(OUTPUT_DIR, img.get("subfolder", ""), img["filename"])
+                    char_dir = os.path.join(CHAR_DIR, char_id)
+                    os.makedirs(char_dir, exist_ok=True)
+                    raw = os.path.join(char_dir, "raw_fullbody_ref.png")
+                    shutil.copy(src, raw)
+                    try:
+                        make_transparent_pil(raw, os.path.join(char_dir, "fullbody_ref.png"))
+                        make_review_copy(os.path.join(char_dir, "fullbody_ref.png"),
+                                         os.path.join(REVIEW_DIR, f"全身_{char_id}_参考图版.png"))
+                        print(f"  {char_id} 参考图版完成 -> 桌面 全身_{char_id}_参考图版.png", flush=True)
+                        return True
+                    except Exception as e:
+                        print(f"  {char_id} 参考图版抠图失败（{e}）", flush=True)
+                        return False
+                else:
+                    continue
+                break
+    print(f"  {char_id} 参考图版超时（>900s），跳过", flush=True)
+    return False
+
 def gen_one(char_id, seed, compare_rembg=False):
     print(f"生成 {char_id} (seed {seed}) ...", flush=True)
     resp = post("/prompt", {"prompt": workflow(char_id, seed)})
@@ -196,19 +269,25 @@ def gen_one(char_id, seed, compare_rembg=False):
     print(f"  {char_id} 超时（>900s），跳过", flush=True)
     return False
 
-def main(start_from=None):
+def main(start_from=None, ref_mode=False):
     # 单角色模式 = 只处理该角色（试验/重跑用，不得连带后续角色）
     ids = list(CHARACTER_PROMPTS.keys())
     single = bool(start_from)
     if start_from:
         ids = [start_from] if start_from in CHARACTER_PROMPTS else []
+    if ref_mode:
+        ids = [i for i in ids if i in REF_MAP]   # baiyue 无参考图
     failed = []
     for char_id in ids:
         # 批量模式用批次种子；单角色（试验/重跑）用 1000000+hash 风格固定种子
         seed = char_seed(char_id) if single else (20260816 + list(CHARACTER_PROMPTS.keys()).index(char_id))
-        if not gen_one(char_id, seed, compare_rembg=single):
+        ok = gen_one_ref(char_id, seed) if ref_mode else gen_one(char_id, seed, compare_rembg=single)
+        if not ok:
             failed.append(char_id)
     print(f"全部完成；失败: {failed if failed else '无'}", flush=True)
 
 if __name__ == "__main__":
-    main(start_from=sys.argv[1] if len(sys.argv) > 1 else None)
+    args = sys.argv[1:]
+    ref_mode = "--ref" in args
+    args = [a for a in args if a != "--ref"]
+    main(start_from=args[0] if args else None, ref_mode=ref_mode)

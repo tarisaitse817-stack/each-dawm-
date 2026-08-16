@@ -12,7 +12,7 @@ from gen_fullbody import CHARACTER_PROMPTS, NEGATIVE, PREFIX
 
 HOST = "http://127.0.0.1:8188"
 OUTPUT_DIR = r"H:\Comfy-Desktop\ComfyUI-Shared\output"
-INPUT_DIR = r"H:\Comfy-Desktop\ComfyUI-Shared\input"
+INPUT_DIR = r"H:\Comfy-Desktop\ComfyUI-Installs\ComfyUI\ComfyUI\input"  # 服务器 --input-directory
 CHAR_DIR = r"C:\Users\Administrator\each-dawm-\assets\characters"
 REVIEW_DIR = r"C:\Users\Administrator\Desktop\场景审查"
 EMOTION_TAGS = {
