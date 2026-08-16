@@ -156,6 +156,10 @@ def char_seed(char_id):
     """1000000 + hash 风格固定种子（确定性派生，跨进程稳定，重跑同角色同种子）"""
     return 1000000 + (sum(char_id.encode("utf-8")) * 10007 + 17) % 900000
 
+# 单角色重跑种子覆盖（用户指定，记录在案）：
+#   linyi v3: 用户对 v2(1093860) 不满意，换种子重跑，提示词/参数不变
+SEED_OVERRIDES = {"linyi": 2157431}
+
 def workflow_ref(char_id, seed):
     """参考图版（img2img）：参考图 1216x832 -> 拉伸到 768x1344 -> VAEEncode 作初始潜变量
     -> KSampler 45步 euler_ancestral cfg1 denoise 0.7（参考图是场景图，需较高重绘把背景洗成纯白）
@@ -279,8 +283,9 @@ def main(start_from=None, ref_mode=False):
         ids = [i for i in ids if i in REF_MAP]   # baiyue 无参考图
     failed = []
     for char_id in ids:
-        # 批量模式用批次种子；单角色（试验/重跑）用 1000000+hash 风格固定种子
-        seed = char_seed(char_id) if single else (20260816 + list(CHARACTER_PROMPTS.keys()).index(char_id))
+        # 批量模式用批次种子；单角色（试验/重跑）用 1000000+hash 风格固定种子；SEED_OVERRIDES 优先
+        seed = SEED_OVERRIDES.get(char_id, char_seed(char_id)) if single \
+            else (20260816 + list(CHARACTER_PROMPTS.keys()).index(char_id))
         ok = gen_one_ref(char_id, seed) if ref_mode else gen_one(char_id, seed, compare_rembg=single)
         if not ok:
             failed.append(char_id)
