@@ -1257,7 +1257,7 @@ SCENE_PROMPTS = {
     "cardshop_inside": "first person view, card game shop interior, glass display cabinets with card packs, dueling table in center, shelves, warm ambient light, quiet, anime scenery, soft brush texture, no humans",
     "cardshop_door": "first person view, card shop storefront, glowing sign, glass window with card posters, night street, anime scenery, soft brush texture, pastel tones, no humans",
     "mall_st": "first person view, busy shopping street, neon signs, storefronts, crosswalk, evening, city lights, wide angle, lively commercial district, anime scenery, soft brush texture, no humans",
-    "mall_dessert": "first person view, dessert cafe interior, glass cake display case, pink pastel interior, cozy seats, soft warm lighting, sweet atmosphere, anime scenery, soft brush texture, pastel tones, no humans",
+    "mall_dessert": "first person view, dessert cafe interior, glass cake display case, wooden tables and chairs, clean white walls, bright neutral daylight, simple modern interior, quiet, anime scenery, soft brush texture, no humans",
     "suburb_st": "first person view, quiet suburban street, low houses, trees, small road, street lamps, dusk, calm, wide angle, anime scenery, soft brush texture, pastel tones, no humans",
     "suburb_station": "first person view, train station platform, train arriving, platform roof, ticket machine, benches, daylight, wide angle, urban transit hub, anime scenery, soft brush texture, no humans",
 }
