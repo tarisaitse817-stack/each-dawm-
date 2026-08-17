@@ -6,33 +6,54 @@ import { AppState } from './state.js';
 import { StorageManager } from './storage.js';
 import { Navigation } from './navigation.js';
 import { showInitialBackground } from './scene.js?v=10';
+import { TransitionView } from './transition.js';
 
-/* 开场叙事文本（3 段话） */
-/**
- * 开场叙事 — 优先从世界书加载，否则使用默认
- */
-var OPENING_NARRATIVE = [
+/* 开场字幕（新游戏转场）：世界书 first_mes 前 3 句；失败回退内置默认文本前 3 句 */
+const MAX_OPENING_LINES = 3;
+
+var OPENING_LINES_FALLBACK = [
   '你在无尽的黑暗中睁开了双眼。不——你甚至不确定自己是否还有"眼睛"这个东西。只有光。微弱而温暖的光，从遥远的地方流淌而来，轻轻拂过你的意识。',
   '"你醒了。"一个声音，像是风穿过水晶的风铃，又像是远山的回响。你试图寻找声音的来源，却发现自己的身体正缓缓飘浮在一片星辉之中。',
   '"来吧，牌佬。属于你的奇妙冒险在等待着你。"'
 ];
 
-async function loadOpeningNarrative() {
+/** 按中文标点断句：保留句尾标点、过滤空白句 */
+function _splitSentences(text) {
+  var parts = text.split(/([。！？…；])/);
+  var sentences = [];
+  for (var i = 0; i < parts.length; i += 2) {
+    var s = (parts[i] + (parts[i + 1] || '')).replace(/\s+/g, ' ').trim();
+    if (s) sentences.push(s);
+  }
+  return sentences;
+}
+
+var _cachedOpeningLines = null;
+
+/**
+ * 开场字幕接口 — 世界书 first_mes 前 3 句（用户改世界书设定自动生效）
+ * 加载失败/为空 → 回退内置默认文本前 3 句
+ * @returns {Promise<string[]>}
+ */
+async function loadOpeningLines() {
+  if (_cachedOpeningLines) return _cachedOpeningLines;
+  var sentences = [];
   try {
     var resp = await fetch('data/worldbook.json');
     if (resp.ok) {
       var wb = await resp.json();
       var raw = (wb.first_mes || '').replace(/<\/?maintext>/g, '').split('\\n').join('\n');
-      // Split into paragraphs (> 50 chars each)
-      var paragraphs = raw.split(/\n\n+/).filter(function(p) { return p.trim().length > 10; });
-      if (paragraphs.length >= 3) {
-        OPENING_NARRATIVE = paragraphs;
-        console.log('[TitleScreen] 加载世界书开场叙事: ' + paragraphs.length + ' 段');
-      }
+      sentences = _splitSentences(raw);
     }
   } catch (e) {
-    console.log('[TitleScreen] 使用默认开场叙事');
+    console.log('[TitleScreen] 世界书开场加载失败，使用默认字幕');
   }
+  if (sentences.length === 0) {
+    sentences = _splitSentences(OPENING_LINES_FALLBACK.join('\n'));
+  }
+  _cachedOpeningLines = sentences.slice(0, MAX_OPENING_LINES);
+  console.log('[TitleScreen] 开场字幕: ' + _cachedOpeningLines.length + ' 句');
+  return _cachedOpeningLines;
 }
 
 export const TitleScreen = {
@@ -55,7 +76,7 @@ export const TitleScreen = {
     }
 
     this.render();
-    loadOpeningNarrative();
+    loadOpeningLines();
   },
 
   /**
@@ -190,26 +211,31 @@ export const TitleScreen = {
 
   /**
    * 开始新游戏
-   * 重置状态 → 跳转到事件视图 → 开场叙事在事件面板中以打字机展示
+   * 重置状态 → 切场景 + 侧边栏立即可见 → 逐句字幕 + 光晕转场渐入
    */
   _startNewGame() {
     // 停止标题 BGM
     if (window.App && typeof window.App.stopBgm === 'function') {
       window.App.stopBgm();
     }
-    // 通知事件面板：新游戏开始（重置侧边栏渐显触发标志）
-    window.dispatchEvent(new CustomEvent('newgame-start'));
 
     AppState.reset();
     this._hideCover();
     Navigation.navigateTo('scene');
 
-    // 开场叙事写入历史，由对话引擎以打字机效果渲染（队列完成触发侧边栏渐显）
-    var history = AppState.get('narrativeHistory') || [];
-    history = history.concat(OPENING_NARRATIVE);
-    AppState.set('narrativeHistory', history);
+    // 立即显示侧边栏（无打字机开场白；开场镜头感由转场字幕承担，与读档路径一致）
+    var sidebar = document.getElementById('sidebar');
+    if (sidebar) sidebar.classList.remove('sidebar-hidden');
+    var main = document.getElementById('main-content');
+    if (main) main.classList.remove('full-width');
+    showInitialBackground();
 
     this.hide();
+
+    // 开场字幕 → 光晕铺满 → 渐入场景
+    loadOpeningLines().then(function (lines) {
+      TransitionView.play({ lines: lines });
+    });
   },
 
   /**

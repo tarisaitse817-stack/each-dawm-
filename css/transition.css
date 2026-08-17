@@ -1,0 +1,19 @@
+/* ==========================================================================
+   转场覆盖层：黑底逐句字幕 + 光晕扩散（时序由 js/transition.js 控制）
+   ========================================================================== */
+#transition-overlay { position: fixed; inset: 0; z-index: 100; background: #0a0c1c; opacity: 1; transition: opacity .4s ease; cursor: pointer; }
+#transition-overlay.hidden { display: none; }
+#transition-overlay.fade-out { opacity: 0; pointer-events: none; }
+
+/* 字幕：居中逐句淡入淡出 */
+.transition-subtitle { position: absolute; left: 50%; top: 46%; transform: translate(-50%, -50%); max-width: 80%; text-align: center; color: #F5ECD7; font-size: clamp(16px, 4.5vw, 22px); line-height: 1.9; opacity: 0; transition: opacity .4s ease; text-shadow: 0 0 12px rgba(212,165,116,.35); }
+.transition-subtitle.show { opacity: 1; }
+
+/* 光晕：中心光斑扩散铺满（halo-expand 1s 与 transition.js _haloMs 一致） */
+.transition-halo { position: absolute; left: 50%; top: 50%; width: 20vmax; height: 20vmax; border-radius: 50%; transform: translate(-50%, -50%) scale(.05); opacity: 0; background: radial-gradient(circle, rgba(255,244,214,.98) 0%, rgba(212,165,116,.55) 45%, transparent 72%); filter: blur(6px); pointer-events: none; }
+#transition-overlay.halo .transition-halo { animation: halo-expand 1s ease-out forwards; }
+@keyframes halo-expand {
+  0% { transform: translate(-50%, -50%) scale(.05); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(9); opacity: 1; }
+}
