@@ -19,7 +19,7 @@ var OPENING_LINES_FALLBACK = [
 
 /** 按中文标点断句：保留句尾标点、过滤空白句 */
 function _splitSentences(text) {
-  var parts = text.split(/([。！？…；])/);
+  var parts = text.split(/([。！？…；]["'”’」』]?)/);
   var sentences = [];
   for (var i = 0; i < parts.length; i += 2) {
     var s = (parts[i] + (parts[i + 1] || '')).replace(/\s+/g, ' ').trim();
@@ -239,7 +239,7 @@ export const TitleScreen = {
   },
 
   /**
-   * "新的旅程" — 直接进入事件面板展示开场叙事
+   * "新的旅程" — 新游戏：重置状态 → 切场景 → 逐句字幕+光晕转场
    */
   _onNewGame() {
     this._startNewGame();
