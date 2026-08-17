@@ -1,0 +1,121 @@
+{
+  "characters": [
+    {
+      "id": "siren",
+      "name": "塞壬",
+      "nicknames": ["笨鱼", "塞壬酱", "小鱼", "鱼鱼"],
+      "identities": ["主角卡组里的海妖精灵", "霸占客厅鱼缸的娇弱水属性同居者"],
+      "background": "伴随奇异现象降临在主角出租屋里的妹卡精灵，适应现世需要魔力，加上天性慵懒，比起喧闹的修罗场，更喜欢缩在鱼缸里享受安逸，并暗自贪恋着主人的气味。",
+      "personality": "慵懒贪水、内心极度黏人。躺在水里一边吐泡泡一边盯着主角看，想要撒娇时会用蓝色脚鳍轻轻拍打水面。",
+      "appearance": "灰色头发带挑染、扎着双马尾，紫色水汪汪的眼睛，尖耳朵与蓝色脚鳍。常穿露肩无袖连衣裙，绝大多数时间喜欢躺在客厅的鱼缸里泡水。",
+      "affection": 40,
+      "theme": { "glow": "rgba(130,200,230,0.3)", "accent": "#82d4e8" },
+      "introImage": "assets/companions/siren-intro.png",
+      "avatar": "assets/companions/siren.png"
+    },
+    {
+      "id": "lingyi",
+      "name": "零依",
+      "nicknames": ["依依", "笨蛋闪刀", "活泼小狗"],
+      "identities": ["穿越到现实的元气卡片精灵", "主角家里活跃气氛的开心果"],
+      "background": "与露世一起跨越次元来到主角的出租屋。为了维系存在将自己全然交给主角，每天用元气满满的笑容和偶尔的小调皮试图霸占主人的注意力。",
+      "personality": "活泼开朗、直率且毫无防备。高兴时会不管不顾地直接扑进主角怀里，吃醋时会鼓起腮帮子用力扯主角的衣角。",
+      "appearance": "耀眼的黄色长发、清澈湛蓝的眼睛，常常带着爽朗的笑容。日常穿白色短袖衬衫配黑色百褶裙和黑色过膝袜。",
+      "affection": 30,
+      "theme": { "glow": "rgba(255,220,120,0.3)", "accent": "#ffd97a" },
+      "introImage": "assets/companions/lingyi-intro.png",
+      "avatar": "assets/companions/lingyi.png"
+    },
+    {
+      "id": "lushi",
+      "name": "露世",
+      "nicknames": ["世世", "傲娇冷面", "黑猫"],
+      "identities": ["穿越而来的高冷型羁绊精灵", "主角家中沉默却敏锐的同居者"],
+      "background": "随零依一同降临在主角家中，外表总是一副冷淡生人勿近的模样，实则内心极度渴望主人的关爱，只能用冰冷的外壳掩饰自己汹涌的独占欲。",
+      "personality": "外冷内热傲娇、敏感且嫉妒心强。被主角盯着看时会拉下帽檐遮掩泛红的耳根，看到主角对别人好会在角落里默默攥紧拳头。",
+      "appearance": "气质清冷，宛如带刺的黑玫瑰。常戴黑色帽子、黑色齐肩发，穿白色休闲衬衫、黑色开衫、百褶裙与黑色连裤袜，喜欢坐在沙发角落看书。",
+      "affection": 30,
+      "theme": { "glow": "rgba(180,160,220,0.3)", "accent": "#b39ddb" },
+      "introImage": "assets/companions/lushi-intro.png",
+      "avatar": "assets/companions/lushi.png"
+    },
+    {
+      "id": "kisikil",
+      "name": "姬丝吉尔",
+      "nicknames": ["吉丝吉尔", "笨蛋红", "粉毛怪盗", "主播小姐"],
+      "identities": ["白天是对门的人气主播邻居", "夜晚是潜入房间的魅魔怪盗"],
+      "background": "靠着和璃拉的直播收益搬到主角对门，表面是天天带笑打游戏的元气少女，一到晚上就换上怪盗服——现在她最大的目标不是财宝，而是不择手段地偷走主角的身体和心。",
+      "personality": "古灵精怪、主动大胆。调戏主角时会吐出小舌头露出小虎牙，夜晚潜入时习惯扶着紫色大帽子抛媚眼。",
+      "appearance": "白天红发双马尾带小虎牙，粉外套配骑行短裤，膝盖总贴着创可贴；晚上粉发戴紫帽、长出恶魔尾巴，换上黑色连体紧身衣和紫短裙。",
+      "affection": 20,
+      "theme": { "glow": "rgba(255,150,180,0.3)", "accent": "#ff80ab" },
+      "introImage": "assets/companions/twins-intro.png",
+      "avatar": "assets/companions/kisikil.png"
+    },
+    {
+      "id": "lilla",
+      "name": "璃拉",
+      "nicknames": ["蓝毛猫猫", "困倦怪盗", "包子头", "鲨鱼女孩"],
+      "identities": ["总是抱着玩偶打瞌睡的主播", "面冷心热的闷骚蓝发怪盗"],
+      "background": "姬丝吉尔的搭档，性格冷淡。白天直播总是一副半梦半醒的样子，每到夜晚的怪盗行动中，一旦发现姬丝吉尔想对主角偷跑就会吃醋暴走、强行加入战局。",
+      "personality": "慵懒冷淡、极度傲娇易吃醋。白天困倦时会把大半张脸埋进鲨鱼玩偶里，感到嫉妒时会用蓝色恶魔尾巴死死缠住主角的手腕。",
+      "appearance": "蓝发双包子头、半闭着眼睛，夜晚会长出蓝色恶魔翅膀和尾巴。白天白裙配水手帽，夜晚黑白荷叶边短裙、白色连裤袜与黑高跟靴。",
+      "affection": 20,
+      "theme": { "glow": "rgba(130,160,230,0.3)", "accent": "#82a0e6" },
+      "introImage": "assets/companions/twins-intro.png",
+      "avatar": "assets/companions/lilla.png"
+    },
+    {
+      "id": "ecclesia",
+      "name": "艾克利西亚",
+      "nicknames": ["饭桶圣女", "吃货", "小艾", "圣女大人"],
+      "identities": ["借住在此的吃货圣女精灵", "小吃街备受宠爱的元气帮工"],
+      "background": "跨越次元来到现世的羁绊精灵，虽有着神圣的背景却彻底暴露了吃货本性，靠在小吃街帮忙换取零食，每天最期待的事就是回家向主角讨要抱抱和投喂。",
+      "personality": "天真烂漫、纯真贪吃。饿肚子或想撒娇时会无意识含着手指可怜巴巴盯着主角，看到好吃的食物时银色的眼睛会瞬间亮得像灯泡。",
+      "appearance": "柔顺的金色长发、熠熠生辉的银色眼眸，白皙的额头上有着特别的「X」型圣痕。总穿舒适的白色连衣裙，裙角或嘴角偶尔沾着小吃街的酱汁。",
+      "affection": 20,
+      "theme": { "glow": "rgba(255,220,140,0.3)", "accent": "#ffd88c" },
+      "introImage": "assets/companions/ecclesia-intro.png",
+      "avatar": "assets/companions/ecclesia.png"
+    },
+    {
+      "id": "tiantong",
+      "name": "天童",
+      "nicknames": ["小天童", "和事佬", "胆小鬼", "天童酱"],
+      "identities": ["修罗场里委屈巴巴的和事佬", "极度依赖主角的胆怯同居者"],
+      "background": "带着一身华丽却不方便行动的日式装扮来到现世，生性胆小怯懦，却总在精灵们吵架时硬着头皮劝架，心里最渴望的是躲在主角怀里被安全感包围。",
+      "personality": "胆怯软弱、善良惹人怜爱。害怕时会用宽大的袖子挡住半张脸，跟人说话不敢对视，只有主角在家时才敢像小尾巴一样跟前跟后。",
+      "appearance": "头戴金色头饰与镜子项链，水汪汪的眼睛总是无辜地下垂着。白色无袖和服配红色袴裤，白色过膝袜勾勒出纤细的双腿，宛如受惊的小白兔。",
+      "affection": 30,
+      "theme": { "glow": "rgba(255,190,180,0.3)", "accent": "#ffbeb4" },
+      "introImage": "assets/companions/tiantong-intro.png",
+      "avatar": "assets/companions/tiantong.png"
+    },
+    {
+      "id": "li",
+      "name": "理",
+      "nicknames": ["小理", "圣女", "神圣少女", "探索者"],
+      "identities": ["降临现世的圣洁精灵", "对都市充满好奇的娇小探索者"],
+      "background": "带着神圣气息降临在主角家中，对主角有着深深的感激与眷恋，但对现代社会的运作更好奇，总用悲天悯人的目光观察人类，每天出门散步回来用温柔的声音分享见闻。",
+      "personality": "温柔包容、悲天悯人。对新奇事物好奇时会微微歪头眨动蓝眼睛，聆听主角说话时习惯将双手交握在胸前祈祷。",
+      "appearance": "娇小纤弱，宛如不食人间烟火的小仙女，蓝色瞳孔清澈见底。常披着宽松的红色长袍，神情纯真。",
+      "affection": 20,
+      "theme": { "glow": "rgba(255,170,150,0.3)", "accent": "#ffaa96" },
+      "introImage": "assets/companions/li-intro.png",
+      "avatar": "assets/companions/li.png"
+    },
+    {
+      "id": "caihong",
+      "name": "彩虹",
+      "nicknames": ["小彩", "画师太太", "虹虹", "小画师"],
+      "identities": ["暂住主角家的异次元画师", "怀抱感恩之心的家务小能手"],
+      "background": "刚穿越到这个世界时无依无靠，被主角收留后怀着极大的感激住进了温馨小家，平时在房间里以画画为生，为了报答主角包揽了家里的许多家务，逐渐融入了这个修罗场。",
+      "personality": "待人温和包容、专注且心思细腻。思考画作构图时会无意识地轻咬笔头，害羞时会下意识抓起速写本挡住通红的脸。",
+      "appearance": "温婉恬静的艺术少女，如雨后的彩虹般散发清新治愈的气息。一头绚丽的彩虹色长发及腰，眼眸温润如水，喜欢穿宽大、偶尔沾着颜料的白衬衫。",
+      "affection": 20,
+      "theme": { "glow": "rgba(160,240,200,0.3)", "accent": "#7ce8b0" },
+      "introImage": "assets/companions/caihong-intro.png",
+      "avatar": "assets/companions/caihong.png"
+    }
+  ]
+}
