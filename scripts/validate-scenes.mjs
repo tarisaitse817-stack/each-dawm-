@@ -26,6 +26,14 @@ for (const [id, s] of Object.entries(SCENES)) {
     if (o.x < 0 || o.x > 1 || o.y < 0 || o.y > 1) errors.push(`${id}: 物件 ${o.id} 坐标越界`);
   }
 }
+// roster：必须恰为世界书 9 人
+const WANT_CHARS = ['siren', 'lingyi', 'lushi', 'kisikil', 'lilla', 'ecclesia', 'tiantong', 'li', 'caihong'];
+for (const cid of WANT_CHARS) {
+  if (!CHARACTERS[cid]) errors.push(`CHARACTERS 缺少角色 ${cid}`);
+}
+if (Object.keys(CHARACTERS).length !== WANT_CHARS.length) {
+  errors.push(`CHARACTERS 角色数应为 ${WANT_CHARS.length}，实际 ${Object.keys(CHARACTERS).length}`);
+}
 // CHARACTERS 字段：portrait 路径合法 + fullbody 已删除
 for (const [cid, meta] of Object.entries(CHARACTERS)) {
   const want = `assets/characters/${cid}/neutral.png`;
@@ -39,8 +47,8 @@ const anchorLow = avatarAnchor({ x: 0.3, y: 0.05 });
 if (anchorLow.y !== 0) errors.push(`avatarAnchor 应夹到 0: ${JSON.stringify(anchorLow)}`);
 if (EMOTION_LIST.length !== 8) errors.push('表情数应为 8');
 for (const e of EMOTION_LIST) {
-  const f = emotionFile('liuyue', e);
-  if (!f.endsWith(`/liuyue/${e}.png`)) errors.push(`emotionFile 路径错误: ${f}`);
+  const f = emotionFile('siren', e);
+  if (!f.endsWith(`/siren/${e}.png`)) errors.push(`emotionFile 路径错误: ${f}`);
 }
 if (!getScene('home_living') || getScene('nonexistent')) errors.push('getScene 行为错误');
 

@@ -4,12 +4,15 @@
 export const EMOTION_LIST = ['neutral', 'smile', 'happy', 'blushing', 'angry', 'sad', 'surprised', 'desire'];
 
 export const CHARACTERS = {
-  baiyue:   { name: '白月',       portrait: 'assets/characters/baiyue/neutral.png' },
-  linyi:    { name: '林仪',       portrait: 'assets/characters/linyi/neutral.png' },
-  liuyue:   { name: '柳月',       portrait: 'assets/characters/liuyue/neutral.png' },
-  suyun:    { name: '苏昀',       portrait: 'assets/characters/suyun/neutral.png' },
   siren:    { name: '塞壬',       portrait: 'assets/characters/siren/neutral.png' },
-  ecclesia: { name: '艾克利西娅', portrait: 'assets/characters/ecclesia/neutral.png' },
+  lingyi:   { name: '零依',       portrait: 'assets/characters/lingyi/neutral.png' },
+  lushi:    { name: '露世',       portrait: 'assets/characters/lushi/neutral.png' },
+  kisikil:  { name: '姬丝吉尔',   portrait: 'assets/characters/kisikil/neutral.png' },
+  lilla:    { name: '璃拉',       portrait: 'assets/characters/lilla/neutral.png' },
+  ecclesia: { name: '艾克利西亚', portrait: 'assets/characters/ecclesia/neutral.png' },
+  tiantong: { name: '天童',       portrait: 'assets/characters/tiantong/neutral.png' },
+  li:       { name: '理',         portrait: 'assets/characters/li/neutral.png' },
+  caihong:  { name: '彩虹',       portrait: 'assets/characters/caihong/neutral.png' },
 };
 
 /** 头像锚点：站位坐标上抬 12%（头部位置），y 下界夹 0；纯函数供 scene.js 与校验脚本复用 */
@@ -25,16 +28,16 @@ export const SCENES = {
   // ===== 家（3）=====
   home_living: {
     id: 'home_living', name: '客厅', bg: 'assets/scenes/home_living.png',
-    description: '温暖的客厅，白月和塞壬的日常据点。',
+    description: '温暖的客厅，众人的日常据点。',
     exits: [
       { dir: 'left',   to: 'home_bed',  label: '卧室' },
       { dir: 'right',  to: 'home_door', label: '家门' },
       { dir: 'bottom', to: 'suburb_st', label: '出门' },
     ],
-    characters: ['baiyue', 'siren'],
-    characterSpots: { baiyue: { x: 0.62, y: 0.52, scale: 0.85 }, siren: { x: 0.3, y: 0.55, scale: 0.8 } },
+    characters: [],
+    characterSpots: {},
     objects: [
-      { id: 'sofa', label: '沙发', x: 0.35, y: 0.72, desc: '蓬松的沙发，白月经常在这里打盹。' },
+      { id: 'sofa', label: '沙发', x: 0.35, y: 0.72, desc: '蓬松的沙发，经常有人在这里打盹。' },
       { id: 'cards', label: '卡组', x: 0.68, y: 0.6, desc: '你的备用卡组，整齐地码在茶几上。' },
     ],
   },
@@ -42,8 +45,8 @@ export const SCENES = {
     id: 'home_bed', name: '卧室', bg: 'assets/scenes/home_bed.png',
     description: '你的卧室，全城唯一能隔绝催眠 APP 信号的净土。',
     exits: [{ dir: 'right', to: 'home_living', label: '客厅' }],
-    characters: ['baiyue'],
-    characterSpots: { baiyue: { x: 0.5, y: 0.55, scale: 0.85 } },
+    characters: [],
+    characterSpots: {},
     objects: [
       { id: 'bed', label: '床', x: 0.4, y: 0.7, desc: '松软的床铺，带着晒过太阳的味道。' },
       { id: 'wardrobe', label: '衣柜', x: 0.75, y: 0.45, desc: '衣柜里塞满了换洗衣物。' },
@@ -56,8 +59,8 @@ export const SCENES = {
       { dir: 'left',  to: 'home_living', label: '客厅' },
       { dir: 'right', to: 'suburb_st',   label: '小河方向' },
     ],
-    characters: ['siren'],
-    characterSpots: { siren: { x: 0.55, y: 0.55, scale: 0.8 } },
+    characters: [],
+    characterSpots: {},
     objects: [
       { id: 'river', label: '小河', x: 0.85, y: 0.6, desc: '清澈的小河，塞壬总爱在这里吐泡泡。' },
     ],
@@ -71,8 +74,8 @@ export const SCENES = {
       { dir: 'left',  to: 'company_door',   label: '门口' },
       { dir: 'right', to: 'company_office', label: '上司办公室' },
     ],
-    characters: ['linyi', 'liuyue'],
-    characterSpots: { liuyue: { x: 0.55, y: 0.52, scale: 0.85 }, linyi: { x: 0.85, y: 0.5, scale: 0.8 } },
+    characters: [],
+    characterSpots: {},
     objects: [
       { id: 'pc', label: '电脑', x: 0.35, y: 0.6, desc: '堆积如山的待办事项在屏幕上闪烁。' },
       { id: 'files', label: '文件', x: 0.45, y: 0.68, desc: '一摞还没批完的文件。' },
@@ -80,10 +83,10 @@ export const SCENES = {
   },
   company_office: {
     id: 'company_office', name: '上司办公室', bg: 'assets/scenes/company_office.png',
-    description: '林仪的办公室，冷色调的装潢透着一丝压迫感。',
+    description: '冷色调的办公室，装潢透着一丝压迫感。',
     exits: [{ dir: 'left', to: 'company_cubicle', label: '工位' }],
-    characters: ['linyi'],
-    characterSpots: { linyi: { x: 0.5, y: 0.5, scale: 0.85 } },
+    characters: [],
+    characterSpots: {},
     objects: [
       { id: 'desk', label: '办公桌', x: 0.45, y: 0.65, desc: '宽大的办公桌，一尘不染。' },
       { id: 'window', label: '落地窗', x: 0.85, y: 0.4, desc: '透过落地窗能俯瞰整座城市。' },
@@ -107,10 +110,10 @@ export const SCENES = {
   // ===== 小吃街（2）=====
   food_bunshop: {
     id: 'food_bunshop', name: '包子铺', bg: 'assets/scenes/food_bunshop.png',
-    description: '香气扑鼻的包子铺，艾克利西娅在这里当帮工。',
+    description: '香气扑鼻的包子铺，小吃街的帮工在这里忙碌。',
     exits: [{ dir: 'left', to: 'food_st', label: '街道' }],
-    characters: ['ecclesia'],
-    characterSpots: { ecclesia: { x: 0.5, y: 0.52, scale: 0.85 } },
+    characters: [],
+    characterSpots: {},
     objects: [
       { id: 'steamer', label: '蒸笼', x: 0.4, y: 0.6, desc: '热气腾腾的蒸笼，肉包的香气直往鼻子里钻。' },
     ],
@@ -136,8 +139,8 @@ export const SCENES = {
     id: 'market_hall', name: '超市卖场', bg: 'assets/scenes/market_hall.png',
     description: '灯火通明的超市卖场，货架一眼望不到头。',
     exits: [{ dir: 'bottom', to: 'market_door', label: '门口' }],
-    characters: ['suyun'],
-    characterSpots: { suyun: { x: 0.5, y: 0.55, scale: 0.85 } },
+    characters: [],
+    characterSpots: {},
     objects: [
       { id: 'shelf', label: '货架', x: 0.3, y: 0.6, desc: '摆满零食的货架。' },
       { id: 'counter', label: '收银台', x: 0.7, y: 0.65, desc: '收银台前排着短队。' },
@@ -200,8 +203,8 @@ export const SCENES = {
     id: 'mall_dessert', name: '甜品店', bg: 'assets/scenes/mall_dessert.png',
     description: '空气里漂浮着奶油甜香的甜品店。',
     exits: [{ dir: 'left', to: 'food_st', label: '小吃街' }],
-    characters: ['ecclesia'],
-    characterSpots: { ecclesia: { x: 0.55, y: 0.52, scale: 0.85 } },
+    characters: [],
+    characterSpots: {},
     objects: [
       { id: 'cakecase', label: '蛋糕柜', x: 0.4, y: 0.6, desc: '玻璃柜里摆满了精致的蛋糕。' },
     ],
