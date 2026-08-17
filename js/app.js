@@ -12,7 +12,7 @@ import { EventPanel } from './event.js?v=10';
 import { AiClient, BattleBridge } from './ai.js?v=10';
 import { CompanionsPanel } from './companions.js';
 import { InventoryPanel } from './inventory.js';
-import { SceneView, showInitialBackground } from './scene.js?v=10';
+import { SceneView } from './scene.js?v=10';
 import { CloseupView } from './closeup.js';
 import { Notifications } from './notifications.js';
 

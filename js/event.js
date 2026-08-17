@@ -257,7 +257,7 @@ export const EventPanel = {
   _isInternalUpdate: false,
 
   /**
-   * 初始化对话引擎（懒初始化：首次打开特写或新游戏开始时调用）
+   * 初始化对话引擎（懒初始化：首次打开特写（closeup-open）时调用）
    * 渲染 DOM 到近景特写的对话容器、绑定事件、显示已有叙事历史
    */
   init() {
@@ -295,6 +295,19 @@ export const EventPanel = {
 
     // Check for pending duel result on load
     this._checkPendingDuelResult();
+  },
+
+  /**
+   * 重置显示状态 — 新游戏开始时清空对话队列与打字状态（防跨局残留）
+   */
+  resetDisplay: function () {
+    this._displayQueue = [];
+    this._isTyping = false;
+    if (this._typewriterTimer) {
+      clearTimeout(this._typewriterTimer);
+      this._typewriterTimer = null;
+    }
+    if (this._narrativeEl) this._narrativeEl.innerHTML = '';
   },
 
   /* ===================================================================

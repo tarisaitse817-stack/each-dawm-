@@ -7,6 +7,7 @@ import { StorageManager } from './storage.js';
 import { Navigation } from './navigation.js';
 import { showInitialBackground } from './scene.js?v=10';
 import { TransitionView } from './transition.js';
+import { EventPanel } from './event.js?v=10';
 
 /* 开场字幕（新游戏转场）：世界书 first_mes 前 3 句；失败回退内置默认文本前 3 句 */
 const MAX_OPENING_LINES = 3;
@@ -223,6 +224,7 @@ export const TitleScreen = {
     }
 
     AppState.reset();
+    EventPanel.resetDisplay();
     this._hideCover();
     Navigation.navigateTo('scene');
 
