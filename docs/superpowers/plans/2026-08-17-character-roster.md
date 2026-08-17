@@ -276,9 +276,13 @@ git commit -m "feat: 图鉴数据 characters.json（世界书 9 人 SFW 介绍�
 ### Task 2: 代码阵容替换 — scenes-data / state / 校验
 
 **Files:**
-- Modify: `js/scenes-data.js`（CHARACTERS 9 人替换；16 场景角色引用清空）
-- Modify: `js/state.js`（初始 companions 数组替换为 9 人）
+- Modify: `js/scenes-data.js`（CHARACTERS 9 人替换；16 场景角色引用清空；3 处场景描述去旧名）
+- Modify: `js/state.js`（初始 companions 数组替换为 9 人；sceneCharacters 清空）
 - Modify: `scripts/validate-scenes.mjs`（roster 校验 + emotionFile 检查改新 id）
+- Modify: `js/event.js`（LOCATION_HEROINES / LOCATION_ACTIONS / _extractOpponentName 旧名清零，方案 A）
+- Modify: `data/worldbook.json`（1 处「艾克利西娅」→「艾克利西亚」拼写对齐）
+
+> **范围扩展（2026-08-18 用户裁决「方案 A：本轮全部清零」）：** 计划原稿只列 3 个文件，但 Step 6 / 验收标准 #2 要求旧 id/旧名零残留，而 event.js 行动文案、state.js sceneCharacters、scenes-data.js 场景描述、worldbook 里仍有旧名。故 Task 2 范围扩展为上述 5 个文件；旧名文案按新阵容+世界书适配改写（标注待用户后续调整场景角色时再校准）。
 
 **Interfaces:**
 - Consumes: Task 1 的 `data/characters.json`（本任务不读取它，但 9 人 id 一致）
@@ -310,6 +314,8 @@ export const CHARACTERS = {
 
 （场景名/背景/出口/物件全部不动；用户后续自行加场景并安排角色。）
 
+另将场景 `description` 中提及旧角色名的 3 处（约 28/83/110 行）改为中性描述（如「温暖的客厅，白月和塞壬的日常据点。」→「温暖的客厅，众人的日常据点。」；「林仪的办公室」→「冷色调的办公室」；「艾克利西娅在这里当帮工」→「小吃街的帮工在这里忙碌」）。其余描述文案不动。
+
 - [ ] **Step 3: 改 `js/state.js` — companions 初始数据替换**
 
 将现有 `companions: [ ... ]` 数组（约 44 行起，6 人、含 deck/battleLines 字段，到 `],` 结束）整体替换为：
@@ -329,6 +335,15 @@ export const CHARACTERS = {
 ```
 
 （`deck` 为可改占位默认值；`battleLines` 字段本轮不写，event.js 有空值兜底。）
+
+同时将 `sceneCharacters` 初始对象（约 184-191 行，旧 6 人）整体替换为 `sceneCharacters: {},`（场景角色已清空；scene.js:42 有 `|| {}` 兜底，storage.js 持久化无需改）。
+
+- [ ] **Step 3b: 改 `js/event.js` — 旧名清零（方案 A）**
+
+1. `LOCATION_HEROINES`（约 26-34 行）：各地点数组全部改为 `[]`（场景角色待用户安排；「色色」分类暂时隐藏，event.js:95 已有空值兜底）。
+2. `LOCATION_ACTIONS`（约 37-61 行）：所有提及旧角色名（白月/林仪/柳月/苏昀/艾克利西娅）的文案改写——home 场景参考塞壬/零依/露世（客厅鱼缸同居者），food 参考艾克利西亚（小吃街帮工）；company/market 新阵容无对应角色，文案中性化（去掉人名）；「色色」分类文案同样改写为新阵容（供用户后续恢复 LOCATION_HEROINES 时直接可用）。改写基于 Task 1 的 `data/characters.json` 图鉴设定，SFW 尺度与原文一致。
+3. `_extractOpponentName`（约 511 行）角色名表整体替换为 9 新名：`['塞壬', '零依', '露世', '姬丝吉尔', '璃拉', '艾克利西亚', '天童', '理', '彩虹']`。
+4. `data/worldbook.json`：「艾克利西娅」1 处改为「艾克利西亚」（新名拼写对齐；其余世界书内容不动）。
 
 - [ ] **Step 4: 改 `scripts/validate-scenes.mjs`**
 
@@ -364,15 +379,15 @@ Expected: 三个都 PASS。
 
 Run（PowerShell）：
 ```powershell
-Select-String -Path js\*.js,scripts\*.mjs -Pattern "baiyue|linyi|liuyue|suyun|白月|林仪|柳月|苏昀"
+Select-String -Path js\*.js,scripts\*.mjs -Pattern "baiyue|linyi|liuyue|suyun|sairen|白月|林仪|柳月|苏昀" | Where-Object { $_.Path -notmatch 'companions\.js$' }
 ```
-Expected: 0 条匹配（文档目录 docs/ 除外）。
+Expected: 0 条匹配（`js/companions.js` 除外——其旧 THEME 键为 Task 3 整体重写前的暂时残留；docs/ 目录不在检查范围）。
 
 - [ ] **Step 7: 提交**
 
 ```bash
-git add js/scenes-data.js js/state.js scripts/validate-scenes.mjs
-git commit -m "feat: 角色阵容替换为世界书 9 人（场景引用清空待用户安排）"
+git add js/scenes-data.js js/state.js scripts/validate-scenes.mjs js/event.js data/worldbook.json
+git commit -m "feat: 角色阵容替换为世界书 9 人（场景引用清空 + 旧名文案清零，待用户安排）"
 ```
 
 ---
