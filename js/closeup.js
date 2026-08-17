@@ -46,12 +46,12 @@ export const CloseupView = {
     const tryFullbody = () => {
       const fb = new Image();
       fb.src = _fullbodyFallbackPath(_charId);
-      fb.onerror = () => { el.classList.add('sprite-missing'); el.textContent = '立绘缺失'; };
+      fb.onerror = () => { if (!fb.isConnected) return; el.classList.add('sprite-missing'); el.textContent = '立绘缺失'; };
       el.appendChild(fb);
     };
     const img = new Image();
     img.src = emotionFile(_charId, emotion);
-    img.onerror = tryFullbody;
+    img.onerror = () => { if (!img.isConnected) return; img.remove(); tryFullbody(); };
     el.appendChild(img);
     AppState.set('closeup', { active: true, characterId: _charId, emotion });
   },
