@@ -48,6 +48,7 @@ export const TransitionView = {
         this._init();
       } catch (e) {
         // 覆盖层创建失败：跳过动画直接进场景，不阻塞进入
+        console.warn('[TransitionView] 覆盖层创建失败，跳过转场动画');
         return;
       }
     }

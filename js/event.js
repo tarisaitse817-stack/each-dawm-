@@ -6,7 +6,7 @@
 import { AppState } from './state.js';
 import { AiClient, BattleBridge } from './ai.js?v=10';
 import { CloseupView } from './closeup.js';
-import { SceneView } from './scene.js';
+import { SceneView } from './scene.js?v=10';
 import { mapEmotion } from './emotion.js';
 import { CHARACTERS } from './scenes-data.js';
 

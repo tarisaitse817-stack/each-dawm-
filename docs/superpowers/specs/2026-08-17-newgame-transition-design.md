@@ -50,9 +50,9 @@
 
 ### 4.1 `js/transition.js` — TransitionView（新增，独立小模块）
 
-对外 API：`init()`、`play({ lines })`、`isPlaying`
+对外 API：`play({ lines })`、`isPlaying`；覆盖层惰性创建（`_init()`，失败则跳过动画直接进场景）
 
-- `init()`：创建 `#transition-overlay`（含字幕层 + 光晕层）挂到 body；元素缺失则标记不可用
+- `_init()`（惰性）：首次 `play()` 时创建 `#transition-overlay`（含字幕层 + 光晕层）挂到 body；创建失败 → 记日志并跳过动画直接进场景
 - `play({ lines })`：
   - `lines` 为 null/空 → 直接进光晕阶段（读档路径）
   - `lines` 为句子数组 → 逐句播放：字幕元素淡入（CSS class 切换）→ 停留 `max(1.2s, 字数×0.08s)` → 淡出 → 下一句
