@@ -667,19 +667,6 @@ export const EventPanel = {
     }
   },
 
-  /**
-   * 公共 API — 「⚔ 提出决斗」按钮触发
-   * 以当前特写角色为对手（卡组取 companions 绑定），跳过对战卡片直接启动
-   * @param {string} characterId - 特写角色 id（如 'baiyue'）
-   */
-  triggerDuelByButton(characterId) {
-    var meta = CHARACTERS[characterId] || null;
-    var opponentName = meta ? meta.name : characterId;
-    var opponent = this._resolveBattleOpponent(opponentName);
-    console.log('[EventPanel] triggerDuelByButton: opponent =', opponent.name, '| deck =', opponent.deck);
-    this._launchBattle(null, opponent.name);
-  },
-
   _addRegenerateBtn() {
     var self = this;
     var container = this._el.querySelector('.narrative-text');

@@ -106,12 +106,7 @@ export const App = {
       EventPanel.init();
     });
 
-    // 16.8 「⚔ 提出决斗」按钮 → 以当前特写角色为对手直接启动对战
-    window.addEventListener('closeup-duel', function (e) {
-      EventPanel.triggerDuelByButton(e.detail.characterId);
-    });
-
-    // 16.9 新游戏开始 → 懒初始化对话引擎（无头渲染开场叙事，队列完成触发侧边栏渐显）
+    // 16.8 新游戏开始 → 懒初始化对话引擎（无头渲染开场叙事，队列完成触发侧边栏渐显）
     window.addEventListener('newgame-start', function () {
       EventPanel.init();
     });
