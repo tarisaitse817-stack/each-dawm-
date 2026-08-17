@@ -192,6 +192,9 @@ export const TitleScreen = {
     this._hideCover();
     Navigation.navigateTo('scene');
     this.hide();
+
+    // 读档入口：仅光晕转场（无开场字幕）
+    TransitionView.play({ lines: null });
   },
 
   /**

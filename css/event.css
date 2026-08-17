@@ -57,40 +57,6 @@
    -------------------------------------------------------------------------- */
 
 /* --------------------------------------------------------------------------
-   4.5 跳过开场白按钮
-   -------------------------------------------------------------------------- */
-
-.skip-intro-btn {
-  position: absolute;
-  top: 16px;
-  right: 20px;
-  z-index: 5;
-  padding: 6px 16px;
-  font-family: var(--font-ui);
-  font-size: 0.8rem;
-  color: rgba(224, 224, 224, 0.6);
-  background: rgba(18, 20, 42, 0.7);
-  border: 1px solid rgba(212, 165, 116, 0.2);
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  animation: fadeIn 0.3s ease;
-}
-
-.skip-intro-btn:hover {
-  color: rgba(224, 224, 224, 0.95);
-  background: rgba(212, 165, 116, 0.15);
-  border-color: rgba(212, 165, 116, 0.5);
-  box-shadow: 0 0 12px rgba(212, 165, 116, 0.15);
-}
-
-.skip-intro-btn.hidden {
-  display: none;
-}
-
-/* --------------------------------------------------------------------------
    4. Narrative Text Area
    -------------------------------------------------------------------------- */
 

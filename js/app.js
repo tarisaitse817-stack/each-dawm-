@@ -84,7 +84,7 @@ export const App = {
     // 10. 初始化标题界面
     TitleScreen.init();
 
-    // 11. 事件对话引擎懒初始化：首次打开特写（closeup-open）或新游戏（newgame-start）时渲染
+    // 11. 事件对话引擎懒初始化：首次打开特写（closeup-open）时渲染
     // 12. 对战由 MDPro3 处理
     // 13. 卡组由玩家在 MDPro3 中设定
 
@@ -106,11 +106,6 @@ export const App = {
       EventPanel.init();
     });
 
-    // 16.8 新游戏开始 → 懒初始化对话引擎（无头渲染开场叙事，队列完成触发侧边栏渐显）
-    window.addEventListener('newgame-start', function () {
-      EventPanel.init();
-    });
-
     // 17. 注册视图切换订阅
     AppState.subscribe('currentView', function (newView) {
       if (newView && newView !== 'title') {
@@ -129,15 +124,6 @@ export const App = {
     // 20. 初始化时间显示
     this._timeEl = document.getElementById('time-display');
     this.updateTimeDisplay();
-
-    // 21. 监听开场白结束事件 — 侧边栏渐显 + 地点背景显示
-    window.addEventListener('sidebar-reveal', function () {
-      var sidebar = document.getElementById('sidebar');
-      if (sidebar) sidebar.classList.remove('sidebar-hidden');
-      var mainContent = document.getElementById('main-content');
-      if (mainContent) mainContent.classList.remove('full-width');
-      showInitialBackground();
-    });
   },
 
   /* ======================================================================
