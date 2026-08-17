@@ -1,8 +1,13 @@
-// 近景特写层：大立绘 + 表情差分 + 对话区（对话引擎在 Task 6 接入）
+// 全屏特写视图：脸部特写图居中 + 底部对话区（对话引擎挂载 #closeup-dialog，对外 API 不变）
+// 降级链：neutral.png（emotionFile）→ fullbody.png（路径硬编码）→ 「立绘缺失」占位
 import { AppState } from './state.js';
 import { CHARACTERS, emotionFile } from './scenes-data.js';
 
 let _charId = null;
+
+function _fullbodyFallbackPath(charId) {
+  return `assets/characters/${charId}/fullbody.png`;
+}
 
 export const CloseupView = {
   init() {
@@ -11,16 +16,11 @@ export const CloseupView = {
     overlay.innerHTML = `
       <div class="closeup-backdrop"></div>
       <div class="closeup-portrait" id="closeup-portrait"></div>
-      <div class="closeup-header"><span class="char-name" id="closeup-name"></span></div>
       <button class="closeup-close" id="closeup-close-btn">关闭 ✕</button>
-      <div class="closeup-dialog" id="closeup-dialog"></div>
-      <button class="closeup-duel" id="closeup-duel-btn">⚔ 提出决斗</button>`;
+      <div class="closeup-header"><span class="char-name" id="closeup-name"></span></div>
+      <div class="closeup-dialog" id="closeup-dialog"></div>`;
     document.body.appendChild(overlay);
     document.getElementById('closeup-close-btn').addEventListener('click', () => this.close());
-    // 决斗按钮占位：Task 6 对话引擎接入时接 BattleBridge.launch + startPolling 链路
-    document.getElementById('closeup-duel-btn').addEventListener('click', () => {
-      window.dispatchEvent(new CustomEvent('closeup-duel', { detail: { characterId: _charId } }));
-    });
   },
 
   open(characterId) {
@@ -43,9 +43,15 @@ export const CloseupView = {
     const el = document.getElementById('closeup-portrait');
     el.innerHTML = '';
     el.classList.remove('sprite-missing');
+    const tryFullbody = () => {
+      const fb = new Image();
+      fb.src = _fullbodyFallbackPath(_charId);
+      fb.onerror = () => { el.classList.add('sprite-missing'); el.textContent = '立绘缺失'; };
+      el.appendChild(fb);
+    };
     const img = new Image();
     img.src = emotionFile(_charId, emotion);
-    img.onerror = () => { el.classList.add('sprite-missing'); el.textContent = '立绘缺失'; };
+    img.onerror = tryFullbody;
     el.appendChild(img);
     AppState.set('closeup', { active: true, characterId: _charId, emotion });
   },

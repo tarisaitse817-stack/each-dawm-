@@ -1,13 +1,11 @@
-/* 近景特写层：全屏覆盖，背景模糊压暗 */
+/* 全屏特写视图：不透明全屏层，脸部特写图居中铺满，底部渐变对话区 */
 #closeup-overlay { position: fixed; inset: 0; z-index: 90; display: none; }
 #closeup-overlay.active { display: block; }
-.closeup-backdrop { position: absolute; inset: 0; background: rgba(10, 12, 28, .65); backdrop-filter: blur(10px); }
-.closeup-portrait { position: absolute; left: 6%; bottom: 0; height: 82vh; z-index: 2; }
-.closeup-portrait img { height: 100%; display: block; filter: drop-shadow(0 10px 24px rgba(0,0,0,.5)); transition: opacity .35s; }
-.closeup-portrait.sprite-missing { width: 240px; height: 340px; border: 1px dashed #D4A574; background: rgba(18,20,42,.6); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #F5ECD7; }
-.closeup-header { position: absolute; top: 22px; left: 6%; z-index: 3; color: #F5ECD7; }
-.closeup-header .char-name { font-size: 22px; margin-right: 14px; }
-.closeup-dialog { position: absolute; right: 5%; bottom: 9%; width: 46%; max-width: 620px; height: 62%; background: rgba(18, 20, 42, .78); border: 1px solid rgba(212, 165, 116, .35); border-radius: 14px; padding: 18px 22px; display: flex; flex-direction: column; z-index: 3; }
+.closeup-backdrop { position: absolute; inset: 0; background: #0a0c1c; }
+.closeup-portrait { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.closeup-portrait img { width: 100vw; height: 100vh; object-fit: cover; display: block; }
+.closeup-portrait.sprite-missing { width: 240px; height: 340px; margin: auto; border: 1px dashed #D4A574; background: rgba(18,20,42,.6); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #F5ECD7; }
+.closeup-header { position: absolute; top: 22px; left: 0; right: 0; text-align: center; z-index: 3; color: #F5ECD7; }
+.closeup-header .char-name { font-size: 22px; text-shadow: 0 2px 8px rgba(0,0,0,.8); }
 .closeup-close { position: absolute; top: 18px; right: 22px; z-index: 4; background: rgba(18,20,42,.7); color: #F5ECD7; border: 1px solid rgba(212,165,116,.4); border-radius: 8px; padding: 6px 14px; cursor: pointer; }
-.closeup-duel { position: absolute; bottom: 4%; left: 6%; z-index: 4; background: rgba(18,20,42,.7); color: #D4A574; border: 1px solid rgba(212,165,116,.5); border-radius: 8px; padding: 8px 16px; cursor: pointer; }
-.closeup-duel:hover { background: rgba(18,20,42,.9); box-shadow: 0 0 10px rgba(212,165,116,.5); }
+.closeup-dialog { position: absolute; left: 0; right: 0; bottom: 0; height: 42%; background: linear-gradient(transparent, rgba(10,12,28,.85) 30%, rgba(10,12,28,.95)); padding: 24px 5%; display: flex; flex-direction: column; z-index: 3; }
