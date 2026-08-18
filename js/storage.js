@@ -3,6 +3,7 @@
    ========================================================================== */
 
 import { DEFAULT_COMPANION_IDS, getDefaultCompanions } from './state.js';
+import { SCENES } from './scenes-data.js';
 
 /** localStorage 存储键名 */
 const STORAGE_KEY = 'light-echoes-save';
@@ -62,6 +63,13 @@ export const StorageManager = {
 
       // 阵容对账：旧版存档（旧 6 人阵容）→ 标准 9 人阵容
       data = this._reconcileRoster(data);
+
+      // 场景对账：currentSceneId 指向已删除/未知场景（如已移除的公司场景）时回落客厅，
+      // 否则读档后无背景/无出口/无物件会白屏软锁，且继续存档坏 id
+      if (data.currentSceneId && !SCENES[data.currentSceneId]) {
+        console.warn('[StorageManager] 检测到未知场景 ' + data.currentSceneId + '，已回落到 home_living');
+        data.currentSceneId = 'home_living';
+      }
 
       return data;
     } catch (e) {
