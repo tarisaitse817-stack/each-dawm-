@@ -136,6 +136,16 @@
   display: inline-block;
 }
 
+/* 图片标题 logo（标题.png，2048×2048 透明底） */
+.title-logo-img {
+  max-width: min(60vw, 520px);
+  max-height: 36vh;
+  object-fit: contain;
+  user-select: none;
+  animation: title-bounce 2.5s ease-in-out infinite;
+  filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.45));
+}
+
 /* 标题中每个字的活泼动画（通过 JS 添加 span.char 实现） */
 .title-logo .char {
   display: inline-block;

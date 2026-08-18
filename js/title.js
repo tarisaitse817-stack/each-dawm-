@@ -90,7 +90,7 @@ export const TitleScreen = {
 
     this._el.innerHTML =
       '<div class="title-content">' +
-        '<div class="title-logo" id="title-logo-text">当妹卡降临到我身边</div>' +
+        '<img class="title-logo-img" id="title-logo-text" src="assets/covers/标题.png" alt="当妹卡降临到我身边">' +
         '<div class="title-btn-container">' +
           (hasSave
             ? '<button class="title-btn primary" id="btn-continue">继续冒险</button>'
@@ -112,7 +112,7 @@ export const TitleScreen = {
    */
   _splitTitleChars: function () {
     var logo = document.getElementById('title-logo-text');
-    if (!logo) return;
+    if (!logo || logo.tagName === 'IMG') return; // 图片 logo 无需逐字拆分
 
     // 活泼配色：暖金、珊瑚、粉、天蓝、薄荷、紫、橙
     var colors = [
