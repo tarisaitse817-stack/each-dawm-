@@ -1067,9 +1067,9 @@ Expected: 四个都 PASS。
 
 Run（PowerShell）：
 ```powershell
-Select-String -Path js\*.js,scripts\*.mjs,scripts\*.py,css\*.css,data\*.json -Pattern "company_cubicle|company_office|company_door|高管公司"
+Select-String -Path js\*.js,scripts\*.mjs,scripts\*.py,css\*.css,data\*.json,server\data\*.json -Pattern "company_cubicle|company_office|company_door|高管公司"
 ```
-Expected: 0 匹配。若 `scripts/scene_prompts.py` 命中（14-16 行 3 条公司场景提示词），删除该 3 行后复跑确认 0 匹配，并在 Step 4 一并提交。
+Expected: 0 匹配。若 `scripts/scene_prompts.py` 命中（14-16 行 3 条公司场景提示词），删除该 3 行后复跑确认 0 匹配，并在 Step 4 一并提交。注意：`server\data\worldbook.json` 是 bridge 实际加载的世界书，旧世界书残留（职场/女高管/社畜等）同样要求 0 命中（照抄根目录 data/worldbook.json 的清理改法）。
 
 - [ ] **Step 3: 浏览器全流程回归（Playwright）**
 
