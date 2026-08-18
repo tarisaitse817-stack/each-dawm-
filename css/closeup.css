@@ -9,3 +9,30 @@
 .closeup-header .char-name { font-size: 22px; text-shadow: 0 2px 8px rgba(0,0,0,.8); }
 .closeup-close { position: absolute; top: 18px; right: 22px; z-index: 4; background: rgba(18,20,42,.7); color: #F5ECD7; border: 1px solid rgba(212,165,116,.4); border-radius: 8px; padding: 6px 14px; cursor: pointer; }
 .closeup-dialog { position: absolute; left: 0; right: 0; bottom: 0; height: 42%; background: linear-gradient(transparent, rgba(10,12,28,.85) 30%, rgba(10,12,28,.95)); padding: 24px 5%; display: flex; flex-direction: column; z-index: 3; }
+
+/* --------------------------------------------------------------------------
+   特写序列：CG 3 秒 → 立绘居中 → 场景背景淡入
+   -------------------------------------------------------------------------- */
+.closeup-scene-bg {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  opacity: 0; transition: opacity .6s ease;
+}
+.closeup-scene-bg.visible { opacity: .45; }
+.closeup-portrait { z-index: 1; }
+/* 注意：现有规则 .closeup-portrait img { width:100vw; height:100vh; object-fit:cover }，
+   下面选择器特异性更高，必须显式覆盖宽高，否则立绘会被强行拉满全屏。 */
+.closeup-portrait .closeup-cg {
+  width: 94%; height: auto; max-height: 88vh; object-fit: contain;
+  border-radius: 12px; box-shadow: 0 8px 40px rgba(0,0,0,.6);
+  animation: closeup-cg-in .4s ease;
+}
+@keyframes closeup-cg-in { from { opacity: 0; } to { opacity: 1; } }
+.closeup-portrait .closeup-standing {
+  width: auto; height: 78vh; max-width: 60vw; object-fit: contain;
+  animation: closeup-standing-in .4s ease;
+  filter: drop-shadow(0 10px 30px rgba(0,0,0,.55));
+}
+@keyframes closeup-standing-in { from { opacity: 0; } to { opacity: 1; } }
+/* CG 段：对话区不可用（序列结束后恢复） */
+.phase-cg #closeup-dialog { pointer-events: none; opacity: .35; transition: opacity .4s; }
