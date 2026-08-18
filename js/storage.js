@@ -2,6 +2,8 @@
    光之回响 (Echoes of Light) — StorageManager localStorage 持久化
    ========================================================================== */
 
+import { DEFAULT_COMPANION_IDS, getDefaultCompanions } from './state.js';
+
 /** localStorage 存储键名 */
 const STORAGE_KEY = 'light-echoes-save';
 
@@ -58,11 +60,41 @@ export const StorageManager = {
         return null;
       }
 
+      // 阵容对账：旧版存档（旧 6 人阵容）→ 标准 9 人阵容
+      data = this._reconcileRoster(data);
+
       return data;
     } catch (e) {
       console.error('[StorageManager] 加载失败:', e);
       return null;
     }
+  },
+
+  /**
+   * 阵容对账：存档伙伴 id 集合与标准 9 人阵容不一致时重建
+   * 触发条件：存档存在 companions 数组，且其 id 集合 ≠ 标准 9 人 id 集合
+   * （旧版 6 人阵容存档命中；全新 9 人存档不受影响，原样返回）
+   * 触发时：companions 重建为标准默认 9 人，sceneCharacters 清空（旧 id 在场状态
+   * 对标准阵容无意义），其余键（player/inventory/settings/gameTime 等）原样保留。
+   * 注意：companions 缺失/非数组的存档不做重建，由 AppState 默认值兜底。
+   * @param {Object} data - 存档数据
+   * @returns {Object} 对账后的存档数据
+   */
+  _reconcileRoster: function (data) {
+    var companions = data.companions;
+    if (!Array.isArray(companions)) {
+      return data;
+    }
+    var savedIds = companions.map(function (c) { return c.id; });
+    var isCanonical = savedIds.length === DEFAULT_COMPANION_IDS.length &&
+      DEFAULT_COMPANION_IDS.every(function (id) { return savedIds.indexOf(id) !== -1; });
+    if (isCanonical) {
+      return data;
+    }
+    console.warn('[StorageManager] 检测到旧版阵容存档，已重建为标准 9 人阵容');
+    data.companions = getDefaultCompanions();
+    data.sceneCharacters = {};
+    return data;
   },
 
   /**

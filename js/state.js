@@ -111,6 +111,31 @@ function createDefaultState() {
 }
 
 /* ==========================================================================
+   阵容对账支持（存档恢复时重建标准 9 人阵容）
+   ========================================================================== */
+
+/** 当前阵容标准 9 人 id 列表（与 data/characters.json 一致） */
+export const DEFAULT_COMPANION_IDS = [
+  'siren',
+  'lingyi',
+  'lushi',
+  'kisikil',
+  'lilla',
+  'ecclesia',
+  'tiantong',
+  'li',
+  'caihong'
+];
+
+/**
+ * 获取默认伙伴列表（深拷贝）— 供存档阵容对账重建使用
+ * @returns {Array}
+ */
+export function getDefaultCompanions() {
+  return deepClone(createDefaultState().companions);
+}
+
+/* ==========================================================================
    私有状态
    ========================================================================== */
 
