@@ -3,13 +3,13 @@
    渲染进近景特写层的对话区（CloseupView.getDialogEl()），对外 API 保持不变
    ========================================================================== */
 
-import { AppState } from './state.js';
-import { AiClient, BattleBridge } from './ai.js?v=10';
-import { CloseupView } from './closeup.js';
-import { SceneView } from './scene.js?v=10';
-import { mapEmotion } from './emotion.js';
-import { CHARACTERS } from './scenes-data.js';
-import { countPresent } from './schedules.js';
+import { AppState } from './state.js?v=11';
+import { AiClient, BattleBridge } from './ai.js?v=11';
+import { CloseupView } from './closeup.js?v=11';
+import { SceneView } from './scene.js?v=11';
+import { mapEmotion } from './emotion.js?v=11';
+import { CHARACTERS } from './scenes-data.js?v=11';
+import { countPresent } from './schedules.js?v=11';
 
 /* ==========================================================================
    常量

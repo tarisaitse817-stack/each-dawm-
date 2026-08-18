@@ -1,8 +1,8 @@
 // 全屏特写视图：点击头像 → CG 3 秒（如有）→ 立绘居中 → 场景背景淡入 → 对话常驻
 // 降级链：standing.png → neutral.png（emotionFile）→ fullbody.png → 「立绘缺失」占位
-import { AppState } from './state.js';
-import { CHARACTERS, emotionFile } from './scenes-data.js';
-import { getCgPath } from './schedules.js';
+import { AppState } from './state.js?v=11';
+import { CHARACTERS, emotionFile } from './scenes-data.js?v=11';
+import { getCgPath } from './schedules.js?v=11';
 
 var _charId = null;
 var _phase = 'closed'; // closed | cg | standing

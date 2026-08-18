@@ -3,18 +3,18 @@
    设置面板 + 键盘快捷键 + 全模块集成
    ========================================================================== */
 
-import { AppState } from './state.js';
-import { StorageManager } from './storage.js';
-import { Navigation } from './navigation.js';
-import { Particles } from './particles.js';
-import { TitleScreen } from './title.js';
-import { EventPanel } from './event.js?v=10';
-import { AiClient, BattleBridge } from './ai.js?v=10';
-import { CompanionsPanel } from './companions.js';
-import { InventoryPanel } from './inventory.js';
-import { SceneView } from './scene.js?v=10';
-import { CloseupView } from './closeup.js';
-import { Notifications } from './notifications.js';
+import { AppState } from './state.js?v=11';
+import { StorageManager } from './storage.js?v=11';
+import { Navigation } from './navigation.js?v=11';
+import { Particles } from './particles.js?v=11';
+import { TitleScreen } from './title.js?v=11';
+import { EventPanel } from './event.js?v=11';
+import { AiClient, BattleBridge } from './ai.js?v=11';
+import { CompanionsPanel } from './companions.js?v=11';
+import { InventoryPanel } from './inventory.js?v=11';
+import { SceneView } from './scene.js?v=11';
+import { CloseupView } from './closeup.js?v=11';
+import { Notifications } from './notifications.js?v=11';
 
 export const App = {
 

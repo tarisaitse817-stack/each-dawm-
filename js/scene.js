@@ -1,7 +1,7 @@
 // 场景视图：背景层 + 出口 + 物件热点 + 旁白字幕 + 立绘层（在场由行程表派生）
-import { AppState } from './state.js';
-import { SCENES, CHARACTERS, getScene, avatarAnchor } from './scenes-data.js';
-import { getPresent, loadSchedules } from './schedules.js';
+import { AppState } from './state.js?v=11';
+import { SCENES, CHARACTERS, getScene, avatarAnchor } from './scenes-data.js?v=11';
+import { getPresent, loadSchedules } from './schedules.js?v=11';
 
 const _subtitleTimer = null;
 let _currentSceneId = 'home_living';

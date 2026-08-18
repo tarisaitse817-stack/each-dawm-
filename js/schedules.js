@@ -4,7 +4,7 @@
    时段：morning 6-12 / afternoon 12-18 / evening 18-24 / night 0-6
    ========================================================================== */
 
-import { CHARACTERS } from './scenes-data.js';
+import { CHARACTERS } from './scenes-data.js?v=11';
 
 /** 行程表数据（data/schedules.json，构建期 fetch 后缓存） */
 export var SCHEDULE_DATA = { periods: [], schedule: {}, cg: {} };
