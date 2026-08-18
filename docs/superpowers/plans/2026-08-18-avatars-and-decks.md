@@ -100,6 +100,8 @@ Expected: `AI_EvilTwin.ydk` 出现且非 0 字节（源文件约 479 字节，�
 
 （`dialog` 对应 WindBot 对话脚本名；除「艾克利西亚」沿用既有 `ecclesia` 外全部 `default`。若现有 config 的 ai_pool 里有旧 6 人 NPC 名，不动——它们属于随机路人池。）
 
+**保留系统条目**：9 人表之外必须保留 `"default": { "name": "AI", "deck": "random", "dialog": "default" }`（bridge.py:447 未知对手回退用；`deck: "random"` 会从 WindBot 池里排除 9 个已分配卡组后随机抽）。最终 `character_decks` 共 **10 键**（9 角色 + default）。
+
 - [ ] **Step 3: 改 `js/state.js` — companions deck 占位**
 
 `companions` 数组 9 条目的 `deck` 字段替换为分配表对应值：
@@ -115,7 +117,7 @@ node scripts/validate-scenes.mjs
 node scripts/validate-emotion.mjs
 node scripts/validate-characters.mjs
 node scripts/validate-schedules.mjs
-python -c "import json; c=json.load(open('server/data/config.json',encoding='utf-8')); assert len(c['character_decks'])==9; assert c['character_decks']['姬丝吉尔']['deck']=='AI_EvilTwin'; print('PASS: character_decks 9 人')"
+python -c "import json; c=json.load(open('server/data/config.json',encoding='utf-8')); assert len(c['character_decks'])==10; assert c['character_decks']['姬丝吉尔']['deck']=='AI_EvilTwin'; assert c['character_decks']['default']['deck']=='random'; print('PASS: character_decks 9 人 + default')"
 ```
 Expected: 全 PASS。
 
