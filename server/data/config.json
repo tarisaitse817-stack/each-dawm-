@@ -27,7 +27,8 @@
     "艾克利西亚": { "name": "Ecclesia", "deck": "AI_Albaz",       "dialog": "ecclesia", "protector": "1073006", "field": "1090006" },
     "天童":       { "name": "TianTong", "deck": "AI_Swordsoul",   "dialog": "default", "protector": "1073007", "field": "1090007" },
     "理":         { "name": "Li",       "deck": "AI_Exosister",   "dialog": "default", "protector": "1073008", "field": "1090008" },
-    "彩虹":       { "name": "CaiHong",  "deck": "AI_Rainbow",     "dialog": "default", "protector": "1073009", "field": "1090009" }
+    "彩虹":       { "name": "CaiHong",  "deck": "AI_Rainbow",     "dialog": "default", "protector": "1073009", "field": "1090009" },
+    "default":    { "name": "AI",       "deck": "random",         "dialog": "default" }
   },
   "llm_timeout": 300
 }
