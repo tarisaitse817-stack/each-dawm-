@@ -45,12 +45,12 @@ function createDefaultState() {
       { id: 'siren',    name: '塞壬',       affection: 40, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/siren.png',    deck: 'Tearlaments',    background: '伴随奇异现象降临在主角出租屋里的妹卡精灵，天性慵懒，喜欢缩在鱼缸里享受安逸，并暗自贪恋着主人的气味。' },
       { id: 'lingyi',   name: '零依',       affection: 30, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/lingyi.png',   deck: 'Sky Striker',    background: '穿越到现实的元气卡片精灵，主角家里活跃气氛的开心果，每天用元气满满的笑容和偶尔的小调皮试图霸占主人的注意力。' },
       { id: 'lushi',    name: '露世',       affection: 30, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/lushi.png',    deck: 'Labrynth',       background: '穿越而来的高冷型羁绊精灵，外表冷淡生人勿近，实则内心极度渴望主人的关爱。' },
-      { id: 'kisikil',  name: '姬丝吉尔',   affection: 20, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/kisikil.png',  deck: 'Live Twin',      background: '白天是对门的人气主播邻居，夜晚是潜入房间的魅魔怪盗，最大的目标是不择手段地偷走主角的身体和心。' },
-      { id: 'lilla',    name: '璃拉',       affection: 20, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/lilla.png',    deck: 'Live Twin',      background: '姬丝吉尔的搭档，白天直播总是一副半梦半醒的样子，夜晚的怪盗行动中一旦发现姬丝吉尔想偷跑就会吃醋暴走。' },
+      { id: 'kisikil',  name: '姬丝吉尔',   affection: 20, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/kisikil.png',  deck: 'Evil Twin',      background: '白天是对门的人气主播邻居，夜晚是潜入房间的魅魔怪盗，最大的目标是不择手段地偷走主角的身体和心。' },
+      { id: 'lilla',    name: '璃拉',       affection: 20, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/lilla.png',    deck: 'Evil Twin',      background: '姬丝吉尔的搭档，白天直播总是一副半梦半醒的样子，夜晚的怪盗行动中一旦发现姬丝吉尔想偷跑就会吃醋暴走。' },
       { id: 'ecclesia', name: '艾克利西亚', affection: 20, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/ecclesia.png', deck: 'Albaz',          background: '跨越次元来到现世的羁绊精灵，彻底暴露了吃货本性，靠在小吃街帮忙换取零食，每天最期待回家讨要抱抱和投喂。' },
-      { id: 'tiantong', name: '天童',       affection: 30, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/tiantong.png', deck: 'Tenyi',          background: '带着一身华丽日式装扮来到现世，生性胆小怯懦，总在精灵们吵架时硬着头皮劝架，心里最渴望躲在主角怀里被安全感包围。' },
-      { id: 'li',       name: '理',         affection: 20, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/li.png',       deck: 'Voiceless Voice', background: '降临现世的圣洁精灵，对现代社会的运作充满好奇，总用悲天悯人的目光观察人类。' },
-      { id: 'caihong',  name: '彩虹',       affection: 20, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/caihong.png',  deck: 'Maliss',         background: '暂住主角家的异次元画师，被收留后怀着极大的感激包揽了家里的许多家务，逐渐融入了这个修罗场。' }
+      { id: 'tiantong', name: '天童',       affection: 30, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/tiantong.png', deck: 'Swordsoul',      background: '带着一身华丽日式装扮来到现世，生性胆小怯懦，总在精灵们吵架时硬着头皮劝架，心里最渴望躲在主角怀里被安全感包围。' },
+      { id: 'li',       name: '理',         affection: 20, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/li.png',       deck: 'Exosister',      background: '降临现世的圣洁精灵，对现代社会的运作充满好奇，总用悲天悯人的目光观察人类。' },
+      { id: 'caihong',  name: '彩虹',       affection: 20, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/caihong.png',  deck: 'Rainbow',        background: '暂住主角家的异次元画师，被收留后怀着极大的感激包揽了家里的许多家务，逐渐融入了这个修罗场。' }
     ],
 
     /* --- MDPro3 卡组由玩家在 MDPro3 中自行设定 --- */
