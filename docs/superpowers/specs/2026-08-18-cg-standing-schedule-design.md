@@ -74,7 +74,7 @@
 |---|---|---|---|
 | 双子的房间（新） | `twins_room` | `assets/scenes/twins_room.png` | ↔ `home_door`（对门） |
 | 教堂（新） | `church` | `assets/scenes/church.jpg` | ↔ `mall_st` |
-| 森林（新） | `forest` | `assets/scenes/forest.jpg` | ↔ `suburb_st` |
+| 森林（新） | `forest` | `assets/scenes/forest.jpg` | ↔ `suburb_station`（城郊站台，suburb_st 四方向已满） |
 
 - 剩余场景中指向公司场景的出口全部修复重连；13 旧场景 + 3 新场景全连通（`validate-scenes.mjs` 节点断言更新为新 16 场景集合）。
 - 公司场景相关的 `event.js` LOCATION_ACTIONS「company」块整体删除。
