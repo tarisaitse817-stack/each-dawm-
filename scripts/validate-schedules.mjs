@@ -30,7 +30,7 @@ for (const [cid, v] of Object.entries(cg)) {
   const okObj = o => o && typeof o === 'object' && okStr(o.day) && okStr(o.night);
   if (!okStr(v) && !okObj(v)) errors.push(`${cid}: cg 路径非法`);
 }
-if (cg.ecclesia) errors.push('ecclesia 不应有 cg 条目（用户未补图）');
+if (!cg.ecclesia || typeof cg.ecclesia !== 'string' || !cg.ecclesia.startsWith('assets/characters/')) errors.push('ecclesia 缺 cg 条目（应为 assets/characters/ecclesia/cg/start.png）');
 // getPeriod：全天覆盖 + 边界正确
 if (getPeriod(0) !== 'night' || getPeriod(5) !== 'night') errors.push('getPeriod 深夜边界错误');
 if (getPeriod(6) !== 'morning' || getPeriod(11) !== 'morning') errors.push('getPeriod 上午边界错误');
@@ -52,7 +52,7 @@ for (const cid of ['kisikil', 'lilla']) {
 if (getCgPath('siren', tMorning) !== 'assets/characters/siren/cg/start.png') errors.push('塞壬 CG 路径错误');
 if (getCgPath('kisikil', tMorning) !== 'assets/characters/twins/cg/start-day.png') errors.push('双子白天 CG 路径错误');
 if (getCgPath('kisikil', tNight) !== 'assets/characters/twins/cg/start-night.png') errors.push('双子夜晚 CG 路径错误');
-if (getCgPath('ecclesia', tMorning) !== null) errors.push('艾克利西亚应无 CG');
+if (getCgPath('ecclesia', tMorning) !== 'assets/characters/ecclesia/cg/start.png') errors.push('艾克利西亚 CG 路径错误');
 
 if (errors.length) {
   console.error('FAIL');

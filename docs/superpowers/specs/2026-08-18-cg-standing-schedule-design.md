@@ -24,7 +24,7 @@
 | 终态形态 | 立绘居中站在场景背景前 + 底部对话区，常驻直到关闭特写回场景 |
 | 动态方式 | 方案 B：手写行程表（4 时段），无 AI 调度；AI 调度（LLM 现编位置）留作未来升级 |
 | 双子 CG | 按游戏时间：6:00-17:59 播「白天直播的双子」，18:00-次日 5:59 播「双子夜晚怪盗行动」 |
-| 艾克利西亚 | 暂无 CG，点击直接立绘；用户补图后无需改代码 |
+| 艾克利西亚 | 用户已补 CG「吃饭的圣女」（assets/characters/ecclesia/cg/start.png），cg 表已含条目，与其他角色一致播放 |
 | 场景 | 删 company_cubicle/company_office/company_door；新增 twins_room/church/forest |
 | 世界书 | 「特殊地域」条目中「码丽丝为了接近主角而任职的高管公司」一句删除（旧世界书残留） |
 | avatar-closeup Task 6 | 正式作废（6 张 neutral.png 需求取消；standing.png 取代其展示位置，neutral.png 保留为降级链兜底） |
@@ -44,7 +44,7 @@
 | 天童躺在床上.png | `tiantong/cg/start.png` |
 | 教堂中的理.png | `li/cg/start.png` |
 | 彩虹正在绘画.png | `caihong/cg/start.png` |
-| （艾克利西亚，未提供） | 无 → 点击直接立绘 |
+| 吃饭的圣女.png（用户后续补） | `ecclesia/cg/start.png` |
 
 双子 CG 共用 `assets/characters/twins/cg/`，由行程表/查询函数按角色与时间返回路径（kisikil 与 lilla 均指向 twins 目录）。
 

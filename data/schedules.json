@@ -68,6 +68,7 @@
     "tiantong": "assets/characters/tiantong/cg/start.png",
     "li":       "assets/characters/li/cg/start.png",
     "caihong":  "assets/characters/caihong/cg/start.png",
+    "ecclesia": "assets/characters/ecclesia/cg/start.png",
     "kisikil":  { "day": "assets/characters/twins/cg/start-day.png",   "night": "assets/characters/twins/cg/start-night.png" },
     "lilla":    { "day": "assets/characters/twins/cg/start-day.png",   "night": "assets/characters/twins/cg/start-night.png" }
   }
