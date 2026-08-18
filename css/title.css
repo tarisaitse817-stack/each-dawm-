@@ -27,18 +27,16 @@
 
 @keyframes cover-pop {
   0%    { opacity: 0; transform: scale(1.08); }
-  5%    { opacity: 0.75; transform: scale(1.05); }
-  14%   { opacity: 0.75; transform: scale(1.0); }
+  5%    { opacity: 1; transform: scale(1.05); }
+  14%   { opacity: 1; transform: scale(1.0); }
   16.6% { opacity: 0; transform: scale(1.02); }
   100%  { opacity: 0; transform: scale(1.08); }
 }
 
-/* Dark gradient overlay for text readability */
+/* 轻量底部渐隐，仅保证按钮/文字可读（用户要求明亮风格，移除重度暗色遮罩） */
 .cover-overlay {
   position: absolute; inset: 0;
-  background:
-    radial-gradient(ellipse at center, transparent 30%, rgba(8,10,20,0.7) 80%),
-    linear-gradient(180deg, rgba(8,10,20,0.3) 0%, rgba(8,10,20,0.6) 50%, rgba(8,10,20,0.85) 100%);
+  background: linear-gradient(180deg, transparent 55%, rgba(8,10,20,0.30) 100%);
   pointer-events: none;
 }
 
