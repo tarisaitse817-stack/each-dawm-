@@ -37,7 +37,7 @@
 - Consumes: 桌面 `角色介绍` 文件夹 8 张 PNG；世界书档案（文案已提炼进本计划）
 - Produces: `data/characters.json`（Task 3 渲染数据源）；`assets/companions/<id>-intro.png` 与 `twins-intro.png`（Task 3 详情弹层全图）；`scripts/validate-characters.mjs`（Task 4 回归复用）
 
-- [ ] **Step 1: 创建 `data/characters.json`**
+- [x] **Step 1: 创建 `data/characters.json`**
 
 文件整体内容（逐字，文案已从世界书档案提炼为 SFW 版）：
 
@@ -165,7 +165,7 @@
 }
 ```
 
-- [ ] **Step 2: 介绍图入库**
+- [x] **Step 2: 介绍图入库**
 
 Run（PowerShell，逐条执行）：
 
@@ -184,7 +184,7 @@ Copy-Item "$src\彩虹.png"     "$dst\caihong-intro.png"
 
 Expected: `assets/companions/` 下新增 8 个 `*-intro.png`（双子只一份 `twins-intro.png`）。
 
-- [ ] **Step 3: 旧素材备份并删除**
+- [x] **Step 3: 旧素材备份并删除**
 
 ```powershell
 $bak = "C:\Users\Administrator\each-dawm-\.superpowers\import-backups"
@@ -197,7 +197,7 @@ Remove-Item -Recurse -Force "C:\Users\Administrator\each-dawm-\assets\characters
 
 Expected: 旧 6 图与旧 5 人目录从工作树删除，备份在 `.superpowers/import-backups/old-assets/`；`assets/characters/siren/` 保留。
 
-- [ ] **Step 4: 创建 `scripts/validate-characters.mjs`**
+- [x] **Step 4: 创建 `scripts/validate-characters.mjs`**
 
 ```js
 // 校验图鉴数据完整性：node scripts/validate-characters.mjs
@@ -256,14 +256,14 @@ if (errors.length) {
 console.log(`PASS: ${chars.length} 角色图鉴数据完整、初始好感与文案合规`);
 ```
 
-- [ ] **Step 5: 运行校验**
+- [x] **Step 5: 运行校验**
 
 ```powershell
 node scripts/validate-characters.mjs
 ```
 Expected: `PASS: 9 角色图鉴数据完整、初始好感与文案合规`
 
-- [ ] **Step 6: 提交**
+- [x] **Step 6: 提交**
 
 ```bash
 git add data/characters.json scripts/validate-characters.mjs assets/companions/
@@ -288,7 +288,7 @@ git commit -m "feat: 图鉴数据 characters.json（世界书 9 人 SFW 介绍�
 - Consumes: Task 1 的 `data/characters.json`（本任务不读取它，但 9 人 id 一致）
 - Produces: `CHARACTERS` 9 人（`portrait: assets/characters/<id>/neutral.png`）；`AppState.get('companions')` 初始 9 人（Task 3 渲染）；`validate-scenes.mjs` 新 roster 断言（Task 4 复用）
 
-- [ ] **Step 1: 改 `js/scenes-data.js` — CHARACTERS 表替换**
+- [x] **Step 1: 改 `js/scenes-data.js` — CHARACTERS 表替换**
 
 将现有 `CHARACTERS` 表（约 6-13 行，`baiyue` 到 `ecclesia` 6 条）整体替换为：
 
@@ -306,7 +306,7 @@ export const CHARACTERS = {
 };
 ```
 
-- [ ] **Step 2: 清空 16 个场景的角色引用**
+- [x] **Step 2: 清空 16 个场景的角色引用**
 
 对 `SCENES` 中的**每个**场景对象（16 个）：
 - `characters: ['...', ...]` 整行 → `characters: [],`
@@ -316,7 +316,7 @@ export const CHARACTERS = {
 
 另将场景 `description` 中提及旧角色名的 3 处（约 28/83/110 行）改为中性描述（如「温暖的客厅，白月和塞壬的日常据点。」→「温暖的客厅，众人的日常据点。」；「林仪的办公室」→「冷色调的办公室」；「艾克利西娅在这里当帮工」→「小吃街的帮工在这里忙碌」）。其余描述文案不动。
 
-- [ ] **Step 3: 改 `js/state.js` — companions 初始数据替换**
+- [x] **Step 3: 改 `js/state.js` — companions 初始数据替换**
 
 将现有 `companions: [ ... ]` 数组（约 44 行起，6 人、含 deck/battleLines 字段，到 `],` 结束）整体替换为：
 
@@ -338,14 +338,14 @@ export const CHARACTERS = {
 
 同时将 `sceneCharacters` 初始对象（约 184-191 行，旧 6 人）整体替换为 `sceneCharacters: {},`（场景角色已清空；scene.js:42 有 `|| {}` 兜底，storage.js 持久化无需改）。
 
-- [ ] **Step 3b: 改 `js/event.js` — 旧名清零（方案 A）**
+- [x] **Step 3b: 改 `js/event.js` — 旧名清零（方案 A）**
 
 1. `LOCATION_HEROINES`（约 26-34 行）：各地点数组全部改为 `[]`（场景角色待用户安排；「色色」分类暂时隐藏，event.js:95 已有空值兜底）。
 2. `LOCATION_ACTIONS`（约 37-61 行）：所有提及旧角色名（白月/林仪/柳月/苏昀/艾克利西娅）的文案改写——home 场景参考塞壬/零依/露世（客厅鱼缸同居者），food 参考艾克利西亚（小吃街帮工）；company/market 新阵容无对应角色，文案中性化（去掉人名）；「色色」分类文案同样改写为新阵容（供用户后续恢复 LOCATION_HEROINES 时直接可用）。改写基于 Task 1 的 `data/characters.json` 图鉴设定，SFW 尺度与原文一致。
 3. `_extractOpponentName`（约 511 行）角色名表整体替换为 9 新名：`['塞壬', '零依', '露世', '姬丝吉尔', '璃拉', '艾克利西亚', '天童', '理', '彩虹']`。
 4. `data/worldbook.json`：「艾克利西娅」1 处改为「艾克利西亚」（新名拼写对齐；其余世界书内容不动）。
 
-- [ ] **Step 4: 改 `scripts/validate-scenes.mjs`**
+- [x] **Step 4: 改 `scripts/validate-scenes.mjs`**
 
 1. 在 CHARACTERS 校验块（现有 `for (const [cid, meta] of Object.entries(CHARACTERS))` 之前）插入：
 
@@ -366,7 +366,7 @@ if (Object.keys(CHARACTERS).length !== WANT_CHARS.length) {
   if (!f.endsWith(`/siren/${e}.png`)) errors.push(`emotionFile 路径错误: ${f}`);
 ```
 
-- [ ] **Step 5: 运行校验**
+- [x] **Step 5: 运行校验**
 
 ```powershell
 node scripts/validate-scenes.mjs
@@ -375,7 +375,7 @@ node scripts/validate-characters.mjs
 ```
 Expected: 三个都 PASS。
 
-- [ ] **Step 6: 引用检查**
+- [x] **Step 6: 引用检查**
 
 Run（PowerShell）：
 ```powershell
@@ -383,7 +383,7 @@ Select-String -Path js\*.js,scripts\*.mjs -Pattern "baiyue|linyi|liuyue|suyun|sa
 ```
 Expected: 0 条匹配（`js/companions.js` 除外——其旧 THEME 键为 Task 3 整体重写前的暂时残留；docs/ 目录不在检查范围）。
 
-- [ ] **Step 7: 提交**
+- [x] **Step 7: 提交**
 
 ```bash
 git add js/scenes-data.js js/state.js scripts/validate-scenes.mjs js/event.js data/worldbook.json
@@ -402,7 +402,7 @@ git commit -m "feat: 角色阵容替换为世界书 9 人（场景引用清空 +
 - Consumes: `data/characters.json`（Task 1）；`AppState.get('companions')` 初始 9 人（Task 2）
 - Produces: 关系页 9 卡片（点击 → `#companion-detail` 全屏弹层：全图 + 文案 + 关闭）；对外无新增全局 API（Task 4 浏览器回归依赖 DOM 结构）
 
-- [ ] **Step 1: 重写 `js/companions.js`**
+- [x] **Step 1: 重写 `js/companions.js`**
 
 文件整体替换为：
 
@@ -750,7 +750,7 @@ export var CompanionsPanel = {
 };
 ```
 
-- [ ] **Step 2: `css/companions.css` 追加规则**
+- [x] **Step 2: `css/companions.css` 追加规则**
 
 在文件末尾追加：
 
@@ -777,7 +777,7 @@ export var CompanionsPanel = {
 .companion-detail-body .detail-affection { margin-top: 6px; font-size: 13px; color: rgba(212,165,116,.9); }
 ```
 
-- [ ] **Step 3: Esc 关闭**
+- [x] **Step 3: Esc 关闭**
 
 `js/app.js` 的 `_initKeyboardShortcuts`（约 900-917 行）Esc 分支中，在关闭设置面板判断（`if (self._settingsVisible) { ... }` 块）之后、`e.preventDefault(); return;` 之前插入：
 
@@ -791,7 +791,7 @@ export var CompanionsPanel = {
 
 （`CompanionsPanel` 已在 app.js:13 导入，ES 模块不挂 window，直接引用模块绑定。）
 
-- [ ] **Step 4: 语法与数据校验**
+- [x] **Step 4: 语法与数据校验**
 
 ```powershell
 node --input-type=module --check js/companions.js
@@ -801,7 +801,7 @@ node scripts/validate-characters.mjs
 ```
 Expected: 全部 PASS。
 
-- [ ] **Step 5: 浏览器回归（关系页）**
+- [x] **Step 5: 浏览器回归（关系页）**
 
 Playwright（http://localhost:8080，复用或自起 python http.server）：
 - 打开关系页（侧边栏导航或直接切 companions 视图）→ 9 张卡片渲染：名字正确、好感星数对应初始值（塞壬 40 = 2 星）、无头像图时显示 user 图标占位
@@ -812,7 +812,7 @@ Playwright（http://localhost:8080，复用或自起 python http.server）：
 - 控制台无 JS 运行时错误（404 素材类预期：`assets/companions/*.png` 头像未提供）
 - 截图存 `C:\Users\Administrator\each-dawm-\.superpowers\sdd\2026-08-17-character-roster\task3-*.png`
 
-- [ ] **Step 6: 提交**
+- [x] **Step 6: 提交**
 
 ```bash
 git add js/companions.js css/companions.css js/app.js
@@ -829,7 +829,7 @@ git commit -m "feat: 关系页图鉴化（圆形缩略 + 点击全屏介绍图�
 **Interfaces:**
 - Consumes: Task 1-3 全部产物
 
-- [ ] **Step 1: 全部校验脚本**
+- [x] **Step 1: 全部校验脚本**
 
 ```powershell
 node scripts/validate-scenes.mjs
@@ -838,7 +838,7 @@ node scripts/validate-characters.mjs
 ```
 Expected: 三个都 PASS。
 
-- [ ] **Step 2: 旧阵容零残留检查**
+- [x] **Step 2: 旧阵容零残留检查**
 
 Run（PowerShell）：
 ```powershell
@@ -847,7 +847,7 @@ Select-String -Path assets\companions -Pattern ".*" | Select-Object -First 5
 ```
 Expected: 第一行 0 匹配（`艾克利西娅` 旧名拼写也应零残留，新名「艾克利西亚」不带「娅」）；第二行仅列新介绍图文件。注意旧 id `sairen` 若在代码中被引用也视为残留（新 id 是 `siren`）。
 
-- [ ] **Step 3: 浏览器全流程回归（Playwright）**
+- [x] **Step 3: 浏览器全流程回归（Playwright）**
 
 - 新游戏 → 转场 → 场景无角色头像残留（场景角色已清空）
 - 关系页：9 卡片、详情弹层全流程（Task 3 清单复验）
@@ -858,7 +858,7 @@ Expected: 第一行 0 匹配（`艾克利西娅` 旧名拼写也应零残留，�
 - 控制台无 JS 运行时错误
 - 截图存 `C:\Users\Administrator\each-dawm-\.superpowers\sdd\2026-08-17-character-roster\task4-*.png`
 
-- [ ] **Step 4: 提交（仅当有修复）**
+- [x] **Step 4: 提交（仅当有修复）**
 
 ```bash
 git add <仅本计划相关修复文件，逐个列出>
