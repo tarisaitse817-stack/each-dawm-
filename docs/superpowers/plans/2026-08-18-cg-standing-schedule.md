@@ -783,6 +783,16 @@ export const CloseupView = {
       <div class="closeup-dialog" id="closeup-dialog"></div>`;
     document.body.appendChild(overlay);
     document.getElementById('closeup-close-btn').addEventListener('click', () => this.close());
+    // Esc 键关闭特写（spec：「Esc / 关闭按钮」回场景）：仅当特写层 active 时响应；
+    // 输入框/文本域聚焦时不抢 Esc（避免影响对话输入等场景）；
+    // 伙伴详情弹层（companion-detail）的 Esc 由 app.js 独立处理，此处以 active 为界不干扰
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      const t = e.target;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+      if (!overlay.classList.contains('active')) return;
+      this.close();
+    });
     // 序列播放中点击任意处跳过 CG 段
     overlay.addEventListener('click', (e) => {
       if (e.target.closest('#closeup-close-btn') || e.target.closest('#closeup-dialog')) return;
