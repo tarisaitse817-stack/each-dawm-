@@ -94,7 +94,7 @@ function createDefaultState() {
 
     /* --- 场景状态 --- */
     currentSceneId: 'home_living',
-    sceneCharacters: {},
+    sceneCharacters: {}, // 派生态：由行程表按时间重建（scene.js _renderAvatars），勿手写初始值
     closeup: { active: false, characterId: null, emotion: 'neutral' },
 
     /* --- Token 统计 --- */

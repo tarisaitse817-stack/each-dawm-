@@ -142,6 +142,7 @@ export const App = {
       t.weekday = t.weekday >= 7 ? 1 : t.weekday + 1;
     }
     AppState.set('gameTime', t);
+    window.dispatchEvent(new CustomEvent('game-time-advanced'));
     this.updateTimeDisplay();
   },
 

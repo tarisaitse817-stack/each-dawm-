@@ -1,6 +1,7 @@
-// 场景视图：背景层 + 出口 + 物件热点 + 旁白字幕 + 立绘层（立绘逻辑在 Task 4 补全）
+// 场景视图：背景层 + 出口 + 物件热点 + 旁白字幕 + 立绘层（在场由行程表派生）
 import { AppState } from './state.js';
 import { SCENES, CHARACTERS, getScene, avatarAnchor } from './scenes-data.js';
+import { getPresent, loadSchedules } from './schedules.js';
 
 const _subtitleTimer = null;
 let _currentSceneId = 'home_living';
@@ -39,13 +40,21 @@ function _renderObjects(scene) {
 function _renderAvatars(scene) {
   const layer = document.getElementById('scene-character-layer');
   layer.innerHTML = '';
-  const sc = AppState.get('sceneCharacters') || {};
-  for (const charId of scene.characters) {
-    const meta = CHARACTERS[charId];
-    const st = sc[charId];
-    if (!meta || !st || !st.present) continue;
-    const spot = (scene.characterSpots || {})[charId];
-    if (!spot) continue;
+  const gameTime = AppState.get('gameTime') || { day: 1, hour: 8, minute: 0 };
+  const present = getPresent(scene.id, gameTime);
+
+  // 派生态写回：在场角色 present:true，不在场清除
+  const sc = {};
+  present.forEach(function (p) { sc[p.charId] = { present: true, emotion: 'neutral' }; });
+  AppState.set('sceneCharacters', sc);
+
+  present.forEach(function (p) {
+    const meta = CHARACTERS[p.charId];
+    if (!meta) return;
+    // 基准点 ±3% 随机偏移
+    const jx = p.spot.x + (Math.random() * 2 - 1) * 0.03;
+    const jy = p.spot.y + (Math.random() * 2 - 1) * 0.03;
+    const spot = { x: Math.min(1, Math.max(0, jx)), y: Math.min(1, Math.max(0, jy)), scale: p.spot.scale };
     const anchor = avatarAnchor(spot);
     const div = document.createElement('div');
     div.className = 'scene-avatar';
@@ -56,14 +65,21 @@ function _renderAvatars(scene) {
     img.className = 'avatar-img';
     img.alt = meta.name;
     img.src = meta.portrait;
-    img.onerror = () => { div.classList.add('avatar-missing'); img.remove(); };
+    img.onerror = () => {
+      // 头像图未出（neutral.png 404）：先用立绘兜底，仍失败再标记缺失
+      const fallback = new Image();
+      fallback.className = 'avatar-img';
+      fallback.src = `assets/characters/${p.charId}/standing.png`;
+      fallback.onerror = () => { div.classList.add('avatar-missing'); fallback.remove(); };
+      img.replaceWith(fallback);
+    };
     div.appendChild(img);
     div.insertAdjacentHTML('beforeend', `<span class="avatar-name">${meta.name}</span>`);
     div.addEventListener('click', () => {
-      window.dispatchEvent(new CustomEvent('closeup-open', { detail: { characterId: charId } }));
+      window.dispatchEvent(new CustomEvent('closeup-open', { detail: { characterId: p.charId } }));
     });
     layer.appendChild(div);
-  }
+  });
 }
 
 export const SceneView = {
@@ -75,6 +91,8 @@ export const SceneView = {
         <div id="scene-object-layer"></div>
         <div id="scene-subtitle" class="scene-subtitle"></div>
       </div>`;
+    loadSchedules().then(() => this.renderCharacters());
+    window.addEventListener('game-time-advanced', () => this.renderCharacters());
     this.showScene(AppState.get('currentSceneId'));
   },
 

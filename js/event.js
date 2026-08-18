@@ -9,6 +9,7 @@ import { CloseupView } from './closeup.js';
 import { SceneView } from './scene.js?v=10';
 import { mapEmotion } from './emotion.js';
 import { CHARACTERS } from './scenes-data.js';
+import { countPresent } from './schedules.js';
 
 /* ==========================================================================
    常量
@@ -22,15 +23,14 @@ var PLAYER_PREFIX = '【玩家】';
    正经 / 恶作剧 / 色色(有女主角时显示) / 跑路
    ========================================================================== */
 
-/** 每个地点存在的女主角（用于判断色色分类是否显示） */
-var LOCATION_HEROINES = {
-  'home':      [],
-  'company':   [],
-  'market':    [],
-  'food':      [],
-  'card_shop': [],
-  'mall':      [],
-  'suburb':    []
+/** 场景 id → 行动桶映射（公司场景已删除；twins_room 归 home 行为桶） */
+var SCENE_BUCKET = {
+  home_living: 'home', home_bed: 'home', home_door: 'home', twins_room: 'home',
+  food_bunshop: 'food', food_st: 'food',
+  market_hall: 'market', market_door: 'market',
+  cardshop_inside: 'card_shop', cardshop_door: 'card_shop',
+  mall_st: 'mall', mall_dessert: 'mall',
+  suburb_st: 'suburb', suburb_station: 'suburb', church: 'suburb', forest: 'suburb'
 };
 
 /** 各地点的四分类行动（每个分类随机抽一条） */
@@ -40,12 +40,6 @@ var LOCATION_ACTIONS = {
     '恶作剧': ['偷吃零依藏在冰箱里的布丁', '把她的校服裙子藏到衣柜深处', '在她追剧时突然换到新闻台', '趁她不注意把空调调低两度', '在她的拖鞋里塞一张冰凉的湿纸巾', '在沙发上故意占满所有位置'],
     '色色':   ['从背后轻轻环住窝在沙发角落看书的露世', '夸她"今天穿的白丝很可爱"', '故意只围着浴巾走出浴室', '假装睡着，等她偷偷靠近时一把拉住她', '在她耳边低声问"今晚要不要一起看恐怖片"'],
     '跑路':   ['借口买酱油溜出家门', '躲进卧室反锁房门戴上耳机', '假装已经睡熟了怎么叫都不醒', '"突然想起来还有个快递要取"']
-  },
-  'company': {
-    '正经':   ['专心写完堆积的报告', '整理桌面杂乱的文件和报表', '回复积压了一周的邮件', '准备下周的汇报PPT', '泡杯咖啡继续埋头工作'],
-    '恶作剧': ['趁同事去洗手间把她的鼠标灵敏度调到最低', '偷偷往同事的咖啡里多加三块糖', '把复印机操作语言改成日语', '在茶水间贴一张"本月零食免费"的假通知', '给同事发消息"经理找你"然后看她慌张跑上楼'],
-    '色色':   ['去上司办公室敲门说"想和你单独谈谈"', '经过女同事工位时低头在她耳边说"今天的香水很好闻"', '给上司发消息"关于上次那个提案，下班后私下聊聊？"', '在无人的楼梯间等同事经过'],
-    '跑路':   ['借口头疼提前下班回家', '趁上司开会时从侧门偷偷溜走', '"突然胃不舒服，今天先回去了"', '躲进消防通道刷手机熬到下班']
   },
   'market': {
     '正经':   ['挑选今晚做饭要用的食材', '看看有没有新到的零食和饮料', '帮店员把新到的货品搬上货架', '买点纸巾牙膏之类的日用品', '跟店员聊聊最近街坊的趣事'],
@@ -87,20 +81,21 @@ var CATEGORY_STYLES = {
   '跑路':   { emoji: '🚪', cssClass: 'cat-escape',  label: '跑路' }
 };
 
-/** 从当前位置生成分类建议列表 */
+/** 从当前位置生成分类建议列表（场景 id → 行动桶；色色按行程表在场判断） */
 function getLocationSuggestions() {
   var state = AppState.get();
-  var locId = state.currentLocation || 'card_shop';
-  var actions = LOCATION_ACTIONS[locId] || LOCATION_ACTIONS['card_shop'];
-  var heroines = LOCATION_HEROINES[locId] || [];
+  var sceneId = state.currentSceneId || 'cardshop_inside';
+  var bucket = SCENE_BUCKET[sceneId] || 'card_shop';
+  var actions = LOCATION_ACTIONS[bucket] || LOCATION_ACTIONS['card_shop'];
+  var heroines = countPresent(sceneId, state.gameTime);
 
   var result = [];
   var categories = ['正经', '恶作剧', '色色', '跑路'];
 
   categories.forEach(function (cat) {
     var pool = actions[cat];
-    // 色色：没有女主角时不显示
-    if (cat === '色色' && heroines.length === 0) return;
+    // 色色：当前时段没有女主角在场时不显示
+    if (cat === '色色' && heroines === 0) return;
     // 该分类没有行动时跳过
     if (!pool || pool.length === 0) return;
 
@@ -143,18 +138,6 @@ var SCENE_FALLBACKS = {
     '门前的小路很安静，远处传来小河的水声。',
     '你站在家门口，晚风轻轻吹过。',
   ],
-  company_cubicle: [
-    '键盘声在工位间此起彼伏。',
-    '你盯着屏幕，暂时没什么进展。',
-  ],
-  company_office: [
-    '办公室的门虚掩着，里面没有任何动静。',
-    '你放轻了脚步，没有进去。',
-  ],
-  company_door: [
-    '公司门口人来人往，通勤族行色匆匆。',
-    '你在门口站了一会儿，什么也没发生。',
-  ],
   food_bunshop: [
     '蒸笼冒着热气，包子的香气弥漫开来。',
     '店铺里很热闹，但没人注意到你。',
@@ -194,6 +177,18 @@ var SCENE_FALLBACKS = {
   suburb_station: [
     '站台上电子屏刷新着时刻表，列车缓缓进站。',
     '你站在月台上，风从轨道方向吹来。',
+  ],
+  twins_room: [
+    '双子房间的门虚掩着，里面传来直播的声音。',
+    '你站在门口，没有贸然打扰。',
+  ],
+  church: [
+    '教堂里很安静，只有彩窗漏下的光。',
+    '你放轻了脚步，生怕打破这份宁静。',
+  ],
+  forest: [
+    '森林里静悄悄的，只有风吹树叶的沙沙声。',
+    '你在林间小径上慢慢走着。',
   ],
 };
 
