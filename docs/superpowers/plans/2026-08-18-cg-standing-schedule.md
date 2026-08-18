@@ -13,7 +13,7 @@
 - 项目根目录：`C:\Users\Administrator\each-dawm-`（所有相对路径以此为根）
 - 无 package.json：自动化检查 = node 断言脚本（`scripts/*.mjs`）；UI 行为 = 浏览器 Playwright 回归清单
 - 校验脚本**不做文件存在性检查**（用户图未到位前不阻塞）
-- 时段划分：上午 6-12 / 下午 12-18 / 晚上 18-24 / 深夜 0-6；双子 CG 切换点 = 18:00（<18 白天版，≥18 夜晚版）
+- 时段划分：上午 6-12 / 下午 12-18 / 晚上 18-24 / 深夜 0-6；双子 CG：6:00-17:59 白天版（start-day），18:00-次日 5:59 夜晚版（start-night）
 - 9 人阵容（id 固定）：`siren`塞壬 / `lingyi`零依 / `lushi`露世 / `kisikil`姬丝吉尔 / `lilla`璃拉 / `ecclesia`艾克利西亚 / `tiantong`天童 / `li`理 / `caihong`彩虹
 - 素材约定：CG → `assets/characters/<id>/cg/start.png`（双子共用 `assets/characters/twins/cg/start-day.png` 与 `start-night.png`）；立绘 → `assets/characters/<id>/standing.png`（832×1216 竖图）；新场景 bg → `assets/scenes/twins_room.png`、`church.jpg`、`forest.jpg`
 - 桌面素材源（PowerShell `$env:USERPROFILE\Desktop\`）：`初始CG`（8 张）、`抠图立绘`（9 张）、`场景审查`（双子房间背景.png/教堂.jpg/森林.jpg）
@@ -491,7 +491,24 @@ export function getCgPath(charId, gameTime) {
   if (!v) return null;
   if (typeof v === 'string') return v;
   var hour = gameTime && gameTime.hour != null ? gameTime.hour : 8;
-  return hour < 18 ? v.day : v.night;
+  return hour >= 6 && hour < 18 ? v.day : v.night;
+}
+
+/* ==========================================================================
+   Node 校验环境预载 — 同步读取 schedules.json 填入 SCHEDULE_DATA
+   （浏览器端由 loadSchedules() 异步 fetch；此处仅服务 node 校验脚本）
+   ========================================================================== */
+if (typeof process !== 'undefined' && typeof process.getBuiltinModule === 'function') {
+  try {
+    var _fs = process.getBuiltinModule('node:fs');
+    var _raw = _fs.readFileSync(new URL('../data/schedules.json', import.meta.url), 'utf8');
+    var _data = JSON.parse(_raw);
+    SCHEDULE_DATA = _data;
+    _periodStart = {};
+    (_data.periods || []).forEach(function (p) { _periodStart[p.id] = p.start; });
+  } catch (e) {
+    console.warn('[Schedules] Node 预载 schedules.json 失败：' + e.message);
+  }
 }
 ```
 
@@ -1040,9 +1057,9 @@ Expected: 四个都 PASS。
 
 Run（PowerShell）：
 ```powershell
-Select-String -Path js\*.js,scripts\*.mjs,css\*.css,data\*.json -Pattern "company_cubicle|company_office|company_door|高管公司"
+Select-String -Path js\*.js,scripts\*.mjs,scripts\*.py,css\*.css,data\*.json -Pattern "company_cubicle|company_office|company_door|高管公司"
 ```
-Expected: 0 匹配。
+Expected: 0 匹配。若 `scripts/scene_prompts.py` 命中（14-16 行 3 条公司场景提示词），删除该 3 行后复跑确认 0 匹配，并在 Step 4 一并提交。
 
 - [ ] **Step 3: 浏览器全流程回归（Playwright）**
 
