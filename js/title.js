@@ -95,7 +95,7 @@ export const TitleScreen = {
           (hasSave
             ? '<button class="title-btn primary" id="btn-continue">继续冒险</button>'
             : '') +
-          '<button class="title-btn secondary" id="btn-newgame">新的旅程</button>' +
+          '<button class="title-btn card-btn" id="btn-newgame" aria-label="新的旅程" title="新的旅程"></button>' +
           '<button class="title-btn secondary" id="btn-settings">设置</button>' +
         '</div>' +
       '</div>' +
