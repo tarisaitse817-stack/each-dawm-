@@ -1,4 +1,4 @@
-// 场景图静态数据：16 节点 + 角色 + 表情约定
+// 场景图静态数据：16 节点（13 旧 + 3 新） + 角色 + 表情约定
 // 坐标一律百分比（0~1）；dir 取值 left/right/top/bottom
 
 export const EMOTION_LIST = ['neutral', 'smile', 'happy', 'blushing', 'angry', 'sad', 'surprised', 'desire'];
@@ -58,6 +58,7 @@ export const SCENES = {
     exits: [
       { dir: 'left',  to: 'home_living', label: '客厅' },
       { dir: 'right', to: 'suburb_st',   label: '小河方向' },
+      { dir: 'top',   to: 'twins_room',  label: '双子房间' },
     ],
     characters: [],
     characterSpots: {},
@@ -66,44 +67,16 @@ export const SCENES = {
     ],
   },
 
-  // ===== 公司（3）=====
-  company_cubicle: {
-    id: 'company_cubicle', name: '工位', bg: 'assets/scenes/company_cubicle.png',
-    description: '你的工位。开放办公区里键盘声此起彼伏。',
-    exits: [
-      { dir: 'left',  to: 'company_door',   label: '门口' },
-      { dir: 'right', to: 'company_office', label: '上司办公室' },
-    ],
+  // ===== 双子（1）=====
+  twins_room: {
+    id: 'twins_room', name: '双子的房间', bg: 'assets/scenes/twins_room.png',
+    description: '双子租住的房间，直播设备摆满一桌。',
+    exits: [{ dir: 'bottom', to: 'home_door', label: '家门前' }],
     characters: [],
     characterSpots: {},
     objects: [
-      { id: 'pc', label: '电脑', x: 0.35, y: 0.6, desc: '堆积如山的待办事项在屏幕上闪烁。' },
-      { id: 'files', label: '文件', x: 0.45, y: 0.68, desc: '一摞还没批完的文件。' },
-    ],
-  },
-  company_office: {
-    id: 'company_office', name: '上司办公室', bg: 'assets/scenes/company_office.png',
-    description: '冷色调的办公室，装潢透着一丝压迫感。',
-    exits: [{ dir: 'left', to: 'company_cubicle', label: '工位' }],
-    characters: [],
-    characterSpots: {},
-    objects: [
-      { id: 'desk', label: '办公桌', x: 0.45, y: 0.65, desc: '宽大的办公桌，一尘不染。' },
-      { id: 'window', label: '落地窗', x: 0.85, y: 0.4, desc: '透过落地窗能俯瞰整座城市。' },
-    ],
-  },
-  company_door: {
-    id: 'company_door', name: '公司门口', bg: 'assets/scenes/company_door.png',
-    description: '公司大楼的门口，通勤族行色匆匆。',
-    exits: [
-      { dir: 'right', to: 'company_cubicle', label: '工位' },
-      { dir: 'left',  to: 'mall_st',  label: '商业街' },
-      { dir: 'bottom', to: 'suburb_st', label: '城郊方向' },
-    ],
-    characters: [],
-    characterSpots: {},
-    objects: [
-      { id: 'gate', label: '门禁', x: 0.5, y: 0.6, desc: '刷卡才能进出的门禁闸机。' },
+      { id: 'pc', label: '直播设备', x: 0.5, y: 0.6, desc: '补光灯和麦克风一应俱全。' },
+      { id: 'plush', label: '鲨鱼玩偶', x: 0.3, y: 0.68, desc: '一只被抱到褪色的鲨鱼玩偶。' },
     ],
   },
 
@@ -191,7 +164,7 @@ export const SCENES = {
     description: '繁华的商业街，霓虹灯牌层层叠叠。',
     exits: [
       { dir: 'left',  to: 'cardshop_door', label: '牌店' },
-      { dir: 'right', to: 'company_door',  label: '公司' },
+      { dir: 'right', to: 'church',       label: '教堂' },
       { dir: 'top',   to: 'food_st',       label: '小吃街' },
       { dir: 'bottom', to: 'suburb_st',    label: '城郊方向' },
     ],
@@ -207,6 +180,19 @@ export const SCENES = {
     characterSpots: {},
     objects: [
       { id: 'cakecase', label: '蛋糕柜', x: 0.4, y: 0.6, desc: '玻璃柜里摆满了精致的蛋糕。' },
+    ],
+  },
+
+  // ===== 教堂（1）=====
+  church: {
+    id: 'church', name: '教堂', bg: 'assets/scenes/church.jpg',
+    description: '安静的教堂，阳光透过彩窗洒在长椅上。',
+    exits: [{ dir: 'left', to: 'mall_st', label: '商业街' }],
+    characters: [],
+    characterSpots: {},
+    objects: [
+      { id: 'window', label: '彩窗', x: 0.5, y: 0.4, desc: '彩绘玻璃窗，光斑落在地上。' },
+      { id: 'pew', label: '长椅', x: 0.4, y: 0.65, desc: '一排空着的长椅。' },
     ],
   },
 
@@ -229,7 +215,7 @@ export const SCENES = {
     description: '连接全城的枢纽站台，列车缓缓驶入。',
     exits: [
       { dir: 'left',   to: 'suburb_st',    label: '街道' },
-      { dir: 'top',    to: 'company_door', label: '公司方向' },
+      { dir: 'top',    to: 'forest',       label: '森林' },
       { dir: 'right',  to: 'food_st',      label: '小吃街方向' },
       { dir: 'bottom', to: 'cardshop_door', label: '牌店方向' },
     ],
@@ -237,6 +223,19 @@ export const SCENES = {
     characterSpots: {},
     objects: [
       { id: 'ticket', label: '售票机', x: 0.5, y: 0.6, desc: '无人售票机，屏幕亮着。' },
+    ],
+  },
+
+  // ===== 森林（1）=====
+  forest: {
+    id: 'forest', name: '森林', bg: 'assets/scenes/forest.jpg',
+    description: '幽静的森林，阳光从枝叶间洒下。',
+    exits: [{ dir: 'bottom', to: 'suburb_station', label: '站台' }],
+    characters: [],
+    characterSpots: {},
+    objects: [
+      { id: 'tree', label: '古树', x: 0.35, y: 0.55, desc: '一棵参天古树，树皮上长着青苔。' },
+      { id: 'trail', label: '小径', x: 0.65, y: 0.7, desc: '蜿蜒的林间小径，通往更深处。' },
     ],
   },
 };

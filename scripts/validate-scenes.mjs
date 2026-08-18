@@ -5,6 +5,19 @@ let errors = [];
 const ids = Object.keys(SCENES);
 if (ids.length !== 16) errors.push(`场景数应为 16，实际 ${ids.length}`);
 
+// 场景集合：必须恰为新 16 场景（公司 3 场景已删除，新增 twins_room/church/forest）
+const WANT_SCENES = ['home_living', 'home_bed', 'home_door', 'twins_room',
+  'food_bunshop', 'food_st', 'market_hall', 'market_door',
+  'cardshop_inside', 'cardshop_door', 'mall_st', 'mall_dessert',
+  'church', 'forest', 'suburb_st', 'suburb_station'];
+for (const sid of WANT_SCENES) {
+  if (!SCENES[sid]) errors.push(`缺少场景 ${sid}`);
+}
+if (ids.length !== WANT_SCENES.length) {
+  const extra = ids.filter(x => !WANT_SCENES.includes(x));
+  errors.push(`场景数应为 ${WANT_SCENES.length}，实际 ${ids.length}${extra.length ? `（多余: ${extra.join(', ')}）` : ''}`);
+}
+
 for (const [id, s] of Object.entries(SCENES)) {
   if (s.id !== id) errors.push(`${id}: id 字段不一致`);
   if (!s.bg || !s.bg.startsWith('assets/scenes/')) errors.push(`${id}: bg 路径非法`);
@@ -74,4 +87,4 @@ if (errors.length) {
   for (const e of errors) console.error(' -', e);
   process.exit(1);
 }
-console.log('PASS: 16 场景、出口引用、角色/物件坐标、表情路径全部有效、16 节点全连通');
+console.log('PASS: 16 场景（新集合）、出口引用、角色/物件坐标、表情路径全部有效、16 节点全连通');
