@@ -64,9 +64,10 @@ function _renderAvatars(scene) {
     const img = new Image();
     img.className = 'avatar-img';
     img.alt = meta.name;
-    img.src = meta.portrait;
+    // 场景头像优先用关系页同款圆形头像（assets/companions/<id>.png，用户已出图）；
+    // 缺失时立绘兜底，仍失败标记缺失
+    img.src = `assets/companions/${p.charId}.png`;
     img.onerror = () => {
-      // 头像图未出（neutral.png 404）：先用立绘兜底，仍失败再标记缺失
       const fallback = new Image();
       fallback.className = 'avatar-img';
       fallback.src = `assets/characters/${p.charId}/standing.png`;
