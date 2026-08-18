@@ -204,13 +204,18 @@ def build_world_context():
 
 def compact_state(state):
     """Create compact version of game state for prompt"""
+    gt = state.get("gameTime", {})
+    sc = state.get("sceneCharacters", [])
     return {
         "player": state.get("player", {}),
         "gamePhase": state.get("gamePhase", {}),
         "companions": [{"name": c.get("name"), "affection": c.get("affection")} for c in state.get("companions", [])],
         "inventory_count": len(state.get("inventory", [])),
         "activeDeck": state.get("activeDeckId"),
-        "map_progress": f"{sum(1 for n in state.get('mapNodes', []) if n.get('status') == 'completed')}/{len(state.get('mapNodes', []))} nodes"
+        "map_progress": f"{sum(1 for n in state.get('mapNodes', []) if n.get('status') == 'completed')}/{len(state.get('mapNodes', []))} nodes",
+        "gameTime": f"第{gt.get('day', 1)}天 {int(gt.get('hour', 8)):02d}:{int(gt.get('minute', 0)):02d}",
+        "currentScene": state.get("currentSceneName") or state.get("currentSceneId") or "",
+        "sceneCharacters": [{"name": c.get("name", ""), "activity": c.get("activity", "")} for c in sc]
     }
 
 # ─── LLM Call ───

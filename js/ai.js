@@ -2,6 +2,8 @@
  * 光之回响 AI 客户端 + MDPro3 对战桥接
  */
 import { AppState } from './state.js';
+import { getPresent, getActivity } from './schedules.js';
+import { getScene } from './scenes-data.js';
 
 export const AiClient = {
     endpoint: 'http://127.0.0.1:9999',
@@ -18,7 +20,12 @@ export const AiClient = {
                 gamePhase: state.gamePhase,
                 companions: state.companions,
                 inventory: state.inventory,
-                currentSceneId: state.currentSceneId
+                currentSceneId: state.currentSceneId,
+                gameTime: state.gameTime,
+                currentSceneName: (getScene(state.currentSceneId) || {}).name || '',
+                sceneCharacters: getPresent(state.currentSceneId, state.gameTime).map(function (p) {
+                    return { name: (getActivity(p.charId, state.gameTime) || '').split(' · ')[0], activity: p.activity };
+                })
             },
             api_key: settings.aiApiKey || '',
             endpoint: settings.aiEndpoint || '',
