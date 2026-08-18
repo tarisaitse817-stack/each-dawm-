@@ -43,7 +43,7 @@
 ```powershell
 $src = "$env:USERPROFILE\Desktop\初始CG"
 $root = "C:\Users\Administrator\each-dawm-\assets\characters"
-New-Item -ItemType Directory -Force "$root\siren\cg","$root\lingyi\cg","$root\lushi\cg","$root\kisikil\cg","$root\lilla\cg","$root\tiantong\cg","$root\li\cg","$root\caihong\cg","$root\twins\cg" | Out-Null
+New-Item -ItemType Directory -Force "$root\siren\cg","$root\lingyi\cg","$root\lushi\cg","$root\kisikil\cg","$root\lilla\cg","$root\ecclesia\cg","$root\tiantong\cg","$root\li\cg","$root\caihong\cg","$root\twins\cg" | Out-Null
 Copy-Item -LiteralPath "$src\塞壬躺在床上.png"      -Destination "$root\siren\cg\start.png"
 Copy-Item -LiteralPath "$src\卧室中的零依.png"      -Destination "$root\lingyi\cg\start.png"
 Copy-Item -LiteralPath "$src\卧室中的露世.png"      -Destination "$root\lushi\cg\start.png"
