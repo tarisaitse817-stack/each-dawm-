@@ -367,3 +367,28 @@
   font-style: italic;
   letter-spacing: 0.05em;
 }
+
+/* --------------------------------------------------------------------------
+   图鉴版：圆形缩略头像 + 全屏详情弹层
+   -------------------------------------------------------------------------- */
+.companion-portrait .portrait-round { border-radius: 50%; object-fit: cover; }
+
+.companion-empty { padding: 40px 20px; text-align: center; color: rgba(224,224,224,.55); font-size: 14px; }
+
+#companion-detail { position: fixed; inset: 0; z-index: 85; display: none; }
+#companion-detail.active { display: block; }
+.companion-detail-backdrop { position: absolute; inset: 0; background: #0a0c1c; }
+.companion-detail-close { position: absolute; top: 18px; right: 22px; z-index: 4; background: rgba(18,20,42,.7); color: #F5ECD7; border: 1px solid rgba(212,165,116,.4); border-radius: 8px; padding: 6px 14px; cursor: pointer; }
+.companion-detail-portrait { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding-bottom: 46%; }
+.companion-detail-portrait .detail-intro-img { max-width: 92%; max-height: 52vh; object-fit: contain; border-radius: 10px; box-shadow: 0 8px 40px rgba(0,0,0,.6); display: block; }
+.companion-detail-portrait.detail-img-missing { color: #F5ECD7; font-size: 14px; border: 1px dashed #D4A574; border-radius: 10px; margin: auto; width: 300px; height: 200px; }
+.companion-detail-body { position: absolute; left: 0; right: 0; bottom: 0; height: 46%; background: linear-gradient(transparent, rgba(10,12,28,.88) 22%, rgba(10,12,28,.97)); padding: 16px 6% 22px; overflow-y: auto; z-index: 3; }
+.companion-detail-body .detail-name { margin: 0 0 4px; font-size: 24px; color: #F5ECD7; }
+.companion-detail-body .detail-nicknames { margin-bottom: 10px; font-size: 13px; color: rgba(212,165,116,.85); }
+.companion-detail-body .detail-section { margin-bottom: 10px; font-size: 14px; line-height: 1.75; color: rgba(240,236,215,.92); }
+.companion-detail-body .detail-label { display: inline-block; margin-right: 8px; padding: 1px 8px; border: 1px solid rgba(212,165,116,.45); border-radius: 999px; color: #D4A574; font-size: 12px; }
+.companion-detail-body .detail-affection { margin-top: 6px; font-size: 13px; color: rgba(212,165,116,.9); }
+
+/* 点击背景关闭：全屏 portrait 容器不拦截点击（图片本身保留指针事件） */
+.companion-detail-portrait { pointer-events: none; }
+.companion-detail-portrait .detail-intro-img { pointer-events: auto; }

@@ -910,6 +910,12 @@ export const App = {
           return;
         }
 
+        // 关闭角色详情弹层
+        if (CompanionsPanel._detailEl && CompanionsPanel._detailEl.classList.contains('active')) {
+          CompanionsPanel._closeDetail();
+          return;
+        }
+
         e.preventDefault();
         return;
       }
