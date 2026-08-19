@@ -2,9 +2,9 @@
  * SillyTavern UI 入口（vanilla）
  */
 
-export { openChatModal } from './chat.js?v=14';
-export { openSettingsModal } from './settings-modal.js?v=14';
-export { openLorebookModal } from './lorebook-modal.js?v=14';
-export { openLorebookEditorModal } from './lorebook-editor-modal.js?v=14';
-export { openPresetModal } from './preset-modal.js?v=14';
-export { showToast } from './dom.js?v=14';
+export { openChatModal } from './chat.js?v=15';
+export { openSettingsModal } from './settings-modal.js?v=15';
+export { openLorebookModal } from './lorebook-modal.js?v=15';
+export { openLorebookEditorModal } from './lorebook-editor-modal.js?v=15';
+export { openPresetModal } from './preset-modal.js?v=15';
+export { showToast } from './dom.js?v=15';

@@ -2,7 +2,7 @@
    光之回响 (Echoes of Light) — Navigation 导航系统
    ========================================================================== */
 
-import { AppState } from './state.js?v=14';
+import { AppState } from './state.js?v=15';
 
 /**
  * 视图路由配置
@@ -79,6 +79,14 @@ export const Navigation = {
     });
 
     _sidebarEl.appendChild(settingsItem);
+
+    // --- 当前场景角色区块（scene.js _renderAvatars 渲染头像列表到这里）---
+    var charSection = document.createElement('div');
+    charSection.id = 'sidebar-characters';
+    charSection.innerHTML =
+      '<div class="sidebar-char-title">当前场景角色</div>' +
+      '<div id="sidebar-char-list"></div>';
+    _sidebarEl.appendChild(charSection);
 
     // --- 悬停展开/收起 ---
     _sidebarEl.addEventListener('mouseenter', function () {
