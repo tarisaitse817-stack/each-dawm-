@@ -1,7 +1,7 @@
 // 场景视图：背景层 + 出口 + 物件热点 + 旁白字幕 + 立绘层（在场由行程表派生）
-import { AppState } from './state.js?v=15';
-import { SCENES, CHARACTERS, getScene } from './scenes-data.js?v=15';
-import { getPresent, loadSchedules } from './schedules.js?v=15';
+import { AppState } from './state.js?v=16';
+import { SCENES, CHARACTERS, getScene } from './scenes-data.js?v=16';
+import { getPresent, loadSchedules } from './schedules.js?v=16';
 
 // 头像图片版本号：换图/重裁后 bump 刷新浏览器缓存（图片本身无 hash）
 const ASSET_V = '12';
@@ -77,7 +77,7 @@ function _renderAvatars(scene) {
       img.replaceWith(fallback);
     };
     div.appendChild(img);
-    div.insertAdjacentHTML('beforeend', `<span class="sidebar-char-name">${meta.name}</span>`);
+    // 用户要求：展开态也不显示人物名称（仅头像列）
     div.addEventListener('click', () => {
       window.dispatchEvent(new CustomEvent('closeup-open', { detail: { characterId: p.charId } }));
     });

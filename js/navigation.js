@@ -2,7 +2,7 @@
    光之回响 (Echoes of Light) — Navigation 导航系统
    ========================================================================== */
 
-import { AppState } from './state.js?v=15';
+import { AppState } from './state.js?v=16';
 
 /**
  * 视图路由配置
