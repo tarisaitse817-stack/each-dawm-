@@ -39,7 +39,8 @@ export const TransitionView = {
 
   /**
    * 播放转场
-   * @param {{ lines: string[]|null }} opts - lines 为句子数组（逐句字幕）；null 直接光晕（读档）
+   * @param {{ lines: string[]|null, onDone?: Function }} opts - lines 为句子数组（逐句字幕）；
+   *        null 直接光晕（读档）；onDone 在转场完全结束（淡出完成后）回调
    */
   play(opts) {
     if (this.isPlaying) return;
@@ -54,6 +55,7 @@ export const TransitionView = {
     }
 
     var lines = (opts && opts.lines) || null;
+    var onDone = (opts && opts.onDone) || null;
     var self = this;
 
     this.isPlaying = true;
@@ -70,6 +72,7 @@ export const TransitionView = {
           self._overlay.classList.add('hidden');
           self._overlay.classList.remove('fade-out', 'halo');
           self.isPlaying = false;
+          if (onDone) onDone();
         }, self._fadeMs);
       }, self._haloMs);
     };

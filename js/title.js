@@ -2,12 +2,13 @@
    光之回响 (Echoes of Light) — TitleScreen 标题界面
    ========================================================================== */
 
-import { AppState } from './state.js?v=11';
-import { StorageManager } from './storage.js?v=11';
-import { Navigation } from './navigation.js?v=11';
-import { showInitialBackground } from './scene.js?v=11';
-import { TransitionView } from './transition.js?v=11';
-import { EventPanel } from './event.js?v=11';
+import { AppState } from './state.js?v=13';
+import { StorageManager } from './storage.js?v=13';
+import { Navigation } from './navigation.js?v=13';
+import { showInitialBackground } from './scene.js?v=13';
+import { TransitionView } from './transition.js?v=13';
+import { EventPanel } from './event.js?v=13';
+import { playOpeningGreeting } from './greeting.js?v=13';
 
 /* 开场字幕（新游戏转场）：世界书 first_mes 前 3 句；失败回退内置默认文本前 3 句 */
 const MAX_OPENING_LINES = 3;
@@ -240,9 +241,9 @@ export const TitleScreen = {
 
     this.hide();
 
-    // 开场字幕 → 光晕铺满 → 渐入场景
+    // 开场字幕 → 光晕铺满 → 渐入场景 → 开场寒暄（在场角色立绘问候，点击推进）
     loadOpeningLines().then(function (lines) {
-      TransitionView.play({ lines: lines });
+      TransitionView.play({ lines: lines, onDone: playOpeningGreeting });
     });
   },
 

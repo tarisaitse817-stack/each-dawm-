@@ -1,15 +1,22 @@
-// 全屏特写视图：点击头像 → CG 3 秒（如有）→ 立绘居中 → 场景背景淡入 → 对话常驻
+// 全屏特写视图（v2 流程）：点击头像 → 立绘居中（standing）→ 对话开始 2 秒后 → CG 3 秒（如有）
+// → 回到立绘继续对话常驻。无 CG 时全程立绘。
 // 降级链：standing.png → neutral.png（emotionFile）→ fullbody.png → 「立绘缺失」占位
-import { AppState } from './state.js?v=11';
-import { CHARACTERS, emotionFile } from './scenes-data.js?v=11';
-import { getCgPath } from './schedules.js?v=11';
+import { AppState } from './state.js?v=13';
+import { CHARACTERS, emotionFile } from './scenes-data.js?v=13';
+import { getCgPath } from './schedules.js?v=13';
+
+// 素材版本号：头像/CG/立绘图片 URL 统一加 v 参数（图片本身无 hash，
+// 重裁/换图后必须 bump 才能刷新用户浏览器缓存；JS 模块走 import 的 v 参数）
+const ASSET_V = '12';
 
 var _charId = null;
-var _phase = 'closed'; // closed | cg | standing
+var _phase = 'closed'; // closed | standing | cg
 var _timers = [];
+var _pendingCgPath = null;
+var _cgScheduled = false; // 每次 open 只安排一次 CG
 
 function _fullbodyFallbackPath(charId) {
-  return `assets/characters/${charId}/fullbody.png`;
+  return `assets/characters/${charId}/fullbody.png?v=${ASSET_V}`;
 }
 
 function _clearTimers() {
@@ -61,6 +68,8 @@ export const CloseupView = {
     const meta = CHARACTERS[characterId];
     if (!meta) return;
     _clearTimers();
+    _cgScheduled = false;
+    _pendingCgPath = getCgPath(characterId, AppState.get('gameTime')) || null;
     AppState.set('closeup', { active: true, characterId, emotion: 'neutral' });
     document.getElementById('closeup-name').textContent = meta.name;
     const overlay = document.getElementById('closeup-overlay');
@@ -74,15 +83,26 @@ export const CloseupView = {
       bg.style.backgroundImage = scene.style.backgroundImage;
     }
 
-    const cgPath = getCgPath(characterId, AppState.get('gameTime'));
-    if (cgPath) {
-      this._startCgPhase(cgPath);
-    } else {
-      this._startStandingPhase();
-    }
+    // 先立绘（v2：点击即立绘，CG 由 onDialogueStarted 安排，对话开始 2 秒后播放）
+    this._startStandingPhase();
   },
 
-  /* CG 段：全屏 CG 3 秒（加载失败直接进立绘段） */
+  /**
+   * 对话开始通知（event.js 首条叙事打字、开局寒暄首句显示时调用）。
+   * 若本角色有 CG 且本次打开尚未安排：2 秒后切入 CG 段。
+   */
+  onDialogueStarted() {
+    if (_cgScheduled || _phase !== 'standing' || !_pendingCgPath) return;
+    _cgScheduled = true;
+    var self = this;
+    _timers.push(setTimeout(() => {
+      if (_phase !== 'standing') return; // 期间已关闭/已切走
+      // 注意：_pendingCgPath 是模块级变量，不是 CloseupView 对象的属性（self._pendingCgPath 恒为 undefined）
+      self._startCgPhase(_pendingCgPath);
+    }, 2000));
+  },
+
+  /* CG 段：全屏 CG 3 秒（加载失败直接回立绘段） */
   _startCgPhase(cgPath) {
     _setPhase('cg');
     const el = document.getElementById('closeup-portrait');
@@ -98,7 +118,7 @@ export const CloseupView = {
       if (_phase !== 'cg') return;
       this._startStandingPhase();
     };
-    img.src = cgPath;
+    img.src = cgPath + `?v=${ASSET_V}`;
     el.appendChild(img);
   },
 
@@ -117,7 +137,7 @@ export const CloseupView = {
     img.className = 'closeup-standing';
     img.alt = CHARACTERS[_charId].name;
     img.onerror = () => { if (!img.isConnected) return; img.remove(); this._tryEmotionFallback(); };
-    img.src = `assets/characters/${_charId}/standing.png`;
+    img.src = `assets/characters/${_charId}/standing.png?v=${ASSET_V}`;
     el.appendChild(img);
     _timers.push(setTimeout(() => {
       const bg = document.getElementById('closeup-scene-bg');
@@ -135,14 +155,29 @@ export const CloseupView = {
       el.appendChild(fb);
     };
     const img = new Image();
-    img.src = emotionFile(_charId, 'neutral');
+    img.src = emotionFile(_charId, 'neutral') + `?v=${ASSET_V}`;
     img.onerror = () => { if (!img.isConnected) return; img.remove(); tryFullbody(); };
     el.appendChild(img);
+  },
+
+  /**
+   * 静默切换角色立绘（开局寒暄用）：换人但不触发 CG、不打断对话区
+   */
+  switchCharacter(characterId) {
+    const meta = CHARACTERS[characterId];
+    if (!meta) return;
+    _charId = characterId;
+    _cgScheduled = true; // 切换后的角色不再安排 CG（本次打开 CG 只属于首个角色）
+    AppState.set('closeup', { active: true, characterId, emotion: 'neutral' });
+    document.getElementById('closeup-name').textContent = meta.name;
+    this._startStandingPhase();
   },
 
   close() {
     _clearTimers();
     _setPhase('closed');
+    _cgScheduled = false;
+    _pendingCgPath = null;
     AppState.set('closeup', { active: false, characterId: null, emotion: 'neutral' });
     document.getElementById('closeup-overlay').classList.remove('active');
     const bg = document.getElementById('closeup-scene-bg');

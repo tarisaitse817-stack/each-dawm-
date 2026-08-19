@@ -3,13 +3,13 @@
    渲染进近景特写层的对话区（CloseupView.getDialogEl()），对外 API 保持不变
    ========================================================================== */
 
-import { AppState } from './state.js?v=11';
-import { AiClient, BattleBridge } from './ai.js?v=11';
-import { CloseupView } from './closeup.js?v=11';
-import { SceneView } from './scene.js?v=11';
-import { mapEmotion } from './emotion.js?v=11';
-import { CHARACTERS } from './scenes-data.js?v=11';
-import { countPresent } from './schedules.js?v=11';
+import { AppState } from './state.js?v=13';
+import { AiClient, BattleBridge } from './ai.js?v=13';
+import { CloseupView } from './closeup.js?v=13';
+import { SceneView } from './scene.js?v=13';
+import { mapEmotion } from './emotion.js?v=13';
+import { CHARACTERS } from './scenes-data.js?v=13';
+import { countPresent } from './schedules.js?v=13';
 
 /* ==========================================================================
    常量
@@ -984,6 +984,8 @@ export const EventPanel = {
     }
 
     this._isTyping = true;
+    // 对话开始通知：特写层据此安排「对话 2 秒后 CG」（每次打开仅触发一次，内部有守卫）
+    CloseupView.onDialogueStarted();
     var text = this._displayQueue.shift();
 
     if (text.indexOf(PLAYER_PREFIX) === 0) {

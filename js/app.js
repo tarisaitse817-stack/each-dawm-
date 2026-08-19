@@ -3,18 +3,18 @@
    设置面板 + 键盘快捷键 + 全模块集成
    ========================================================================== */
 
-import { AppState } from './state.js?v=11';
-import { StorageManager } from './storage.js?v=11';
-import { Navigation } from './navigation.js?v=11';
-import { Particles } from './particles.js?v=11';
-import { TitleScreen } from './title.js?v=11';
-import { EventPanel } from './event.js?v=11';
-import { AiClient, BattleBridge } from './ai.js?v=11';
-import { CompanionsPanel } from './companions.js?v=11';
-import { InventoryPanel } from './inventory.js?v=11';
-import { SceneView } from './scene.js?v=11';
-import { CloseupView } from './closeup.js?v=11';
-import { Notifications } from './notifications.js?v=11';
+import { AppState } from './state.js?v=13';
+import { StorageManager } from './storage.js?v=13';
+import { Navigation } from './navigation.js?v=13';
+import { Particles } from './particles.js?v=13';
+import { TitleScreen } from './title.js?v=13';
+import { EventPanel } from './event.js?v=13';
+import { AiClient, BattleBridge } from './ai.js?v=13';
+import { CompanionsPanel } from './companions.js?v=13';
+import { InventoryPanel } from './inventory.js?v=13';
+import { SceneView } from './scene.js?v=13';
+import { CloseupView } from './closeup.js?v=13';
+import { Notifications } from './notifications.js?v=13';
 
 export const App = {
 
@@ -91,8 +91,9 @@ export const App = {
     // 14. 初始化伙伴面板
     CompanionsPanel.init();
 
-    // 15. 初始化背包面板
-    InventoryPanel.init();
+    // 15. 初始化背包面板 —— 背包 UI 已隐藏（用户要求，只藏 UI 不动数据层），
+    //     inventory 数据仍随状态保存/参与 AI game_state
+    // InventoryPanel.init();
 
     // 16. 初始化场景视图
     SceneView.init();
@@ -136,9 +137,9 @@ export const App = {
      ====================================================================== */
   async _initSillytavern() {
     try {
-      var storeMod = await import('./sillytavern/store.js?v=11');
-      var uiMod = await import('./sillytavern/ui/index.js?v=11');
-      var seedMod = await import('./sillytavern/seed.js?v=11');
+      var storeMod = await import('./sillytavern/store.js?v=13');
+      var uiMod = await import('./sillytavern/ui/index.js?v=13');
+      var seedMod = await import('./sillytavern/seed.js?v=13');
       var store = storeMod.sillytavernStore;
       await store.loadAll();
 
@@ -400,8 +401,8 @@ export const App = {
 
     if (mainContent.querySelector('.view-panel')) return;
 
-    var viewIds = ['scene', 'companions', 'inventory'];
-    var viewNames = ['场景', '伙伴', '背包'];
+    var viewIds = ['scene', 'companions']; // 背包面板已隐藏
+    var viewNames = ['场景', '伙伴'];
 
     viewIds.forEach(function (id, index) {
       var panel = document.createElement('div');
@@ -936,7 +937,7 @@ export const App = {
     // 重新初始化各面板（对话引擎随特写懒初始化，此处关闭特写即可）
     CloseupView.close();
     CompanionsPanel.init();
-    InventoryPanel.init();
+    // InventoryPanel.init(); —— 背包 UI 已隐藏
     SceneView.render();
 
     // 更新 Lucide 图标

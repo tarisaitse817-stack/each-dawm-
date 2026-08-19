@@ -36,3 +36,42 @@
 @keyframes closeup-standing-in { from { opacity: 0; } to { opacity: 1; } }
 /* CG 段：对话区不可用（序列结束后恢复） */
 .phase-cg #closeup-dialog { pointer-events: none; opacity: .35; transition: opacity .4s; }
+
+/* --------------------------------------------------------------------------
+   开局寒暄桥段（greeting.js）：立绘 + 台词卡，点击推进
+   -------------------------------------------------------------------------- */
+.greeting-box {
+  width: min(720px, 88vw);
+  margin: auto auto 0;
+  padding: 20px 28px 18px;
+  background: rgba(18, 20, 42, 0.72);
+  border: 1px solid rgba(212, 165, 116, 0.35);
+  border-radius: 14px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+.greeting-speaker {
+  font-size: 15px;
+  color: var(--color-spirit, #D4A574);
+  min-height: 22px;
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+}
+.greeting-text {
+  font-size: 17px;
+  line-height: 1.8;
+  color: #F5ECD7;
+  font-family: var(--font-body, 'LXGW WenKai', serif);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity .45s ease, transform .45s ease;
+}
+.greeting-text.show { opacity: 1; transform: translateY(0); }
+.greeting-hint {
+  margin-top: 14px;
+  text-align: right;
+  font-size: 12px;
+  color: rgba(212, 165, 116, 0.75);
+  animation: greeting-hint-pulse 1.6s ease-in-out infinite;
+}
+@keyframes greeting-hint-pulse { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }

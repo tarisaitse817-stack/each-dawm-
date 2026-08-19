@@ -8,20 +8,20 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500&family=LXGW+WenKai:wght@300;400;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/sidebar.css">
-  <link rel="stylesheet" href="css/splash.css">
-  <link rel="stylesheet" href="css/title.css">
-  <link rel="stylesheet" href="css/event.css">
-  <link rel="stylesheet" href="css/notifications.css">
-  <link rel="stylesheet" href="css/ai.css">
-  <link rel="stylesheet" href="css/companions.css">
-  <link rel="stylesheet" href="css/inventory.css">
-  <link rel="stylesheet" href="css/scene.css">
-  <link rel="stylesheet" href="css/closeup.css">
-  <link rel="stylesheet" href="css/transition.css">
-  <link rel="stylesheet" href="css/settings.css">
-  <link rel="stylesheet" href="css/sillytavern.css">
+  <link rel="stylesheet" href="css/base.css?v=13">
+  <link rel="stylesheet" href="css/sidebar.css?v=13">
+  <link rel="stylesheet" href="css/splash.css?v=13">
+  <link rel="stylesheet" href="css/title.css?v=13">
+  <link rel="stylesheet" href="css/event.css?v=13">
+  <link rel="stylesheet" href="css/notifications.css?v=13">
+  <link rel="stylesheet" href="css/ai.css?v=13">
+  <link rel="stylesheet" href="css/companions.css?v=13">
+  <link rel="stylesheet" href="css/inventory.css?v=13">
+  <link rel="stylesheet" href="css/scene.css?v=13">
+  <link rel="stylesheet" href="css/closeup.css?v=13">
+  <link rel="stylesheet" href="css/transition.css?v=13">
+  <link rel="stylesheet" href="css/settings.css?v=13">
+  <link rel="stylesheet" href="css/sillytavern.css?v=13">
 </head>
 <body>
   <!-- ==================================================================
@@ -40,12 +40,9 @@
 
   <!-- 地点背景图层 -->
   <div id="location-bg"></div>
-  <!-- 封面轮播背景（4 张：封面0-封面3，按顺序轮换） -->
+  <!-- 封面背景（用户要求：固定为第一条「封面0」，其余 3 张保留在 assets/covers/ 不参与显示） -->
   <div id="cover-slideshow">
     <div class="cover-slide" style="background-image:url('assets/covers/封面0.png')"></div>
-    <div class="cover-slide" style="background-image:url('assets/covers/封面1.png')"></div>
-    <div class="cover-slide" style="background-image:url('assets/covers/封面2.png')"></div>
-    <div class="cover-slide" style="background-image:url('assets/covers/封面3.png')"></div>
     <div class="cover-overlay"></div>
   </div>
   <!-- 标题界面 -->
@@ -113,6 +110,6 @@
   <!-- SillyTavern 集成：Dexie (IndexedDB 封装) 先行加载，暴露全局 window.Dexie -->
   <script src="lib/dexie.min.js"></script>
   <!-- JS 模块 -->
-  <script type="module" src="js/app.js?v=11"></script>
+  <script type="module" src="js/app.js?v=13"></script>
 </body>
 </html>

@@ -13,51 +13,51 @@
       "night":     { "scene": "home_bed",    "activity": "缩在被窝里睡着了",     "spot": { "x": 0.35, "y": 0.55, "scale": 0.85 } }
     },
     "lingyi": {
-      "morning":   { "scene": "home_living", "activity": "元气满满地活跃着气氛", "spot": { "x": 0.62, "y": 0.55, "scale": 0.85 } },
+      "morning":   { "scene": "suburb_st",   "activity": "元气满满地晨跑",       "spot": { "x": 0.45, "y": 0.50, "scale": 0.85 } },
       "afternoon": { "scene": "mall_st",     "activity": "元气十足地逛着街",     "spot": { "x": 0.45, "y": 0.50, "scale": 0.85 } },
       "evening":   { "scene": "home_living", "activity": "缠着你不放",           "spot": { "x": 0.60, "y": 0.55, "scale": 0.85 } },
-      "night":     { "scene": "home_bed",    "activity": "四仰八叉地睡着了",     "spot": { "x": 0.55, "y": 0.55, "scale": 0.85 } }
+      "night":     { "scene": "home_living", "activity": "四仰八叉睡在沙发上",   "spot": { "x": 0.55, "y": 0.55, "scale": 0.85 } }
     },
     "lushi": {
       "morning":   { "scene": "home_bed",    "activity": "安静地坐在床边看书",   "spot": { "x": 0.60, "y": 0.55, "scale": 0.85 } },
       "afternoon": { "scene": "home_living", "activity": "坐在沙发角落看书",     "spot": { "x": 0.78, "y": 0.60, "scale": 0.85 } },
-      "evening":   { "scene": "home_living", "activity": "冷眼观察着众人",       "spot": { "x": 0.76, "y": 0.58, "scale": 0.85 } },
+      "evening":   { "scene": "home_bed",    "activity": "独自安静地看着书",     "spot": { "x": 0.60, "y": 0.55, "scale": 0.85 } },
       "night":     { "scene": "home_bed",    "activity": "安静地睡着了",         "spot": { "x": 0.62, "y": 0.55, "scale": 0.85 } }
     },
     "kisikil": {
       "morning":   { "scene": "twins_room",  "activity": "对着镜头元气直播",     "spot": { "x": 0.40, "y": 0.55, "scale": 0.85 } },
       "afternoon": { "scene": "twins_room",  "activity": "继续着下午的直播",     "spot": { "x": 0.42, "y": 0.55, "scale": 0.85 } },
-      "evening":   { "scene": "home_living", "activity": "跑来串门调戏你",       "spot": { "x": 0.85, "y": 0.55, "scale": 0.85 } },
+      "evening":   { "scene": "twins_room",  "activity": "开启晚间直播",         "spot": { "x": 0.40, "y": 0.55, "scale": 0.85 } },
       "night":     null
     },
     "lilla": {
       "morning":   { "scene": "twins_room",  "activity": "半梦半醒地陪着直播",   "spot": { "x": 0.58, "y": 0.55, "scale": 0.85 } },
       "afternoon": { "scene": "twins_room",  "activity": "抱着鲨鱼玩偶打瞌睡",   "spot": { "x": 0.60, "y": 0.55, "scale": 0.85 } },
-      "evening":   { "scene": "home_living", "activity": "半梦半醒地靠在沙发上", "spot": { "x": 0.88, "y": 0.58, "scale": 0.85 } },
+      "evening":   { "scene": "twins_room",  "activity": "半梦半醒地陪着晚播",   "spot": { "x": 0.58, "y": 0.55, "scale": 0.85 } },
       "night":     null
     },
     "ecclesia": {
       "morning":   { "scene": "food_bunshop", "activity": "在包子铺里帮忙",      "spot": { "x": 0.45, "y": 0.55, "scale": 0.85 } },
       "afternoon": { "scene": "food_st",      "activity": "在小吃街帮工",        "spot": { "x": 0.50, "y": 0.55, "scale": 0.85 } },
-      "evening":   { "scene": "home_living",  "activity": "眼巴巴地讨要投喂",    "spot": { "x": 0.50, "y": 0.55, "scale": 0.85 } },
+      "evening":   { "scene": "food_st",      "activity": "在夜市里忙活着帮工",  "spot": { "x": 0.48, "y": 0.55, "scale": 0.85 } },
       "night":     { "scene": "home_bed",     "activity": "抱着肚子睡着了",      "spot": { "x": 0.40, "y": 0.55, "scale": 0.85 } }
     },
     "tiantong": {
-      "morning":   { "scene": "home_living", "activity": "怯怯地跟在你身后",     "spot": { "x": 0.40, "y": 0.55, "scale": 0.85 } },
-      "afternoon": { "scene": "home_bed",    "activity": "用袖子挡着脸躲在屋里", "spot": { "x": 0.45, "y": 0.55, "scale": 0.85 } },
-      "evening":   { "scene": "home_living", "activity": "硬着头皮当和事佬",     "spot": { "x": 0.42, "y": 0.55, "scale": 0.85 } },
-      "night":     { "scene": "home_bed",    "activity": "蜷成一团睡着了",       "spot": { "x": 0.48, "y": 0.55, "scale": 0.85 } }
+      "morning":   { "scene": "home_door",    "activity": "怯怯地守在门口等你",  "spot": { "x": 0.50, "y": 0.55, "scale": 0.85 } },
+      "afternoon": { "scene": "home_bed",     "activity": "用袖子挡着脸躲在屋里", "spot": { "x": 0.45, "y": 0.55, "scale": 0.85 } },
+      "evening":   { "scene": "home_door",    "activity": "怯怯地守在门口张望",  "spot": { "x": 0.50, "y": 0.55, "scale": 0.85 } },
+      "night":     { "scene": "home_living",  "activity": "蜷在沙发角落睡着了",  "spot": { "x": 0.48, "y": 0.55, "scale": 0.85 } }
     },
     "li": {
       "morning":   { "scene": "church",     "activity": "在教堂里静思祈祷",     "spot": { "x": 0.50, "y": 0.55, "scale": 0.85 } },
       "afternoon": { "scene": "mall_st",    "activity": "好奇地探索着都市",     "spot": { "x": 0.55, "y": 0.50, "scale": 0.85 } },
-      "evening":   { "scene": "home_living", "activity": "温柔地分享今日见闻",  "spot": { "x": 0.68, "y": 0.55, "scale": 0.85 } },
-      "night":     { "scene": "home_bed",    "activity": "安详地睡着了",        "spot": { "x": 0.58, "y": 0.55, "scale": 0.85 } }
+      "evening":   { "scene": "church",     "activity": "在教堂里做着晚祷",     "spot": { "x": 0.50, "y": 0.55, "scale": 0.85 } },
+      "night":     { "scene": "church",     "activity": "在教堂里安静守夜",     "spot": { "x": 0.50, "y": 0.55, "scale": 0.85 } }
     },
     "caihong": {
       "morning":   { "scene": "home_living", "activity": "包揽着家里的大小家务", "spot": { "x": 0.72, "y": 0.58, "scale": 0.85 } },
       "afternoon": { "scene": "forest",      "activity": "在森林里安静写生",     "spot": { "x": 0.50, "y": 0.55, "scale": 0.85 } },
-      "evening":   { "scene": "home_living", "activity": "专心致志地画画",       "spot": { "x": 0.70, "y": 0.58, "scale": 0.85 } },
+      "evening":   { "scene": "suburb_st",   "activity": "在晚霞里安静地速写",   "spot": { "x": 0.52, "y": 0.52, "scale": 0.85 } },
       "night":     { "scene": "home_bed",    "activity": "抱着速写本睡着了",     "spot": { "x": 0.52, "y": 0.55, "scale": 0.85 } }
     }
   },

@@ -1,7 +1,10 @@
 // 场景视图：背景层 + 出口 + 物件热点 + 旁白字幕 + 立绘层（在场由行程表派生）
-import { AppState } from './state.js?v=11';
-import { SCENES, CHARACTERS, getScene, avatarAnchor } from './scenes-data.js?v=11';
-import { getPresent, loadSchedules } from './schedules.js?v=11';
+import { AppState } from './state.js?v=13';
+import { SCENES, CHARACTERS, getScene, avatarAnchor } from './scenes-data.js?v=13';
+import { getPresent, loadSchedules } from './schedules.js?v=13';
+
+// 头像图片版本号：换图/重裁后 bump 刷新浏览器缓存（图片本身无 hash）
+const ASSET_V = '12';
 
 const _subtitleTimer = null;
 let _currentSceneId = 'home_living';
@@ -66,11 +69,11 @@ function _renderAvatars(scene) {
     img.alt = meta.name;
     // 场景头像优先用关系页同款圆形头像（assets/companions/<id>.png，用户已出图）；
     // 缺失时立绘兜底，仍失败标记缺失
-    img.src = `assets/companions/${p.charId}.png`;
+    img.src = `assets/companions/${p.charId}.png?v=${ASSET_V}`;
     img.onerror = () => {
       const fallback = new Image();
       fallback.className = 'avatar-img';
-      fallback.src = `assets/characters/${p.charId}/standing.png`;
+      fallback.src = `assets/characters/${p.charId}/standing.png?v=${ASSET_V}`;
       fallback.onerror = () => { div.classList.add('avatar-missing'); fallback.remove(); };
       img.replaceWith(fallback);
     };

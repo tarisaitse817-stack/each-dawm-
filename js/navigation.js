@@ -2,7 +2,7 @@
    光之回响 (Echoes of Light) — Navigation 导航系统
    ========================================================================== */
 
-import { AppState } from './state.js?v=11';
+import { AppState } from './state.js?v=13';
 
 /**
  * 视图路由配置
@@ -10,7 +10,8 @@ import { AppState } from './state.js?v=11';
 const views = [
   { id: 'scene',       label: '场景', icon: 'map-pin' },
   { id: 'companions',  label: '伙伴', icon: 'heart' },
-  { id: 'inventory',   label: '背包', icon: 'briefcase' },
+  // 背包已隐藏（用户要求：只藏 UI，inventory 数据层保留）
+  // { id: 'inventory',   label: '背包', icon: 'briefcase' },
 ];
 
 /**
