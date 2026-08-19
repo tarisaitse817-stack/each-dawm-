@@ -1,7 +1,10 @@
 // 场景视图：背景层 + 出口 + 物件热点 + 旁白字幕 + 立绘层（在场由行程表派生）
-import { AppState } from './state.js?v=30';
-import { SCENES, CHARACTERS, getScene } from './scenes-data.js?v=30';
-import { getPresent, loadSchedules } from './schedules.js?v=30';
+import { AppState } from './state.js?v=31';
+import { SCENES, CHARACTERS, getScene, isSceneOpen } from './scenes-data.js?v=31';
+import { getPresent, loadSchedules } from './schedules.js?v=31';
+
+/** 打烊提示文案（用户要求） */
+const CLOSED_MSG = '已经到了非营业时间了，明天再来吧';
 
 // 头像图片版本号：换图/重裁后 bump 刷新浏览器缓存（图片本身无 hash）
 const ASSET_V = '13';
@@ -198,9 +201,16 @@ export const SceneView = {
     const from = getScene(_currentSceneId);
     const to = getScene(sceneId);
     if (!to) return;
+    // 营业时间检查（用户要求）：打烊场景拦截进入，不计时间、不触发转场
+    const t = AppState.get('gameTime') || { day: 1, hour: 8, minute: 0 };
+    if (!isSceneOpen(to, t.hour)) {
+      this.showSubtitle(CLOSED_MSG);
+      return false;
+    }
     if (window.App && typeof window.App.advanceTime === 'function') window.App.advanceTime();
     this.showScene(sceneId, Object.assign({ flipFrom: dir || null }, opts || {}));
     this._enterScene(to);
+    return true;
   },
 
   /**

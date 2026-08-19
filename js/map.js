@@ -4,26 +4,39 @@
    进入走统一 travelTo 流程：翻页动画 + 自动对话输入态 + AI 旁白。
    ========================================================================== */
 
-import { SCENES } from './scenes-data.js?v=30';
-import { SceneView } from './scene.js?v=30';
-import { AppState } from './state.js?v=30';
-import { el, makeOverlay } from './sillytavern/ui/dom.js?v=30';
+import { SCENES, isSceneOpen, openHoursLabel } from './scenes-data.js?v=31';
+import { SceneView } from './scene.js?v=31';
+import { AppState } from './state.js?v=31';
+import { el, makeOverlay, showToast } from './sillytavern/ui/dom.js?v=31';
+
+/** 打烊提示文案（用户要求） */
+const CLOSED_MSG = '已经到了非营业时间了，明天再来吧';
 
 export function openMap() {
   const { panel, close } = makeOverlay(() => {}, { zIndex: 1105, center: true });
   panel.classList.add('map-panel');
 
   const currentId = AppState.get('currentSceneId');
+  const gameTime = AppState.get('gameTime') || { day: 1, hour: 8, minute: 0 };
   const grid = el('div', { class: 'map-grid' });
 
   for (const scene of Object.values(SCENES)) {
     const isCurrent = scene.id === currentId;
+    const open = isSceneOpen(scene, gameTime.hour);
     const card = el('div', {
-      class: 'map-card' + (isCurrent ? ' current' : ''),
-      title: scene.description || scene.name,
+      class: 'map-card' + (isCurrent ? ' current' : '') + (open ? '' : ' closed'),
+      title: scene.description + '（营业时间：' + openHoursLabel(scene.id) + '）',
       on: {
         click: () => {
           if (isCurrent) { close(); return; } // 已在当前场景
+          if (!open) {
+            // 打烊：不关闭地图，卡片抖动 + 提示
+            card.classList.remove('shake');
+            void card.offsetHeight;
+            card.classList.add('shake');
+            showToast(CLOSED_MSG);
+            return;
+          }
           // 用户要求：选图过渡动画 —— 中间缩略图迅速放大占满全屏，再切入场景
           const rect = card.getBoundingClientRect();
           close();
@@ -36,6 +49,7 @@ export function openMap() {
       el('div', { class: 'map-card-bg', style: { backgroundImage: `url('${scene.bg}')` } }),
       el('div', { class: 'map-card-name' }, scene.name),
       isCurrent && el('div', { class: 'map-card-here' }, '当前'),
+      !open && el('div', { class: 'map-card-closed' }, '已打烊'),
     ]);
     grid.append(card);
   }

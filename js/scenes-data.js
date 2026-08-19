@@ -24,6 +24,36 @@ export function emotionFile(charId, emotion) {
   return `assets/characters/${charId}/${emotion}.png`;
 }
 
+/**
+ * 营业时间表（用户要求）：部分地图有营业时间，非营业时间进入提示打烊。
+ * 起止小时 [start, end)，未列出的场景 24 小时可进入。
+ * 牌店 20 点关门、超市 22 点关门、商业街/甜品店 22 点、小吃 22 点。
+ */
+export const OPEN_HOURS = {
+  food_bunshop:    { start: 6,  end: 22 },
+  food_st:         { start: 6,  end: 22 },
+  market_hall:     { start: 8,  end: 22 },
+  market_door:     { start: 8,  end: 22 },
+  cardshop_inside: { start: 10, end: 20 },
+  cardshop_door:   { start: 10, end: 20 },
+  mall_st:         { start: 10, end: 22 },
+  mall_dessert:    { start: 10, end: 22 },
+};
+
+/** 场景当前小时是否营业（无营业时间的场景视为 24h 开放） */
+export function isSceneOpen(scene, hour) {
+  var oh = scene ? OPEN_HOURS[scene.id] : null;
+  if (!oh) return true;
+  var h = ((hour % 24) + 24) % 24;
+  return h >= oh.start && h < oh.end;
+}
+
+/** 营业时间文案（地图卡片提示/角标用） */
+export function openHoursLabel(sceneId) {
+  var oh = OPEN_HOURS[sceneId];
+  return oh ? (oh.start + ':00 - ' + oh.end + ':00') : '全天开放';
+}
+
 export const SCENES = {
   // ===== 家（3）=====
   home_living: {

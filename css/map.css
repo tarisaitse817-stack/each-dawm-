@@ -72,6 +72,30 @@
   font-weight: 700;
 }
 
+/* 已打烊场景：卡片变暗 + 角标；点击时抖动提示 */
+.map-card.closed { filter: grayscale(0.6) brightness(0.55); border-color: rgba(176, 190, 197, 0.25); }
+.map-card.closed:hover { border-color: rgba(176, 190, 197, 0.5); box-shadow: 0 6px 24px rgba(176, 190, 197, 0.2); }
+.map-card.closed .map-card-name { color: #b9b6ac; }
+.map-card-closed {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(18, 20, 42, 0.88);
+  border: 1px solid rgba(176, 190, 197, 0.5);
+  color: #B0BEC5;
+  font-size: 11px;
+}
+.map-card.shake { animation: map-card-shake 0.45s ease; }
+@keyframes map-card-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-7px); }
+  40% { transform: translateX(7px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+
 /* --------------------------------------------------------------------------
    选图缩放入场（用户要求）：选中的缩略图从原位置迅速放大占满全屏
    FLIP 起点由 JS 内联 transform 设定，.zooming 过渡回全屏
