@@ -1,0 +1,16 @@
+{
+  "_说明": "胜败 CG 角色提示词（用户可随时编辑，保存后刷新页面生效）。仅成年配角定制；未列出的对手走 generic_female/generic_male。",
+  "characters": {
+    "siren": "grey hair, twintails, purple eyes, pointed ears, bare shoulders, blue fin feet",
+    "lingyi": "yellow hair, long hair, blue eyes, white shirt, black pleated skirt, black thighhighs",
+    "lushi": "black hair, medium hair, black hat, white shirt, black cardigan, pleated skirt, black pantyhose",
+    "kisikil": "red hair, twintails, fang, pink jacket, bike shorts",
+    "lilla": "blue hair, double buns, half-closed eyes, white dress, sailor hat",
+    "caihong": "rainbow hair, very long hair, white shirt",
+    "ecclesia": "blonde hair, long hair, silver eyes, white dress, x-shaped mark on forehead",
+    "li": "red hooded robe, blue eyes, petite woman",
+    "tiantong": "white kimono, red hakama, white thighhighs, gold headdress, shy expression"
+  },
+  "generic_female": "adult woman, mature female",
+  "generic_male": "1boy, short black hair, adult man"
+}

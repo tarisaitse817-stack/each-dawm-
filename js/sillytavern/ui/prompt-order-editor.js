@@ -3,8 +3,8 @@
  * 渲染到容器；onChange(next) 由宿主更新草稿。
  */
 
-import { movePromptItem } from '../editor-utils.js?v=40';
-import { el } from './dom.js?v=40';
+import { movePromptItem } from '../editor-utils.js?v=42';
+import { el } from './dom.js?v=42';
 
 export function renderPromptOrderEditor(container, value, onChange) {
   if (value.length === 0) {

@@ -9,7 +9,7 @@ import {
   getSettings, saveSettings, initializeDatabase,
   getChats, saveChat, deleteChat as deleteChatById,
   assemblePrompt, extractVariables, mergeVariables, USER_ROLE, truncateChatAt, branchChat,
-} from './index.js?v=40';
+} from './index.js?v=42';
 
 export function createSillytavernStore() {
   let lorebooks = [];

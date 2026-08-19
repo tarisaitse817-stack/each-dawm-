@@ -4,10 +4,10 @@
    进入走统一 travelTo 流程：翻页动画 + 自动对话输入态 + AI 旁白。
    ========================================================================== */
 
-import { SCENES, isSceneOpen, openHoursLabel } from './scenes-data.js?v=40';
-import { SceneView } from './scene.js?v=40';
-import { AppState } from './state.js?v=40';
-import { el, makeOverlay, showToast } from './sillytavern/ui/dom.js?v=40';
+import { SCENES, isSceneOpen, openHoursLabel } from './scenes-data.js?v=42';
+import { SceneView } from './scene.js?v=42';
+import { AppState } from './state.js?v=42';
+import { el, makeOverlay, showToast } from './sillytavern/ui/dom.js?v=42';
 
 /** 打烊提示文案（用户要求） */
 const CLOSED_MSG = '已经到了非营业时间了，明天再来吧';

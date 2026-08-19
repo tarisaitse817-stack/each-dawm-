@@ -3,13 +3,13 @@
    渲染进近景特写层的对话区（CloseupView.getDialogEl()），对外 API 保持不变
    ========================================================================== */
 
-import { AppState } from './state.js?v=40';
-import { AiClient, BattleBridge } from './ai.js?v=40';
-import { CloseupView, showDuelResultCg } from './closeup.js?v=40';
-import { SceneView } from './scene.js?v=40';
-import { mapEmotion } from './emotion.js?v=40';
-import { CHARACTERS } from './scenes-data.js?v=40';
-import { countPresent, getPresent, getPeriod } from './schedules.js?v=40';
+import { AppState } from './state.js?v=42';
+import { AiClient, BattleBridge } from './ai.js?v=42';
+import { CloseupView, showDuelResultCg } from './closeup.js?v=42';
+import { SceneView } from './scene.js?v=42';
+import { mapEmotion } from './emotion.js?v=42';
+import { CHARACTERS } from './scenes-data.js?v=42';
+import { countPresent, getPresent, getPeriod } from './schedules.js?v=42';
 
 /** 场景 → Danbooru 背景标签（用户需求：胜败 CG 背景随当前场景自动变化） */
 var SCENE_BG_TAGS = {
@@ -38,6 +38,27 @@ var PERIOD_BG_TAGS = {
   evening:   'evening, sunset, warm light',
   night:     'night, moonlight, dim light',
 };
+
+/** 用户可编辑的 CG 数据（data/cg_prompts.json / cg_poses.json） */
+var CG_PROMPTS = null;
+var CG_POSES = null;
+
+async function loadCgData() {
+  try {
+    var results = await Promise.all([
+      fetch('data/cg_prompts.json?v=1').then(function (r) { return r.ok ? r.json() : null; }),
+      fetch('data/cg_poses.json?v=1').then(function (r) { return r.ok ? r.json() : null; }),
+    ]);
+    CG_PROMPTS = results[0];
+    CG_POSES = results[1];
+    console.log('[EventPanel] CG 角色提示词/姿势池已加载');
+  } catch (e) {
+    console.warn('[EventPanel] CG 提示词加载失败，使用内置兜底:', e);
+  }
+}
+
+// 模块加载即拉取（不依赖 EventPanel.init 懒初始化时机）
+loadCgData();
 
 /* ==========================================================================
    常量
@@ -795,28 +816,49 @@ export const EventPanel = {
 
   /**
    * 胜败 CG 提示词（用户需求：胜利 → 女性受向 NSFW；失败 → 男性受向 NSFW）
-   * 背景按当前场景+时段自动注入。
-   * 仅成年配角（世界书设定 ≥18：塞壬/零依/露世/姬丝吉尔/璃拉/彩虹）定制外貌标签；
-   * 其余对手（路人/未成年设定的配角）使用通用成年角色描述。
-   * TODO：用户提供各角色详细提示词后，接入 data/cg_prompts.json 优先使用。
+   * 拼装顺序：质量前缀 + 角色提示词 + 随机姿势（cg_poses.json 池中抽取）+
+   * 场景背景标签（自动）+ 时段光线（自动）+ nsfw。
+   * 角色提示词优先 data/cg_prompts.json（用户可编辑），失败回退内置默认。
    */
   _buildDuelCgPrompt: function (playerWon, opp) {
     var bg = this._buildCgBackgroundTags();
+
+    // 随机姿势：每次胜负从姿势池随机抽一条
+    var pose = '';
+    if (CG_POSES) {
+      var pool = playerWon ? CG_POSES.win : CG_POSES.lose;
+      if (pool && pool.length) pose = pool[Math.floor(Math.random() * pool.length)];
+    }
+    if (!pose) {
+      pose = playerWon
+        ? 'naked, submissive, on knees, blushing, looking at viewer, pleading, presenting'
+        : 'naked, submissive, on knees, blushing, dominated';
+    }
+
     if (!playerWon) {
       // 战败：男性受向（玩家被支配）
-      return 'masterpiece, best quality, highres, score_8, 1boy, short black hair, adult man, naked, submissive, on knees, blushing, dominated, ' + bg + ', nsfw';
+      var male = (CG_PROMPTS && CG_PROMPTS.generic_male) || '1boy, short black hair, adult man';
+      return 'masterpiece, best quality, highres, score_8, ' + male + ', ' + pose + ', ' + bg + ', nsfw';
     }
-    var FEATURES = {
-      '塞壬': 'grey hair, twintails, purple eyes, pointed ears, bare shoulders, blue fin feet',
-      '零依': 'yellow hair, long hair, blue eyes, white shirt, black pleated skirt, black thighhighs',
-      '露世': 'black hair, medium hair, black hat, white shirt, black cardigan, pleated skirt, black pantyhose',
-      '姬丝吉尔': 'red hair, twintails, fang, pink jacket, bike shorts',
-      '璃拉': 'blue hair, double buns, half-closed eyes, white dress, sailor hat',
-      '彩虹': 'rainbow hair, very long hair, white shirt'
-    };
-    var feat = (opp && FEATURES[opp.name]) || 'adult woman, mature female';
-    return 'masterpiece, best quality, highres, score_8, 1girl, ' + feat +
-      ', naked, submissive, on knees, blushing, looking at viewer, pleading, presenting, ' + bg + ', nsfw';
+
+    // 胜利：女性受向 —— 用户 JSON 优先，内置仅成年配角兜底，最后通用成年女性
+    var feat = (CG_PROMPTS && CG_PROMPTS.characters && CG_PROMPTS.characters[opp && opp.name]) || null;
+    if (!feat) {
+      var BUILTIN = {
+        '塞壬': 'grey hair, twintails, purple eyes, pointed ears, bare shoulders, blue fin feet',
+        '零依': 'yellow hair, long hair, blue eyes, white shirt, black pleated skirt, black thighhighs',
+        '露世': 'black hair, medium hair, black hat, white shirt, black cardigan, pleated skirt, black pantyhose',
+        '姬丝吉尔': 'red hair, twintails, fang, pink jacket, bike shorts',
+        '璃拉': 'blue hair, double buns, half-closed eyes, white dress, sailor hat',
+        '彩虹': 'rainbow hair, very long hair, white shirt',
+        '艾克利西亚': 'blonde hair, long hair, silver eyes, white dress, x-shaped mark on forehead',
+        '理': 'red hooded robe, blue eyes, petite woman',
+        '天童': 'white kimono, red hakama, white thighhighs, gold headdress, shy expression'
+      };
+      feat = BUILTIN[opp && opp.name] || null;
+    }
+    if (!feat) feat = (CG_PROMPTS && CG_PROMPTS.generic_female) || 'adult woman, mature female';
+    return 'masterpiece, best quality, highres, score_8, 1girl, ' + feat + ', ' + pose + ', ' + bg + ', nsfw';
   },
 
   _addRegenerateBtn() {
