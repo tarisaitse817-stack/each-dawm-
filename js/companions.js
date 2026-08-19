@@ -3,8 +3,8 @@
    数据源：data/characters.json（静态图鉴） + AppState companions（运行时好感/状态）
    ========================================================================== */
 
-import { AppState } from './state.js?v=32';
-import { Notifications } from './notifications.js?v=32';
+import { AppState } from './state.js?v=33';
+import { Notifications } from './notifications.js?v=33';
 
 /* ==========================================================================
    常量

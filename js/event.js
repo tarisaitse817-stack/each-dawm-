@@ -3,13 +3,13 @@
    渲染进近景特写层的对话区（CloseupView.getDialogEl()），对外 API 保持不变
    ========================================================================== */
 
-import { AppState } from './state.js?v=32';
-import { AiClient, BattleBridge } from './ai.js?v=32';
-import { CloseupView } from './closeup.js?v=32';
-import { SceneView } from './scene.js?v=32';
-import { mapEmotion } from './emotion.js?v=32';
-import { CHARACTERS } from './scenes-data.js?v=32';
-import { countPresent } from './schedules.js?v=32';
+import { AppState } from './state.js?v=33';
+import { AiClient, BattleBridge } from './ai.js?v=33';
+import { CloseupView } from './closeup.js?v=33';
+import { SceneView } from './scene.js?v=33';
+import { mapEmotion } from './emotion.js?v=33';
+import { CHARACTERS } from './scenes-data.js?v=33';
+import { countPresent } from './schedules.js?v=33';
 
 /* ==========================================================================
    常量
@@ -572,6 +572,7 @@ export const EventPanel = {
         return {
           name: c.name,
           deck: c.deck || 'BlueEyes',
+          isHeroine: true, // 配角 → 黑暗决斗
           battleLines: c.battleLines || { opening: '', victory: '', defeat: '' }
         };
       }
@@ -592,6 +593,7 @@ export const EventPanel = {
     return {
       name: name,
       deck: deck,
+      isHeroine: false, // 路人 → 普通决斗
       battleLines: {
         opening: '来一局决斗吧！让我看看你的实力！',
         victory: '不错的决斗，承让了！',
@@ -628,8 +630,9 @@ export const EventPanel = {
     el.innerHTML =
       '<div class="battle-trigger-card">' +
         '<div class="battle-trigger-glow"></div>' +
-        '<div class="battle-trigger-text">黑暗决斗即将开始</div>' +
-        '<div class="battle-trigger-deck">对手: ' + opp.name + ' | 使用卡组: ' + playerDeck + '</div>' +
+        // 用户要求：路人 → 「决斗开启」；配角 → 「黑暗决斗开启」
+        '<div class="battle-trigger-text">' + (opp.isHeroine ? '黑暗决斗开启' : '决斗开启') + '</div>' +
+        '<div class="battle-trigger-deck">对手: ' + opp.name + ' | 使用卡组: ' + opp.deck + '</div>' +
         lineHtml +
         '<button class="battle-trigger-btn" id="battle-trigger-btn">开始对战</button>' +
       '</div>';
@@ -653,7 +656,11 @@ export const EventPanel = {
           btn.textContent = '决斗已开启 (对手: ' + result.ai + ')';
           btn.className = 'battle-trigger-btn launched';
         } else {
-          this._addNarratorText('⚔️ 黑暗决斗开始——' + opponent + ' 接受了你的挑战！');
+          // 用户要求：路人 → 「决斗开始」；配角 → 「黑暗决斗开始」
+          var oppResolved = this._resolveBattleOpponent(opponent);
+          this._addNarratorText(oppResolved.isHeroine
+            ? '⚔️ 黑暗决斗开始——' + opponent + ' 接受了你的挑战！'
+            : '⚔️ 决斗开始——' + opponent + ' 向你发起了挑战！');
         }
         BattleBridge.startPolling(function(r) {
           console.log('[EventPanel] Duel callback fired:', r);

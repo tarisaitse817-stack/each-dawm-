@@ -1,7 +1,7 @@
 // 场景视图：背景层 + 出口 + 物件热点 + 旁白字幕 + 立绘层（在场由行程表派生）
-import { AppState } from './state.js?v=32';
-import { SCENES, CHARACTERS, getScene, isSceneOpen } from './scenes-data.js?v=32';
-import { getPresent, loadSchedules } from './schedules.js?v=32';
+import { AppState } from './state.js?v=33';
+import { SCENES, CHARACTERS, getScene, isSceneOpen } from './scenes-data.js?v=33';
+import { getPresent, loadSchedules } from './schedules.js?v=33';
 
 /** 打烊提示文案（用户要求） */
 const CLOSED_MSG = '已经到了非营业时间了，明天再来吧';
