@@ -7,7 +7,7 @@ import { getCgPath } from './schedules.js?v=34';
 
 // 素材版本号：头像/CG/立绘图片 URL 统一加 v 参数（图片本身无 hash，
 // 重裁/换图后必须 bump 才能刷新用户浏览器缓存；JS 模块走 import 的 v 参数）
-const ASSET_V = '14';
+const ASSET_V = '15';
 
 var _charId = null;
 var _phase = 'closed'; // closed | standing | cg
