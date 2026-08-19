@@ -3,8 +3,8 @@
  * 渲染到给定容器；onChange(patch) 由宿主更新草稿。
  */
 
-import { clampNumber } from '../editor-utils.js?v=28';
-import { el, fieldRow } from './dom.js?v=28';
+import { clampNumber } from '../editor-utils.js?v=29';
+import { el, fieldRow } from './dom.js?v=29';
 
 const POSITIONS = [
   { value: 'before_char', label: 'before_char (角色前)' },

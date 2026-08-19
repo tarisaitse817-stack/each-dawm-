@@ -2,13 +2,13 @@
    光之回响 (Echoes of Light) — TitleScreen 标题界面
    ========================================================================== */
 
-import { AppState } from './state.js?v=28';
-import { StorageManager } from './storage.js?v=28';
-import { Navigation } from './navigation.js?v=28';
-import { showInitialBackground } from './scene.js?v=28';
-import { TransitionView } from './transition.js?v=28';
-import { EventPanel } from './event.js?v=28';
-import { playOpeningGreeting } from './greeting.js?v=28';
+import { AppState } from './state.js?v=29';
+import { StorageManager } from './storage.js?v=29';
+import { Navigation } from './navigation.js?v=29';
+import { showInitialBackground } from './scene.js?v=29';
+import { TransitionView } from './transition.js?v=29';
+import { EventPanel } from './event.js?v=29';
+import { playOpeningGreeting } from './greeting.js?v=29';
 
 /* 开场字幕（新游戏转场）：世界书 first_mes 前 3 句；失败回退内置默认文本前 3 句 */
 const MAX_OPENING_LINES = 3;
@@ -94,13 +94,19 @@ export const TitleScreen = {
         '<img class="title-logo-img" id="title-logo-text" src="assets/covers/标题.png" alt="当妹卡降临到我身边">' +
         '<div class="title-btn-container">' +
           (hasSave
-            ? '<button class="title-btn primary" id="btn-continue">继续冒险</button>'
+            ? '<button class="title-btn card-btn" id="btn-continue" aria-label="继续冒险" title="继续冒险">' +
+                '<span class="card-face card-front"></span>' +
+                '<span class="card-face card-back">继续冒险</span>' +
+              '</button>'
             : '') +
           '<button class="title-btn card-btn" id="btn-newgame" aria-label="开始冒险" title="开始冒险">' +
             '<span class="card-face card-front"></span>' +
             '<span class="card-face card-back">开始冒险</span>' +
           '</button>' +
-          '<button class="title-btn secondary" id="btn-settings">设置</button>' +
+          '<button class="title-btn card-btn" id="btn-settings" aria-label="设置" title="设置">' +
+            '<span class="card-face card-front"></span>' +
+            '<span class="card-face card-back">设置</span>' +
+          '</button>' +
         '</div>' +
       '</div>' +
       '<div class="title-narrative hidden"></div>';

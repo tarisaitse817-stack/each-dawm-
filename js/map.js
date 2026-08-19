@@ -4,10 +4,10 @@
    进入走统一 travelTo 流程：翻页动画 + 自动对话输入态 + AI 旁白。
    ========================================================================== */
 
-import { SCENES } from './scenes-data.js?v=28';
-import { SceneView } from './scene.js?v=28';
-import { AppState } from './state.js?v=28';
-import { el, makeOverlay } from './sillytavern/ui/dom.js?v=28';
+import { SCENES } from './scenes-data.js?v=29';
+import { SceneView } from './scene.js?v=29';
+import { AppState } from './state.js?v=29';
+import { el, makeOverlay } from './sillytavern/ui/dom.js?v=29';
 
 export function openMap() {
   const { panel, close } = makeOverlay(() => {}, { zIndex: 1105, center: true });

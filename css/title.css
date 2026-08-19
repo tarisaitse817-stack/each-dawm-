@@ -180,10 +180,13 @@
    5. 按钮容器
    -------------------------------------------------------------------------- */
 
+/* 用户要求：三个按钮（继续冒险/开始冒险/设置）横向排列，均为卡背样式 */
 .title-btn-container {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
   margin-top: 48px;
 }
 
