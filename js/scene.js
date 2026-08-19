@@ -1,13 +1,13 @@
 // 场景视图：背景层 + 出口 + 物件热点 + 旁白字幕 + 立绘层（在场由行程表派生）
-import { AppState } from './state.js?v=43';
-import { SCENES, CHARACTERS, getScene, isSceneOpen } from './scenes-data.js?v=43';
-import { getPresent, loadSchedules } from './schedules.js?v=43';
+import { AppState } from './state.js?v=47';
+import { SCENES, CHARACTERS, getScene, isSceneOpen } from './scenes-data.js?v=47';
+import { getPresent, loadSchedules } from './schedules.js?v=47';
 
 /** 打烊提示文案（用户要求） */
 const CLOSED_MSG = '已经到了非营业时间了，明天再来吧';
 
 // 头像图片版本号：换图/重裁后 bump 刷新浏览器缓存（图片本身无 hash）
-const ASSET_V = '16';
+const ASSET_V = '17';
 
 const _subtitleTimer = null;
 let _currentSceneId = 'home_living';

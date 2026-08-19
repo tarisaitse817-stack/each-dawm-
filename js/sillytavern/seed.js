@@ -6,7 +6,7 @@
  * ST 条目格式：{ id(uuid), keys, secondaryKeys, content, comment, order, position, selective, selectiveLogic, constant, probability, useProbability, addMemo }
  */
 
-import { getLorebooks, saveLorebook } from './database.js?v=43';
+import { getLorebooks, saveLorebook } from './database.js?v=47';
 
 /** 从内容 YAML 提取角色名（"name: 塞壬"）作为关键词 */
 function extractNameFromContent(content) {

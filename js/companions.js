@@ -3,8 +3,8 @@
    数据源：data/characters.json（静态图鉴） + AppState companions（运行时好感/状态）
    ========================================================================== */
 
-import { AppState } from './state.js?v=43';
-import { Notifications } from './notifications.js?v=43';
+import { AppState } from './state.js?v=47';
+import { Notifications } from './notifications.js?v=47';
 
 /* ==========================================================================
    常量
@@ -53,7 +53,7 @@ export var CompanionsPanel = {
   loadCharacters: async function () {
     if (_characters) return _characters;
     try {
-      var resp = await fetch('data/characters.json');
+      var resp = await fetch('data/characters.json?v=1');
       if (resp.ok) {
         var data = await resp.json();
         _characters = data.characters || [];

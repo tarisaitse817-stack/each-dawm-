@@ -1,10 +1,9 @@
 {
   "_说明": "胜败 CG 姿势池（用户要求：每次战败/胜利随机抽取一个姿势）。win = 胜利时女性受向；lose = 失败时男性受向。可自由增删条目。",
   "win": [
-    "naked, submissive, on knees, blushing, looking at viewer, pleading, presenting",
-    "naked, submissive, lying on back, blushing, looking at viewer, spread legs, hands above head",
-    "naked, submissive, on all fours, blushing, looking back at viewer, presenting",
-    "naked, submissive, sitting, blushing, legs spread, looking at viewer, pleading"
+    "sensitive, suggestive, blushing, embarrassed, teasing, seductive",
+    "looking away, shy, flustered, exposed, torn clothes",
+    "bedroom eyes, bite lip, finger on lips"
   ],
   "lose": [
     "naked, submissive, on knees, blushing, dominated, hands behind back",
@@ -18,5 +17,11 @@
     "defiant expression, sticking out tongue",
     "angry pout, blushing, pointing at viewer",
     "shocked, wide eyes, embarrassed blush"
+  ],
+  "femdom": [
+    "dominant, dominating,  topping, aggressive, assertive",
+    "pinning down, grabbing wrist, holding down, pressing against wall, standing over, towering over",
+    "smug, wicked smile,  taunting, teasing",
+    "gripping chin, grabbing hair"
   ]
 }

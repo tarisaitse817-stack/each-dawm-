@@ -3,13 +3,13 @@
    渲染进近景特写层的对话区（CloseupView.getDialogEl()），对外 API 保持不变
    ========================================================================== */
 
-import { AppState } from './state.js?v=43';
-import { AiClient, BattleBridge } from './ai.js?v=43';
-import { CloseupView, showDuelResultCg } from './closeup.js?v=43';
-import { SceneView } from './scene.js?v=43';
-import { mapEmotion } from './emotion.js?v=43';
-import { CHARACTERS } from './scenes-data.js?v=43';
-import { countPresent, getPresent, getPeriod } from './schedules.js?v=43';
+import { AppState } from './state.js?v=47';
+import { AiClient, BattleBridge } from './ai.js?v=47';
+import { CloseupView, showDuelResultCg } from './closeup.js?v=47';
+import { SceneView } from './scene.js?v=47';
+import { mapEmotion } from './emotion.js?v=47';
+import { CHARACTERS } from './scenes-data.js?v=47';
+import { countPresent, getPresent, getPeriod } from './schedules.js?v=47';
 
 /** 场景 → Danbooru 背景标签（用户需求：胜败 CG 背景随当前场景自动变化） */
 var SCENE_BG_TAGS = {
@@ -778,13 +778,19 @@ export const EventPanel = {
             btn.className = 'battle-trigger-btn finished';
             btn.disabled = true;
           }
-          // 用户新 idea：决斗结束后全屏展示战胜/战败 CG（点击关闭后继续叙事）
-          // 胜利 → 女性受向 NSFW；失败 → 男性受向 NSFW（ComfyUI 动态生成）
-          showDuelResultCg(playerWon, function () {
+          // 用户规则：只有配角决斗触发胜败 CG（路人只是普通决斗，不生成 CG）
+          if (opp && opp.isHeroine) {
+            // 胜利 → 女性受向 NSFW；失败 → 女性攻支配（ComfyUI 动态生成）
+            showDuelResultCg(playerWon, function () {
+              EventPanel._addNarratorText(fullMsg, null, function () {
+                EventPanel.submitAction('决斗结束了，我' + (playerWon ? '赢了' : '输了') + '，生成后续叙事');
+              });
+            }, { genPrompt: EventPanel._buildDuelCgPrompt(playerWon, opp) });
+          } else {
             EventPanel._addNarratorText(fullMsg, null, function () {
               EventPanel.submitAction('决斗结束了，我' + (playerWon ? '赢了' : '输了') + '，生成后续叙事');
             });
-          }, { genPrompt: EventPanel._buildDuelCgPrompt(playerWon, opp) });
+          }
         });
       } else {
         console.error('[EventPanel] Battle launch FAILED:', result.error, result.message);
@@ -825,32 +831,13 @@ export const EventPanel = {
   _buildDuelCgPrompt: function (playerWon, opp) {
     var bg = this._buildCgBackgroundTags();
     var oppName = opp && opp.name;
+    var isHeroine = !!(opp && opp.isHeroine);
 
     // SFW-only 角色（如塞拉）：胜负两侧都走 SFW 姿势池，不生成任何成人内容
     var sfwOnly = CG_PROMPTS && CG_PROMPTS.sfw_only &&
       CG_PROMPTS.sfw_only.indexOf(oppName) !== -1;
 
-    // 随机姿势：SFW-only 角色走 sfw 池，其余按胜负走 NSFW 池
-    var pose = '';
-    if (CG_POSES) {
-      var pool = sfwOnly ? CG_POSES.sfw
-        : (playerWon ? CG_POSES.win : CG_POSES.lose);
-      if (pool && pool.length) pose = pool[Math.floor(Math.random() * pool.length)];
-    }
-    if (!pose) {
-      pose = sfwOnly ? 'smug grin, arms crossed'
-        : (playerWon
-          ? 'naked, submissive, on knees, blushing, looking at viewer, pleading, presenting'
-          : 'naked, submissive, on knees, blushing, dominated');
-    }
-
-    if (!playerWon && !sfwOnly) {
-      // 战败：男性受向（玩家被支配）
-      var male = (CG_PROMPTS && CG_PROMPTS.generic_male) || '1boy, short black hair, adult man';
-      return 'masterpiece, best quality, highres, score_8, ' + male + ', ' + pose + ', ' + bg + ', nsfw';
-    }
-
-    // 女性角色（胜利方 / SFW-only 角色）—— 用户 JSON 优先，内置兜底，最后通用成年女性
+    // 角色提示词：用户 JSON 优先，内置兜底，最后通用成年女性
     var feat = (CG_PROMPTS && CG_PROMPTS.characters && CG_PROMPTS.characters[oppName]) || null;
     if (!feat) {
       var BUILTIN = {
@@ -869,8 +856,37 @@ export const EventPanel = {
       feat = BUILTIN[oppName] || null;
     }
     if (!feat) feat = (CG_PROMPTS && CG_PROMPTS.generic_female) || 'adult woman, mature female';
-    var tail = sfwOnly ? '' : ', nsfw';
-    return 'masterpiece, best quality, highres, score_8, 1girl, ' + feat + ', ' + pose + ', ' + bg + tail;
+
+    var pickPose = function (poolName, fallback) {
+      var pool = CG_POSES && CG_POSES[poolName];
+      if (pool && pool.length) return pool[Math.floor(Math.random() * pool.length)];
+      return fallback;
+    };
+    var QUALITY = 'masterpiece, best quality, highres, score_8';
+
+    // ① SFW-only 角色（如塞拉）：挑衅/哭泣等日常表情，无成人内容
+    if (sfwOnly) {
+      var sfwPose = pickPose('sfw', 'smug grin, arms crossed');
+      return QUALITY + ', 1girl, ' + feat + ', ' + sfwPose + ', ' + bg;
+    }
+
+    // ② 玩家胜利：女配角/女性 受向（女性受姿势池）
+    if (playerWon) {
+      var shouPose = pickPose('win', 'naked, submissive, on knees, blushing, looking at viewer, pleading, presenting');
+      return QUALITY + ', 1girl, ' + feat + ', ' + shouPose + ', ' + bg + ', nsfw';
+    }
+
+    // ③ 玩家失败 vs 女配角：女性攻姿势支配玩家（1girl + 1boy）
+    if (isHeroine) {
+      var gongPose = pickPose('femdom', 'dominant, pinning down, smug, taunting');
+      var maleSub = '1boy, short black hair, adult man, naked, submissive, blushing';
+      return QUALITY + ', 1girl, ' + feat + ', ' + maleSub + ', ' + gongPose + ', ' + bg + ', nsfw';
+    }
+
+    // ④ 玩家失败 vs 路人：男性受向
+    var losePose = pickPose('lose', 'naked, submissive, on knees, blushing, dominated');
+    var male = (CG_PROMPTS && CG_PROMPTS.generic_male) || '1boy, short black hair, adult man';
+    return QUALITY + ', ' + male + ', ' + losePose + ', ' + bg + ', nsfw';
   },
 
   _addRegenerateBtn() {

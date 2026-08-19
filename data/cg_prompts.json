@@ -1,19 +1,21 @@
 {
   "_说明": "胜败 CG 角色提示词（用户可随时编辑，保存后刷新页面生效）。仅成年配角定制；未列出的对手走 generic_female/generic_male。",
   "characters": {
-    "siren": "grey hair, twintails, purple eyes, pointed ears, bare shoulders, blue fin feet",
-    "lingyi": "yellow hair, long hair, blue eyes, white shirt, black pleated skirt, black thighhighs",
-    "lushi": "black hair, medium hair, black hat, white shirt, black cardigan, pleated skirt, black pantyhose",
-    "kisikil": "red hair, twintails, fang, pink jacket, bike shorts",
-    "lilla": "blue hair, double buns, half-closed eyes, white dress, sailor hat",
-    "caihong": "rainbow hair, very long hair, white shirt",
-    "ecclesia": "blonde hair, long hair, silver eyes, white dress, x-shaped mark on forehead",
-    "li": "red hooded robe, blue eyes, petite woman",
-    "tiantong": "white kimono, red hakama, white thighhighs, gold headdress, shy expression",
-    "sera": "green twintails, green ahoge, green eyes, flower hair ornament, tank top, shorts",
-    "winda": "teal green ponytail, long bangs, green eyes, dark circles under eyes, pale skin"
+    "塞壬": "grey hair, twintails, purple eyes, pointed ears, bare shoulders, blue fin feet",
+    "零依": "white short-sleeve shirt, black pleated skirt, black thighhighs, long yellow hair, ahoge, blue eyes",
+    "露世": "grey hair. cap, black cap，white casual blouse, black cardigan, black pleated skirt, black thighhighs, cold, long white hair, ahoge, red eyes",
+    "姬丝吉尔": "ki-sikil, red hair, twintails, phantom thief, purple demon wings, purple demon tail, pink demon horns, purple large hat, purple cropped jacket, purple skirt, purple gloves, orange-tinted eyewear, red necktie, black bodystocking, purple high heel boots, adjusting hat",
+    "璃拉": "blue hair, double buns, half-closed eyes, white dress, sailor hat",
+    "艾克利西亚": "blonde, waist-length hair, twin buns, flower hairpin, blue hair ribbon, hair horns, silver eyes, fair skin, golden X-shaped",
+    "天童": "white sleeveless kimono, white kimono, red hakama, white ribbon-trimmed sleeves, flowing sleeves,white stocking",
+    "彩虹": "black dress, dark robe, angelic, elegant, mature woman, tall, slender,pink bangs, multicolored hair, rainbow-colored hair,flowing hair, colorful hair",
+    "塞拉": "green Medium-length hair, twintails, green eyes,despise",
+    "米德拉什": "teal green long hair, high ponytail, messy hair, messy bangs, hair over eyes, loose hair strands",
+    "理": "hood, hooded cloak, hooded robe, red hood, cloak, robe, hood up, hood over head"
   },
   "generic_female": "adult woman, mature female",
   "generic_male": "1boy, short black hair, adult man",
-  "sfw_only": ["塞拉"]
+  "sfw_only": [
+    "塞拉"
+  ]
 }

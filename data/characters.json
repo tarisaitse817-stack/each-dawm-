@@ -236,7 +236,7 @@
         "glow": "rgba(140,220,150,0.3)",
         "accent": "#8cdc96"
       },
-      "introImage": "assets/companions/sera.png",
+      "introImage": "assets/companions/sera-intro.png",
       "avatar": "assets/companions/sera.png"
     },
     {
@@ -261,7 +261,7 @@
         "glow": "rgba(150,130,200,0.3)",
         "accent": "#9682c8"
       },
-      "introImage": "assets/companions/winda.png",
+      "introImage": "assets/companions/winda-intro.png",
       "avatar": "assets/companions/winda.png"
     }
   ]
