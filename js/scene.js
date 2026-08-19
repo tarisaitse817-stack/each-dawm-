@@ -1,7 +1,7 @@
 // 场景视图：背景层 + 出口 + 物件热点 + 旁白字幕 + 立绘层（在场由行程表派生）
-import { AppState } from './state.js?v=16';
-import { SCENES, CHARACTERS, getScene } from './scenes-data.js?v=16';
-import { getPresent, loadSchedules } from './schedules.js?v=16';
+import { AppState } from './state.js?v=17';
+import { SCENES, CHARACTERS, getScene } from './scenes-data.js?v=17';
+import { getPresent, loadSchedules } from './schedules.js?v=17';
 
 // 头像图片版本号：换图/重裁后 bump 刷新浏览器缓存（图片本身无 hash）
 const ASSET_V = '12';
@@ -20,7 +20,7 @@ function _renderExits(scene) {
     const div = document.createElement('div');
     div.className = `scene-exit exit-${e.dir}`;
     div.innerHTML = `<span class="exit-label">${e.label}</span>`;
-    div.addEventListener('click', () => SceneView.travelTo(e.to));
+    div.addEventListener('click', () => SceneView.travelTo(e.to, e.dir));
     layer.appendChild(div);
   }
 }
@@ -105,7 +105,7 @@ export const SceneView = {
     if (scene) _renderAvatars(scene);
   },
 
-  showScene(sceneId) {
+  showScene(sceneId, opts) {
     const scene = getScene(sceneId);
     if (!scene) return;
     _currentSceneId = sceneId;
@@ -122,14 +122,51 @@ export const SceneView = {
     _renderObjects(scene);
     _renderAvatars(scene);
     this.showSubtitle(`${scene.name} · ${scene.description}`);
+    // 出口翻页动画：新场景如书页从点击方向翻开盖住旧场景
+    if (opts && opts.flipFrom) this._playFlip(scene, opts.flipFrom);
   },
 
-  travelTo(sceneId) {
+  /**
+   * 场景翻页动画：覆盖层贴上新场景背景，按出口方向设定旋转轴，
+   * 从垂直于屏幕翻到平铺（700ms）。左侧按钮 → 从左往右翻；右侧镜像；
+   * 顶部/底部（居中按钮）→ 从上往下翻。
+   * @param {Object} scene - 目标场景
+   * @param {string} dir - 出口方向 left / right / top / bottom
+   */
+  _playFlip(scene, dir) {
+    var overlay = document.getElementById('scene-flip');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'scene-flip';
+      document.body.appendChild(overlay);
+    }
+    // 快速连点多个出口：取消上一次翻页的收尾（防旧监听器误删新遮罩）
+    if (overlay._flipOnEnd) overlay.removeEventListener('animationend', overlay._flipOnEnd);
+    if (overlay._flipTimer) { clearTimeout(overlay._flipTimer); overlay._flipTimer = null; }
+
+    overlay.className = 'scene-flip from-' + dir;
+    overlay.style.backgroundImage = _bgUrl(scene);
+    void overlay.offsetHeight; // 强制重绘重启动画
+
+    var finish = function () {
+      if (overlay._flipOnEnd) {
+        overlay.removeEventListener('animationend', overlay._flipOnEnd);
+        overlay._flipOnEnd = null;
+      }
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    };
+    // 动画结束后移除（animationend + setTimeout 兜底，防事件丢失残留遮罩）
+    overlay._flipOnEnd = finish;
+    overlay.addEventListener('animationend', finish, { once: true });
+    overlay._flipTimer = setTimeout(finish, 1200);
+  },
+
+  travelTo(sceneId, dir) {
     const from = getScene(_currentSceneId);
     const to = getScene(sceneId);
     if (!to) return;
     if (window.App && typeof window.App.advanceTime === 'function') window.App.advanceTime();
-    this.showScene(sceneId);
+    this.showScene(sceneId, { flipFrom: dir || null });
     if (from) {
       const here = document.querySelector('.scene-exit'); // 到达提示已在 showScene 字幕中
     }

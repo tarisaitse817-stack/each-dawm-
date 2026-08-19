@@ -23,8 +23,8 @@
 /* 注意：现有规则 .closeup-portrait img { width:100vw; height:100vh; object-fit:cover }，
    下面选择器特异性更高，必须显式覆盖宽高，否则立绘会被强行拉满全屏。 */
 .closeup-portrait .closeup-cg {
-  width: 94%; height: auto; max-height: 88vh; object-fit: contain;
-  border-radius: 12px; box-shadow: 0 8px 40px rgba(0,0,0,.6);
+  /* 用户要求：CG 全屏铺满（cover 裁边居中，无圆角无留白） */
+  width: 100vw; height: 100vh; object-fit: cover;
   animation: closeup-cg-in .4s ease;
 }
 @keyframes closeup-cg-in { from { opacity: 0; } to { opacity: 1; } }
