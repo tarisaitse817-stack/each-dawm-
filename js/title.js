@@ -2,13 +2,13 @@
    光之回响 (Echoes of Light) — TitleScreen 标题界面
    ========================================================================== */
 
-import { AppState } from './state.js?v=29';
-import { StorageManager } from './storage.js?v=29';
-import { Navigation } from './navigation.js?v=29';
-import { showInitialBackground } from './scene.js?v=29';
-import { TransitionView } from './transition.js?v=29';
-import { EventPanel } from './event.js?v=29';
-import { playOpeningGreeting } from './greeting.js?v=29';
+import { AppState } from './state.js?v=30';
+import { StorageManager } from './storage.js?v=30';
+import { Navigation } from './navigation.js?v=30';
+import { showInitialBackground } from './scene.js?v=30';
+import { TransitionView } from './transition.js?v=30';
+import { EventPanel } from './event.js?v=30';
+import { playOpeningGreeting } from './greeting.js?v=30';
 
 /* 开场字幕（新游戏转场）：世界书 first_mes 前 3 句；失败回退内置默认文本前 3 句 */
 const MAX_OPENING_LINES = 3;
@@ -267,6 +267,10 @@ export const TitleScreen = {
     if (!this._el) return;
     this._showCover();
     this._el.classList.remove('hidden');
+
+    // 回到标题界面时隐藏右上角时间戳（用户要求：仅游戏中显示）
+    var timeEl = document.getElementById('time-display');
+    if (timeEl) timeEl.classList.add('hidden');
 
     // 隐藏侧边栏 — 标题画面期间不可见
     var sidebar = document.getElementById('sidebar');

@@ -1,9 +1,9 @@
 /**
  * 光之回响 AI 客户端 + MDPro3 对战桥接
  */
-import { AppState } from './state.js?v=29';
-import { getPresent, getActivity } from './schedules.js?v=29';
-import { getScene } from './scenes-data.js?v=29';
+import { AppState } from './state.js?v=30';
+import { getPresent, getActivity } from './schedules.js?v=30';
+import { getScene } from './scenes-data.js?v=30';
 
 export const AiClient = {
     endpoint: 'http://127.0.0.1:9999',

@@ -3,18 +3,18 @@
    设置面板 + 键盘快捷键 + 全模块集成
    ========================================================================== */
 
-import { AppState } from './state.js?v=29';
-import { StorageManager } from './storage.js?v=29';
-import { Navigation } from './navigation.js?v=29';
-import { Particles } from './particles.js?v=29';
-import { TitleScreen } from './title.js?v=29';
-import { EventPanel } from './event.js?v=29';
-import { AiClient, BattleBridge } from './ai.js?v=29';
-import { CompanionsPanel } from './companions.js?v=29';
-import { InventoryPanel } from './inventory.js?v=29';
-import { SceneView } from './scene.js?v=29';
-import { CloseupView } from './closeup.js?v=29';
-import { Notifications } from './notifications.js?v=29';
+import { AppState } from './state.js?v=30';
+import { StorageManager } from './storage.js?v=30';
+import { Navigation } from './navigation.js?v=30';
+import { Particles } from './particles.js?v=30';
+import { TitleScreen } from './title.js?v=30';
+import { EventPanel } from './event.js?v=30';
+import { AiClient, BattleBridge } from './ai.js?v=30';
+import { CompanionsPanel } from './companions.js?v=30';
+import { InventoryPanel } from './inventory.js?v=30';
+import { SceneView } from './scene.js?v=30';
+import { CloseupView } from './closeup.js?v=30';
+import { Notifications } from './notifications.js?v=30';
 
 export const App = {
 
@@ -113,10 +113,12 @@ export const App = {
       EventPanel.init();
     });
 
-    // 17. 注册视图切换订阅
+    // 17. 注册视图切换订阅（进入游戏视图时显示右上角时间戳；标题界面隐藏）
+    var self2 = this;
     AppState.subscribe('currentView', function (newView) {
       if (newView && newView !== 'title') {
         Navigation.navigateTo(newView);
+        self2.updateTimeDisplay();
       }
     });
 
@@ -128,9 +130,10 @@ export const App = {
     // 19. 始终显示标题界面（有存档时显示"继续冒险"按钮）
     TitleScreen.show();
 
-    // 20. 初始化时间显示
+    // 20. 初始化时间显示引用（用户要求：标题界面不显示时间戳，
+    //     进入游戏时由 currentView 订阅触发显示）
     this._timeEl = document.getElementById('time-display');
-    this.updateTimeDisplay();
+    // this.updateTimeDisplay();
 
     // 21. SillyTavern AI 聊天集成（异步，不阻塞启动）
     this._initSillytavern();
@@ -143,9 +146,9 @@ export const App = {
      ====================================================================== */
   async _initSillytavern() {
     try {
-      var storeMod = await import('./sillytavern/store.js?v=29');
-      var uiMod = await import('./sillytavern/ui/index.js?v=29');
-      var seedMod = await import('./sillytavern/seed.js?v=29');
+      var storeMod = await import('./sillytavern/store.js?v=30');
+      var uiMod = await import('./sillytavern/ui/index.js?v=30');
+      var seedMod = await import('./sillytavern/seed.js?v=30');
       var store = storeMod.sillytavernStore;
       await store.loadAll();
 
