@@ -1,10 +1,10 @@
 // 全屏特写视图（v2 流程）：点击头像 → 立绘居中（standing）→ 对话开始 2 秒后 → CG 3 秒（如有）
 // → 回到立绘继续对话常驻。无 CG 时全程立绘。
 // 降级链：standing.png → neutral.png（emotionFile）→ fullbody.png → 「立绘缺失」占位
-import { AppState } from './state.js?v=39';
-import { CHARACTERS, emotionFile } from './scenes-data.js?v=39';
-import { getCgPath } from './schedules.js?v=39';
-import { CgGenerator, AiClient } from './ai.js?v=39';
+import { AppState } from './state.js?v=40';
+import { CHARACTERS, emotionFile } from './scenes-data.js?v=40';
+import { getCgPath } from './schedules.js?v=40';
+import { CgGenerator, AiClient } from './ai.js?v=40';
 
 // 素材版本号：头像/CG/立绘图片 URL 统一加 v 参数（图片本身无 hash，
 // 重裁/换图后必须 bump 才能刷新用户浏览器缓存；JS 模块走 import 的 v 参数）

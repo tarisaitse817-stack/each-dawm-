@@ -185,14 +185,14 @@
    5. 按钮容器
    -------------------------------------------------------------------------- */
 
-/* 用户要求：三个按钮（继续冒险/开始冒险/设置）横向排列在最右侧，均为卡背样式 */
+/* 用户要求：三个按钮（继续冒险/开始冒险/设置）竖向排列在最右侧，均为卡背样式 */
 .title-btn-container {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 28px;
-  margin-top: 48px;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 26px;
+  margin-top: 0;
   padding-right: 64px;
   box-sizing: border-box;
   width: 100%;

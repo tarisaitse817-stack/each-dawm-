@@ -3,13 +3,13 @@
    渲染进近景特写层的对话区（CloseupView.getDialogEl()），对外 API 保持不变
    ========================================================================== */
 
-import { AppState } from './state.js?v=39';
-import { AiClient, BattleBridge } from './ai.js?v=39';
-import { CloseupView, showDuelResultCg } from './closeup.js?v=39';
-import { SceneView } from './scene.js?v=39';
-import { mapEmotion } from './emotion.js?v=39';
-import { CHARACTERS } from './scenes-data.js?v=39';
-import { countPresent, getPresent, getPeriod } from './schedules.js?v=39';
+import { AppState } from './state.js?v=40';
+import { AiClient, BattleBridge } from './ai.js?v=40';
+import { CloseupView, showDuelResultCg } from './closeup.js?v=40';
+import { SceneView } from './scene.js?v=40';
+import { mapEmotion } from './emotion.js?v=40';
+import { CHARACTERS } from './scenes-data.js?v=40';
+import { countPresent, getPresent, getPeriod } from './schedules.js?v=40';
 
 /** 场景 → Danbooru 背景标签（用户需求：胜败 CG 背景随当前场景自动变化） */
 var SCENE_BG_TAGS = {
