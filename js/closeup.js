@@ -1,9 +1,9 @@
 // 全屏特写视图（v2 流程）：点击头像 → 立绘居中（standing）→ 对话开始 2 秒后 → CG 3 秒（如有）
 // → 回到立绘继续对话常驻。无 CG 时全程立绘。
 // 降级链：standing.png → neutral.png（emotionFile）→ fullbody.png → 「立绘缺失」占位
-import { AppState } from './state.js?v=34';
-import { CHARACTERS, emotionFile } from './scenes-data.js?v=34';
-import { getCgPath } from './schedules.js?v=34';
+import { AppState } from './state.js?v=35';
+import { CHARACTERS, emotionFile } from './scenes-data.js?v=35';
+import { getCgPath } from './schedules.js?v=35';
 
 // 素材版本号：头像/CG/立绘图片 URL 统一加 v 参数（图片本身无 hash，
 // 重裁/换图后必须 bump 才能刷新用户浏览器缓存；JS 模块走 import 的 v 参数）
@@ -89,17 +89,11 @@ export const CloseupView = {
 
   /**
    * 对话开始通知（event.js 首条叙事打字、开局寒暄首句显示时调用）。
-   * 若本角色有 CG 且本次打开尚未安排：2 秒后切入 CG 段。
+   * 用户要求：取消剧情中点击角色时的 CG —— 立绘常驻，不再切入 CG 段。
+   * （原「对话 2 秒后 CG」逻辑下线；_startCgPhase 保留备用）
    */
   onDialogueStarted() {
-    if (_cgScheduled || _phase !== 'standing' || !_pendingCgPath) return;
-    _cgScheduled = true;
-    var self = this;
-    _timers.push(setTimeout(() => {
-      if (_phase !== 'standing') return; // 期间已关闭/已切走
-      // 注意：_pendingCgPath 是模块级变量，不是 CloseupView 对象的属性（self._pendingCgPath 恒为 undefined）
-      self._startCgPhase(_pendingCgPath);
-    }, 2000));
+    // 已取消：点击角色 → 全程立绘
   },
 
   /* CG 段：全屏 CG 3 秒（加载失败直接回立绘段） */
@@ -221,3 +215,50 @@ export const CloseupView = {
 
   getDialogEl() { return document.getElementById('closeup-dialog'); },
 };
+
+/**
+ * 决斗结束胜败 CG（用户新 idea）：决斗结束后全屏展示战胜/战败 CG，
+ * 点击任意处关闭（关闭后回调继续后续叙事）。
+ * 素材：assets/cg/victory.png（战胜）/ assets/cg/defeat.png（战败）；
+ * 缺图时降级为文字版胜/负全屏（金色/暗红色大字 + 光晕）。
+ * @param {boolean} playerWon - 玩家是否获胜
+ * @param {Function} onDone - 玩家点击关闭后的回调
+ */
+export function showDuelResultCg(playerWon, onDone) {
+  const overlay = document.createElement('div');
+  overlay.id = 'duel-cg-overlay';
+  const img = new Image();
+  img.className = 'duel-cg-img';
+  img.alt = playerWon ? '胜利' : '败北';
+  const textEl = document.createElement('div');
+  textEl.className = 'duel-cg-text ' + (playerWon ? 'win' : 'lose');
+  textEl.textContent = playerWon ? '胜 利' : '败 北';
+  const hint = document.createElement('div');
+  hint.className = 'duel-cg-hint';
+  hint.textContent = '点击继续 ▸';
+
+  overlay.append(img, textEl, hint);
+  document.body.appendChild(overlay);
+
+  var done = false;
+  var finish = function () {
+    if (done) return;
+    done = true;
+    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    document.removeEventListener('keydown', onKey);
+    if (onDone) onDone();
+  };
+  var onKey = function (e) {
+    if (e.key === 'Escape' || e.key === 'Enter') finish();
+  };
+  overlay.addEventListener('click', finish);
+  document.addEventListener('keydown', onKey);
+
+  // 素材加载：失败降级为纯文字版
+  img.onerror = function () {
+    if (done) return;
+    img.remove();
+    overlay.classList.add('text-only');
+  };
+  img.src = (playerWon ? 'assets/cg/victory.png' : 'assets/cg/defeat.png') + '?v=' + ASSET_V;
+}

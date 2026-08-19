@@ -3,12 +3,12 @@
  * 左侧会话列表 + 右侧消息区/变量面板/输入栏；头部可打开设置/世界书/预设。
  */
 
-import { sillytavernStore } from '../store.js?v=34';
-import { USER_ROLE } from '../variables.js?v=34';
-import { el, makeOverlay, showToast } from './dom.js?v=34';
-import { openSettingsModal } from './settings-modal.js?v=34';
-import { openLorebookModal } from './lorebook-modal.js?v=34';
-import { openPresetModal } from './preset-modal.js?v=34';
+import { sillytavernStore } from '../store.js?v=35';
+import { USER_ROLE } from '../variables.js?v=35';
+import { el, makeOverlay, showToast } from './dom.js?v=35';
+import { openSettingsModal } from './settings-modal.js?v=35';
+import { openLorebookModal } from './lorebook-modal.js?v=35';
+import { openPresetModal } from './preset-modal.js?v=35';
 
 export function openChatModal() {
   const { panel, close } = makeOverlay(() => { cleanup(); }, { zIndex: 1105, center: true });

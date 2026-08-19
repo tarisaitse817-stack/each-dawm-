@@ -3,13 +3,13 @@
    渲染进近景特写层的对话区（CloseupView.getDialogEl()），对外 API 保持不变
    ========================================================================== */
 
-import { AppState } from './state.js?v=34';
-import { AiClient, BattleBridge } from './ai.js?v=34';
-import { CloseupView } from './closeup.js?v=34';
-import { SceneView } from './scene.js?v=34';
-import { mapEmotion } from './emotion.js?v=34';
-import { CHARACTERS } from './scenes-data.js?v=34';
-import { countPresent, getPresent } from './schedules.js?v=34';
+import { AppState } from './state.js?v=35';
+import { AiClient, BattleBridge } from './ai.js?v=35';
+import { CloseupView, showDuelResultCg } from './closeup.js?v=35';
+import { SceneView } from './scene.js?v=35';
+import { mapEmotion } from './emotion.js?v=35';
+import { CHARACTERS } from './scenes-data.js?v=35';
+import { countPresent, getPresent } from './schedules.js?v=35';
 
 /* ==========================================================================
    常量
@@ -727,8 +727,11 @@ export const EventPanel = {
             btn.className = 'battle-trigger-btn finished';
             btn.disabled = true;
           }
-          EventPanel._addNarratorText(fullMsg, null, function () {
-            EventPanel.submitAction('决斗结束了，我' + (playerWon ? '赢了' : '输了') + '，生成后续叙事');
+          // 用户新 idea：决斗结束后全屏展示战胜/战败 CG（点击关闭后继续叙事）
+          showDuelResultCg(playerWon, function () {
+            EventPanel._addNarratorText(fullMsg, null, function () {
+              EventPanel.submitAction('决斗结束了，我' + (playerWon ? '赢了' : '输了') + '，生成后续叙事');
+            });
           });
         });
       } else {

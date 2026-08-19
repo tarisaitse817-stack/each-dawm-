@@ -1,5 +1,5 @@
 // 情感标签 → 8 表情 key 的映射与归一化
-import { EMOTION_LIST } from './scenes-data.js?v=34';
+import { EMOTION_LIST } from './scenes-data.js?v=35';
 
 const ALIASES = {
   blush: 'blushing', blushing: 'blushing', embarrassed: 'blushing', shy: 'blushing',

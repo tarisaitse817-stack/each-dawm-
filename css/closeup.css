@@ -45,6 +45,56 @@
 .phase-cg #closeup-dialog { pointer-events: none; opacity: .35; transition: opacity .4s; }
 
 /* --------------------------------------------------------------------------
+   决斗结束胜败 CG（closeup.js showDuelResultCg）
+   有素材：assets/cg/victory.png / defeat.png 全屏铺满；
+   缺素材：文字版大字胜/负 + 光晕（.text-only）
+   -------------------------------------------------------------------------- */
+#duel-cg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1150;
+  background: #0a0c1c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  animation: duel-cg-in 0.45s ease;
+}
+@keyframes duel-cg-in { from { opacity: 0; } to { opacity: 1; } }
+#duel-cg-overlay .duel-cg-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+#duel-cg-overlay .duel-cg-text {
+  position: relative;
+  font-family: var(--font-title, 'Cinzel', serif);
+  font-size: clamp(64px, 14vw, 160px);
+  font-weight: 700;
+  letter-spacing: 0.35em;
+  text-indent: 0.35em;
+  text-shadow: 0 0 40px currentColor;
+  animation: duel-cg-pop 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+@keyframes duel-cg-pop { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+#duel-cg-overlay .duel-cg-text.win { color: #FFD54F; }
+#duel-cg-overlay .duel-cg-text.lose { color: #C0392B; }
+#duel-cg-overlay.text-only .duel-cg-text { text-shadow: 0 0 60px currentColor, 0 0 120px currentColor; }
+#duel-cg-overlay .duel-cg-hint {
+  position: absolute;
+  bottom: 42px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-ui, 'Noto Sans SC', sans-serif);
+  font-size: 13px;
+  color: rgba(245, 236, 215, 0.75);
+  letter-spacing: 2px;
+  animation: greeting-hint-pulse 1.6s ease-in-out infinite;
+}
+
+/* --------------------------------------------------------------------------
    开局寒暄桥段（greeting.js）：立绘 + 台词卡，点击推进
    -------------------------------------------------------------------------- */
 .greeting-box {
