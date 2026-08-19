@@ -3,18 +3,18 @@
    设置面板 + 键盘快捷键 + 全模块集成
    ========================================================================== */
 
-import { AppState } from './state.js?v=37';
-import { StorageManager } from './storage.js?v=37';
-import { Navigation } from './navigation.js?v=37';
-import { Particles } from './particles.js?v=37';
-import { TitleScreen } from './title.js?v=37';
-import { EventPanel } from './event.js?v=37';
-import { AiClient, BattleBridge } from './ai.js?v=37';
-import { CompanionsPanel } from './companions.js?v=37';
-import { InventoryPanel } from './inventory.js?v=37';
-import { SceneView } from './scene.js?v=37';
-import { CloseupView } from './closeup.js?v=37';
-import { Notifications } from './notifications.js?v=37';
+import { AppState } from './state.js?v=38';
+import { StorageManager } from './storage.js?v=38';
+import { Navigation } from './navigation.js?v=38';
+import { Particles } from './particles.js?v=38';
+import { TitleScreen } from './title.js?v=38';
+import { EventPanel } from './event.js?v=38';
+import { AiClient, BattleBridge } from './ai.js?v=38';
+import { CompanionsPanel } from './companions.js?v=38';
+import { InventoryPanel } from './inventory.js?v=38';
+import { SceneView } from './scene.js?v=38';
+import { CloseupView } from './closeup.js?v=38';
+import { Notifications } from './notifications.js?v=38';
 
 export const App = {
 
@@ -146,9 +146,9 @@ export const App = {
      ====================================================================== */
   async _initSillytavern() {
     try {
-      var storeMod = await import('./sillytavern/store.js?v=37');
-      var uiMod = await import('./sillytavern/ui/index.js?v=37');
-      var seedMod = await import('./sillytavern/seed.js?v=37');
+      var storeMod = await import('./sillytavern/store.js?v=38');
+      var uiMod = await import('./sillytavern/ui/index.js?v=38');
+      var seedMod = await import('./sillytavern/seed.js?v=38');
       var store = storeMod.sillytavernStore;
       await store.loadAll();
 

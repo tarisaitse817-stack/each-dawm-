@@ -3,13 +3,41 @@
    渲染进近景特写层的对话区（CloseupView.getDialogEl()），对外 API 保持不变
    ========================================================================== */
 
-import { AppState } from './state.js?v=37';
-import { AiClient, BattleBridge } from './ai.js?v=37';
-import { CloseupView, showDuelResultCg } from './closeup.js?v=37';
-import { SceneView } from './scene.js?v=37';
-import { mapEmotion } from './emotion.js?v=37';
-import { CHARACTERS } from './scenes-data.js?v=37';
-import { countPresent, getPresent } from './schedules.js?v=37';
+import { AppState } from './state.js?v=38';
+import { AiClient, BattleBridge } from './ai.js?v=38';
+import { CloseupView, showDuelResultCg } from './closeup.js?v=38';
+import { SceneView } from './scene.js?v=38';
+import { mapEmotion } from './emotion.js?v=38';
+import { CHARACTERS } from './scenes-data.js?v=38';
+import { countPresent, getPresent, getPeriod } from './schedules.js?v=38';
+
+/** 场景 → Danbooru 背景标签（用户需求：胜败 CG 背景随当前场景自动变化） */
+var SCENE_BG_TAGS = {
+  home_living:     'living room, sofa, aquarium, indoors',
+  home_bed:        'bedroom, bed, nightstand, indoors',
+  home_door:       'entrance, front door, outdoors',
+  twins_room:      'streaming room, computer desk, neon lights, indoors',
+  food_bunshop:    'steamed bun shop, food stall, steam, indoors',
+  food_st:         'food street, food stalls, lanterns, outdoors',
+  market_hall:     'supermarket, shelves, shopping cart, indoors',
+  market_door:     'supermarket entrance, storefront, outdoors',
+  cardshop_inside: 'card shop, glass display case, duel table, indoors',
+  cardshop_door:   'card shop storefront, signboard, outdoors',
+  mall_st:         'shopping street, city, storefronts, outdoors',
+  mall_dessert:    'dessert shop, cafe, cakes, indoors',
+  church:          'church interior, stained glass, candles, indoors',
+  suburb_st:       'suburban street, road, trees, outdoors',
+  suburb_station:  'train platform, station, railway, outdoors',
+  forest:          'forest, trees, grass, outdoors',
+};
+
+/** 时段 → 光线/时间标签 */
+var PERIOD_BG_TAGS = {
+  morning:   'morning, daylight',
+  afternoon: 'day, daylight',
+  evening:   'evening, sunset, warm light',
+  night:     'night, moonlight, dim light',
+};
 
 /* ==========================================================================
    常量
@@ -755,14 +783,28 @@ export const EventPanel = {
   },
 
   /**
+   * 背景标签：当前场景 + 时段 自动生成（用户需求：CG 背景随角色所在场景变化）
+   */
+  _buildCgBackgroundTags: function () {
+    var state = AppState.get();
+    var sceneTags = SCENE_BG_TAGS[state.currentSceneId] || 'indoors';
+    var hour = (state.gameTime && state.gameTime.hour != null) ? state.gameTime.hour : 12;
+    var periodTags = PERIOD_BG_TAGS[getPeriod(hour)] || 'day, daylight';
+    return sceneTags + ', ' + periodTags;
+  },
+
+  /**
    * 胜败 CG 提示词（用户需求：胜利 → 女性受向 NSFW；失败 → 男性受向 NSFW）
+   * 背景按当前场景+时段自动注入。
    * 仅成年配角（世界书设定 ≥18：塞壬/零依/露世/姬丝吉尔/璃拉/彩虹）定制外貌标签；
    * 其余对手（路人/未成年设定的配角）使用通用成年角色描述。
+   * TODO：用户提供各角色详细提示词后，接入 data/cg_prompts.json 优先使用。
    */
   _buildDuelCgPrompt: function (playerWon, opp) {
+    var bg = this._buildCgBackgroundTags();
     if (!playerWon) {
       // 战败：男性受向（玩家被支配）
-      return 'masterpiece, best quality, highres, score_8, 1boy, short black hair, adult man, naked, submissive, on knees, blushing, dominated, nsfw';
+      return 'masterpiece, best quality, highres, score_8, 1boy, short black hair, adult man, naked, submissive, on knees, blushing, dominated, ' + bg + ', nsfw';
     }
     var FEATURES = {
       '塞壬': 'grey hair, twintails, purple eyes, pointed ears, bare shoulders, blue fin feet',
@@ -774,7 +816,7 @@ export const EventPanel = {
     };
     var feat = (opp && FEATURES[opp.name]) || 'adult woman, mature female';
     return 'masterpiece, best quality, highres, score_8, 1girl, ' + feat +
-      ', naked, submissive, on knees, blushing, looking at viewer, pleading, presenting, nsfw';
+      ', naked, submissive, on knees, blushing, looking at viewer, pleading, presenting, ' + bg + ', nsfw';
   },
 
   _addRegenerateBtn() {
