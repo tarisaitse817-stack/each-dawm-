@@ -1,7 +1,7 @@
 // 场景视图：背景层 + 出口 + 物件热点 + 旁白字幕 + 立绘层（在场由行程表派生）
-import { AppState } from './state.js?v=18';
-import { SCENES, CHARACTERS, getScene } from './scenes-data.js?v=18';
-import { getPresent, loadSchedules } from './schedules.js?v=18';
+import { AppState } from './state.js?v=19';
+import { SCENES, CHARACTERS, getScene } from './scenes-data.js?v=19';
+import { getPresent, loadSchedules } from './schedules.js?v=19';
 
 // 头像图片版本号：换图/重裁后 bump 刷新浏览器缓存（图片本身无 hash）
 const ASSET_V = '13';
