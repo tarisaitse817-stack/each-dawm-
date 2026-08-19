@@ -1,7 +1,7 @@
 // 场景视图：背景层 + 出口 + 物件热点 + 旁白字幕 + 立绘层（在场由行程表派生）
-import { AppState } from './state.js?v=27';
-import { SCENES, CHARACTERS, getScene } from './scenes-data.js?v=27';
-import { getPresent, loadSchedules } from './schedules.js?v=27';
+import { AppState } from './state.js?v=28';
+import { SCENES, CHARACTERS, getScene } from './scenes-data.js?v=28';
+import { getPresent, loadSchedules } from './schedules.js?v=28';
 
 // 头像图片版本号：换图/重裁后 bump 刷新浏览器缓存（图片本身无 hash）
 const ASSET_V = '13';
@@ -225,11 +225,11 @@ export const SceneView = {
     if (present.length > 0) {
       var names = present.map((p) => ((CHARACTERS[p.charId] || {}).name || p.charId)).join('、');
       var bgNote = npcNote ? `（背景：${npcNote}）` : '';
-      aiText = `（系统提示：你刚进入${scene.name}。在场角色：${names}。${bgNote}请以旁白视角、用2-3句话描述她们注意到你到来时的反应，不要输出角色对话，不要输出任何标签，总字数不超过200字。）`;
+      aiText = `（系统提示：你刚进入${scene.name}。在场角色：${names}。${bgNote}请以旁白视角、用2-3句话描述她们注意到你到来时的反应，不要输出角色对话，不要输出任何标签。）`;
     } else if (npcNote) {
-      aiText = `（系统提示：你刚进入${scene.name}。${npcNote}。请以旁白视角、用2-3句话描述这里的环境与NPC们的活动，不要输出任何标签，总字数不超过200字。）`;
+      aiText = `（系统提示：你刚进入${scene.name}。${npcNote}。请以旁白视角、用2-3句话描述这里的环境与NPC们的活动，不要输出任何标签。）`;
     } else {
-      aiText = `（系统提示：你刚进入${scene.name}，这里空无一人。请以旁白视角、用2-3句话描述这个环境，不要输出任何标签，总字数不超过200字。）`;
+      aiText = `（系统提示：你刚进入${scene.name}，这里空无一人。请以旁白视角、用2-3句话描述这个环境，不要输出任何标签。）`;
     }
 
     setTimeout(function () {

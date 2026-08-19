@@ -3,13 +3,13 @@
    渲染进近景特写层的对话区（CloseupView.getDialogEl()），对外 API 保持不变
    ========================================================================== */
 
-import { AppState } from './state.js?v=27';
-import { AiClient, BattleBridge } from './ai.js?v=27';
-import { CloseupView } from './closeup.js?v=27';
-import { SceneView } from './scene.js?v=27';
-import { mapEmotion } from './emotion.js?v=27';
-import { CHARACTERS } from './scenes-data.js?v=27';
-import { countPresent } from './schedules.js?v=27';
+import { AppState } from './state.js?v=28';
+import { AiClient, BattleBridge } from './ai.js?v=28';
+import { CloseupView } from './closeup.js?v=28';
+import { SceneView } from './scene.js?v=28';
+import { mapEmotion } from './emotion.js?v=28';
+import { CHARACTERS } from './scenes-data.js?v=28';
+import { countPresent } from './schedules.js?v=28';
 
 /* ==========================================================================
    常量
@@ -496,13 +496,11 @@ export const EventPanel = {
     this._showThinking();
     AiClient.chat(aiText).then(function (result) {
       self._hideThinking();
-      // 进场景旁白硬性限长 200 字（用户要求；提示词约束之外的兜底截断）
-      var narrative = truncate(result.narrative || '', 200);
       self._isInternalUpdate = true;
-      AppState.push('narrativeHistory', narrative);
+      AppState.push('narrativeHistory', result.narrative);
       self._isInternalUpdate = false;
       self._lastAISuggestions = result.suggestions || [];
-      self._addNarratorText(narrative, undefined, function () {
+      self._addNarratorText(result.narrative, undefined, function () {
         self._pendingResponses--;
         self._isSubmitting = false;
         if (self._pendingResponses === 0) {
