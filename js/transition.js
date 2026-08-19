@@ -39,8 +39,10 @@ export const TransitionView = {
 
   /**
    * 播放转场
-   * @param {{ lines: string[]|null, onDone?: Function }} opts - lines 为句子数组（逐句字幕）；
-   *        null 直接光晕（读档）；onDone 在转场完全结束（淡出完成后）回调
+   * @param {{ lines: string[]|null, onDone?: Function, clickAdvance?: boolean }} opts
+   *        lines 为句子数组（逐句字幕）；null 直接光晕（读档）；
+   *        clickAdvance = 每句字幕等待点击后推进下一句（黑屏开场文本模式）；
+   *        onDone 在转场完全结束（淡出完成后）回调
    */
   play(opts) {
     if (this.isPlaying) return;
@@ -56,6 +58,7 @@ export const TransitionView = {
 
     var lines = (opts && opts.lines) || null;
     var onDone = (opts && opts.onDone) || null;
+    this._clickAdvance = !!(opts && opts.clickAdvance);
     var self = this;
 
     this.isPlaying = true;
@@ -83,10 +86,15 @@ export const TransitionView = {
     }
 
     var clickHandler = function () { self._skipSubtitle = true; };
-    this._overlay.addEventListener('click', clickHandler);
+    // 点击推进模式：点击用于逐句推进（不再整体跳过）
+    if (!this._clickAdvance) {
+      this._overlay.addEventListener('click', clickHandler);
+    }
 
     this._playLines(lines, 0, function () {
-      self._overlay.removeEventListener('click', clickHandler);
+      if (!self._clickAdvance) {
+        self._overlay.removeEventListener('click', clickHandler);
+      }
       self._subtitleEl.classList.remove('show');
       startHalo();
     });
@@ -94,6 +102,7 @@ export const TransitionView = {
 
   /**
    * 逐句播放字幕：淡入 → 停留 → 淡出 → 下一句（被跳过时直接结束）
+   * clickAdvance 模式：淡入后等待一次点击再推进下一句
    * @param {string[]} lines
    * @param {number} index
    * @param {Function} done - 全部播完（或被跳过）后的回调
@@ -103,6 +112,18 @@ export const TransitionView = {
     if (this._skipSubtitle || index >= lines.length) { done(); return; }
     this._subtitleEl.textContent = lines[index];
     this._subtitleEl.classList.add('show');
+
+    if (this._clickAdvance) {
+      this._overlay.addEventListener('click', function advance() {
+        self._overlay.removeEventListener('click', advance);
+        self._subtitleEl.classList.remove('show');
+        setTimeout(function () {
+          self._playLines(lines, index + 1, done);
+        }, self._fadeMs);
+      }, { once: true });
+      return;
+    }
+
     var stayMs = Math.max(1200, lines[index].length * 80);
     setTimeout(function () {
       self._subtitleEl.classList.remove('show');

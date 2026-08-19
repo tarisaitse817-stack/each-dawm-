@@ -2,14 +2,14 @@
    光之回响 (Echoes of Light) — TitleScreen 标题界面
    ========================================================================== */
 
-import { AppState } from './state.js?v=48';
-import { StorageManager } from './storage.js?v=48';
-import { Navigation } from './navigation.js?v=48';
-import { showInitialBackground } from './scene.js?v=48';
-import { TransitionView } from './transition.js?v=48';
-import { EventPanel } from './event.js?v=48';
+import { AppState } from './state.js?v=49';
+import { StorageManager } from './storage.js?v=49';
+import { Navigation } from './navigation.js?v=49';
+import { showInitialBackground } from './scene.js?v=49';
+import { TransitionView } from './transition.js?v=49';
+import { EventPanel } from './event.js?v=49';
 // 开局寒暄已停用（用户要求）：js/greeting.js 保留，想恢复时重新引入
-// import { playOpeningGreeting } from './greeting.js?v=48';
+// import { playOpeningGreeting } from './greeting.js?v=49';
 
 /* 开场字幕（新游戏转场）：世界书 first_mes 前 3 句；失败回退内置默认文本前 3 句 */
 const MAX_OPENING_LINES = 3;
@@ -248,9 +248,22 @@ export const TitleScreen = {
 
     this.hide();
 
-    // 开场字幕 → 光晕铺满 → 渐入场景（寒暄已停用，转场后直接自由探索）
-    loadOpeningLines().then(function (lines) {
-      TransitionView.play({ lines: lines });
+    // 开场黑屏文本（用户提供文案）：第一句 → 点击 → 第二句 → 点击 → 光晕转场
+    var OPENING_BLACK_LINES = [
+      '客厅里传来了熟悉的新闻播报声，这时我就知道，我该醒了',
+      '不知道从什么时候开始，越来越多的卡片来到这里，给这栋冷清的房屋带来了不少生气，也带来了不少麻烦。'
+    ];
+    // 进入客厅后的开场白（彩虹立绘登场 + 打字机叙事，结尾引导自由输入）
+    var SCENE_OPENING = '彩虹小姐娴静的坐在沙发上，电视上播放着无聊的早间新闻。在大鱼缸里的塞壬小姐透过玻璃壁出神的看着电视，不知道在想什么。在听到房门的动静之后，两人一齐转过头，看向了你。这时，你决定：';
+
+    TransitionView.play({
+      lines: OPENING_BLACK_LINES,
+      clickAdvance: true,
+      onDone: function () {
+        // 彩虹立绘登场（对话层随之初始化），开场白入叙事队列
+        window.dispatchEvent(new CustomEvent('closeup-open', { detail: { characterId: 'caihong' } }));
+        AppState.push('narrativeHistory', SCENE_OPENING);
+      }
     });
   },
 
