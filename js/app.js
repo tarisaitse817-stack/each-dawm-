@@ -3,18 +3,18 @@
    设置面板 + 键盘快捷键 + 全模块集成
    ========================================================================== */
 
-import { AppState } from './state.js?v=20';
-import { StorageManager } from './storage.js?v=20';
-import { Navigation } from './navigation.js?v=20';
-import { Particles } from './particles.js?v=20';
-import { TitleScreen } from './title.js?v=20';
-import { EventPanel } from './event.js?v=20';
-import { AiClient, BattleBridge } from './ai.js?v=20';
-import { CompanionsPanel } from './companions.js?v=20';
-import { InventoryPanel } from './inventory.js?v=20';
-import { SceneView } from './scene.js?v=20';
-import { CloseupView } from './closeup.js?v=20';
-import { Notifications } from './notifications.js?v=20';
+import { AppState } from './state.js?v=21';
+import { StorageManager } from './storage.js?v=21';
+import { Navigation } from './navigation.js?v=21';
+import { Particles } from './particles.js?v=21';
+import { TitleScreen } from './title.js?v=21';
+import { EventPanel } from './event.js?v=21';
+import { AiClient, BattleBridge } from './ai.js?v=21';
+import { CompanionsPanel } from './companions.js?v=21';
+import { InventoryPanel } from './inventory.js?v=21';
+import { SceneView } from './scene.js?v=21';
+import { CloseupView } from './closeup.js?v=21';
+import { Notifications } from './notifications.js?v=21';
 
 export const App = {
 
@@ -102,8 +102,14 @@ export const App = {
     CloseupView.init();
 
     // 16.7 监听场景立绘点击 → 打开特写层（首次打开时懒初始化对话引擎）
+    //      characterId 为空 = 环境模式（无人场景进入对话，仅背景+对话区）
     window.addEventListener('closeup-open', function (e) {
-      CloseupView.open(e.detail.characterId);
+      var detail = e.detail || {};
+      if (detail.characterId) {
+        CloseupView.open(detail.characterId);
+      } else {
+        CloseupView.openScene(detail.sceneName || '');
+      }
       EventPanel.init();
     });
 
@@ -137,9 +143,9 @@ export const App = {
      ====================================================================== */
   async _initSillytavern() {
     try {
-      var storeMod = await import('./sillytavern/store.js?v=20');
-      var uiMod = await import('./sillytavern/ui/index.js?v=20');
-      var seedMod = await import('./sillytavern/seed.js?v=20');
+      var storeMod = await import('./sillytavern/store.js?v=21');
+      var uiMod = await import('./sillytavern/ui/index.js?v=21');
+      var seedMod = await import('./sillytavern/seed.js?v=21');
       var store = storeMod.sillytavernStore;
       await store.loadAll();
 

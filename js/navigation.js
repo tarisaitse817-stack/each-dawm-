@@ -2,7 +2,8 @@
    光之回响 (Echoes of Light) — Navigation 导航系统
    ========================================================================== */
 
-import { AppState } from './state.js?v=20';
+import { AppState } from './state.js?v=21';
+import { openMap } from './map.js?v=21';
 
 /**
  * 视图路由配置
@@ -64,6 +65,20 @@ export const Navigation = {
 
       _sidebarEl.appendChild(item);
     });
+
+    // --- 渲染地图按钮（打开地图系统覆盖层） ---
+    var mapItem = document.createElement('div');
+    mapItem.className = 'nav-item';
+    mapItem.id = 'nav-map';
+    mapItem.innerHTML =
+      '<i data-lucide="map" class="nav-icon"></i>' +
+      '<span class="nav-label">地图</span>';
+
+    mapItem.addEventListener('click', function () {
+      openMap();
+    });
+
+    _sidebarEl.appendChild(mapItem);
 
     // --- 渲染设置按钮（底部固定） ---
     var settingsItem = document.createElement('div');

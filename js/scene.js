@@ -1,13 +1,36 @@
 // 场景视图：背景层 + 出口 + 物件热点 + 旁白字幕 + 立绘层（在场由行程表派生）
-import { AppState } from './state.js?v=20';
-import { SCENES, CHARACTERS, getScene } from './scenes-data.js?v=20';
-import { getPresent, loadSchedules } from './schedules.js?v=20';
+import { AppState } from './state.js?v=21';
+import { SCENES, CHARACTERS, getScene } from './scenes-data.js?v=21';
+import { getPresent, loadSchedules } from './schedules.js?v=21';
 
 // 头像图片版本号：换图/重裁后 bump 刷新浏览器缓存（图片本身无 hash）
 const ASSET_V = '13';
 
 const _subtitleTimer = null;
 let _currentSceneId = 'home_living';
+
+/**
+ * NPC 氛围文案（用户要求：NPC 密集的地点进入时描述 NPC 行为）。
+ * 用于无人场景的环境旁白，也作为有人场景的背景音注入。
+ */
+const NPC_AMBIENCE = {
+  cardshop_inside: '店里正举办着店赛，老板热情地问你要不要参加',
+  cardshop_door: '牌店门口贴着店赛海报，进出的牌佬们谈笑风生',
+  mall_st: '商业街上人来人往，各家店铺的店员正卖力吆喝',
+  mall_dessert: '甜品店里坐满了休息的客人，空气里都是甜丝丝的香气',
+  food_st: '小吃街香气四溢，摊主们热情地招呼着过往行人',
+  food_bunshop: '包子铺热气腾腾，买早点的客人排着队',
+  market_door: '超市门口客流不断，购物袋的摩擦声不绝于耳',
+  market_hall: '超市里熙熙攘攘，收银台前排着长队',
+  suburb_station: '车站人来人往，列车进站的广播声回荡着',
+  suburb_st: '城郊街道上偶尔有车辆驶过，十分安静',
+  church: '教堂里很安静，只有零星几位信徒在低声祷告',
+  forest: '森林里只有风声与鸟鸣，一片静谧',
+  home_door: '家门口很安静，偶尔有邻居经过',
+  twins_room: '对门静悄悄的，双子的直播设备还亮着待机灯',
+  home_living: '家里静悄悄的，只有时钟的滴答声',
+  home_bed: '卧室里静悄悄的，被子还保持着起床后的褶皱',
+};
 
 function _bgUrl(scene) {
   return `url('${scene.bg}')`;
@@ -167,9 +190,45 @@ export const SceneView = {
     if (!to) return;
     if (window.App && typeof window.App.advanceTime === 'function') window.App.advanceTime();
     this.showScene(sceneId, { flipFrom: dir || null });
-    if (from) {
-      const here = document.querySelector('.scene-exit'); // 到达提示已在 showScene 字幕中
+    this._enterScene(to);
+  },
+
+  /**
+   * 进入场景统一入口（用户要求：进场景自动进入文本输入状态）：
+   * 1. 打开对话层 —— 有在场角色则立绘登场，无人则环境模式（仅背景+对话区）
+   * 2. 翻页动画完成后派发旁白请求，AI 描述在场角色反应；
+   *    无人场景描述环境，NPC 密集地点额外描述 NPC 活动（店赛/吆喝/排队等）
+   */
+  _enterScene(scene) {
+    const gameTime = AppState.get('gameTime') || { day: 1, hour: 8, minute: 0 };
+    const present = getPresent(scene.id, gameTime);
+    const firstChar = present.length ? present[0].charId : null;
+
+    window.dispatchEvent(new CustomEvent('closeup-open', {
+      detail: { characterId: firstChar, sceneName: scene.name },
+    }));
+
+    // AI 旁白文案：有人 → 角色反应（可带 NPC 背景音）；无人 → 环境/NPC 描写
+    const npcNote = NPC_AMBIENCE[scene.id] || '';
+    var aiText, fallbackText;
+    if (present.length > 0) {
+      var names = present.map((p) => ((CHARACTERS[p.charId] || {}).name || p.charId)).join('、');
+      var bgNote = npcNote ? `（背景：${npcNote}）` : '';
+      aiText = `（系统提示：你刚进入${scene.name}。在场角色：${names}。${bgNote}请以旁白视角、用2-3句话描述她们注意到你到来时的反应，不要输出角色对话，不要输出任何标签。）`;
+      fallbackText = `你来到${scene.name}，${names}都在。${npcNote}`.trim();
+    } else if (npcNote) {
+      aiText = `（系统提示：你刚进入${scene.name}。${npcNote}。请以旁白视角、用2-3句话描述这里的环境与NPC们的活动，不要输出任何标签。）`;
+      fallbackText = `你来到${scene.name}。${npcNote}`;
+    } else {
+      aiText = `（系统提示：你刚进入${scene.name}，这里空无一人。请以旁白视角、用2-3句话描述这个环境，不要输出任何标签。）`;
+      fallbackText = `你来到${scene.name}。${scene.description || ''}`.trim();
     }
+
+    setTimeout(function () {
+      window.dispatchEvent(new CustomEvent('scene-narration-request', {
+        detail: { aiText: aiText, fallbackText: fallbackText },
+      }));
+    }, 900); // 翻页动画(~700ms)结束后
   },
 
   showSubtitle(text) {

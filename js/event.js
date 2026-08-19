@@ -3,13 +3,13 @@
    渲染进近景特写层的对话区（CloseupView.getDialogEl()），对外 API 保持不变
    ========================================================================== */
 
-import { AppState } from './state.js?v=20';
-import { AiClient, BattleBridge } from './ai.js?v=20';
-import { CloseupView } from './closeup.js?v=20';
-import { SceneView } from './scene.js?v=20';
-import { mapEmotion } from './emotion.js?v=20';
-import { CHARACTERS } from './scenes-data.js?v=20';
-import { countPresent } from './schedules.js?v=20';
+import { AppState } from './state.js?v=21';
+import { AiClient, BattleBridge } from './ai.js?v=21';
+import { CloseupView } from './closeup.js?v=21';
+import { SceneView } from './scene.js?v=21';
+import { mapEmotion } from './emotion.js?v=21';
+import { CHARACTERS } from './scenes-data.js?v=21';
+import { countPresent } from './schedules.js?v=21';
 
 /* ==========================================================================
    常量
@@ -290,6 +290,11 @@ export const EventPanel = {
 
     // Check for pending duel result on load
     this._checkPendingDuelResult();
+
+    // 场景旁白请求（scene.js 进入场景时派发）：AI 描述在场角色反应或环境
+    window.addEventListener('scene-narration-request', function (e) {
+      self.requestSceneNarration(e.detail || {});
+    });
   },
 
   /**
@@ -464,6 +469,51 @@ export const EventPanel = {
         self._callFallback(text);
       });
     }
+  },
+
+  /**
+   * 场景旁白：进入场景时请求 AI 描述在场角色反应 / 环境（用户要求）
+   * 不在叙事历史中写入玩家行动，AI 失败时静默（不打断输入状态）
+   * @param {{ aiText: string, fallbackText: string }} detail
+   */
+  requestSceneNarration: function (detail) {
+    var self = this;
+    var aiText = detail.aiText;
+    var fallbackText = detail.fallbackText;
+    if (!aiText) return;
+    // 有请求在途/正在提交时不叠加旁白
+    if (this._pendingResponses > 0 || this._isSubmitting) return;
+
+    var state = AppState.get();
+    var aiOn = state.settings && state.settings.aiEnabled !== false;
+    if (!aiOn) {
+      if (fallbackText) this._addNarratorText(fallbackText);
+      return;
+    }
+
+    this._pendingResponses++;
+    this._showThinking();
+    AiClient.chat(aiText).then(function (result) {
+      self._hideThinking();
+      self._isInternalUpdate = true;
+      AppState.push('narrativeHistory', result.narrative);
+      self._isInternalUpdate = false;
+      self._lastAISuggestions = result.suggestions || [];
+      self._addNarratorText(result.narrative, undefined, function () {
+        self._pendingResponses--;
+        self._isSubmitting = false;
+        if (self._pendingResponses === 0) {
+          self.showSuggestions(self._lastAISuggestions.length > 0 ? self._lastAISuggestions : getLocationSuggestions());
+          self._addRegenerateBtn();
+        }
+      });
+    }).catch(function (err) {
+      self._hideThinking();
+      self._pendingResponses--;
+      self._isSubmitting = false;
+      console.warn('[EventPanel] 场景旁白失败:', err.message);
+      if (fallbackText) self._addNarratorText(fallbackText);
+    });
   },
 
   /**

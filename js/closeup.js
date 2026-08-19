@@ -1,9 +1,9 @@
 // 全屏特写视图（v2 流程）：点击头像 → 立绘居中（standing）→ 对话开始 2 秒后 → CG 3 秒（如有）
 // → 回到立绘继续对话常驻。无 CG 时全程立绘。
 // 降级链：standing.png → neutral.png（emotionFile）→ fullbody.png → 「立绘缺失」占位
-import { AppState } from './state.js?v=20';
-import { CHARACTERS, emotionFile } from './scenes-data.js?v=20';
-import { getCgPath } from './schedules.js?v=20';
+import { AppState } from './state.js?v=21';
+import { CHARACTERS, emotionFile } from './scenes-data.js?v=21';
+import { getCgPath } from './schedules.js?v=21';
 
 // 素材版本号：头像/CG/立绘图片 URL 统一加 v 参数（图片本身无 hash，
 // 重裁/换图后必须 bump 才能刷新用户浏览器缓存；JS 模块走 import 的 v 参数）
@@ -158,6 +158,35 @@ export const CloseupView = {
     img.src = emotionFile(_charId, 'neutral') + `?v=${ASSET_V}`;
     img.onerror = () => { if (!img.isConnected) return; img.remove(); tryFullbody(); };
     el.appendChild(img);
+  },
+
+  /**
+   * 环境模式：无人场景进入对话时打开特写层（无立绘、无 CG），
+   * 仅场景背景 + 对话区，供玩家输入。
+   */
+  openScene(sceneName) {
+    _clearTimers();
+    _cgScheduled = true; // 环境模式不安排 CG
+    _pendingCgPath = null;
+    _charId = null;
+    _setPhase('standing');
+    AppState.set('closeup', { active: true, characterId: null, emotion: 'neutral' });
+    document.getElementById('closeup-name').textContent = sceneName || '';
+    const overlay = document.getElementById('closeup-overlay');
+    overlay.classList.add('active');
+    const portrait = document.getElementById('closeup-portrait');
+    portrait.innerHTML = '';
+    portrait.classList.remove('sprite-missing');
+    const bg = document.getElementById('closeup-scene-bg');
+    bg.classList.remove('visible');
+    const scene = document.getElementById('location-bg');
+    if (scene && scene.style.backgroundImage) {
+      bg.style.backgroundImage = scene.style.backgroundImage;
+    }
+    _timers.push(setTimeout(() => {
+      const bgEl = document.getElementById('closeup-scene-bg');
+      if (bgEl) bgEl.classList.add('visible');
+    }, 600));
   },
 
   /**
