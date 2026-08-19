@@ -1,9 +1,9 @@
 /**
  * 光之回响 AI 客户端 + MDPro3 对战桥接
  */
-import { AppState } from './state.js?v=36';
-import { getPresent, getActivity } from './schedules.js?v=36';
-import { getScene } from './scenes-data.js?v=36';
+import { AppState } from './state.js?v=37';
+import { getPresent, getActivity } from './schedules.js?v=37';
+import { getScene } from './scenes-data.js?v=37';
 
 export const AiClient = {
     endpoint: 'http://127.0.0.1:9999',
@@ -79,6 +79,28 @@ export const AiClient = {
             return { ok: false, error: 'bridge_offline' };
         }
     }
+};
+
+/**
+ * CG 生成（ComfyUI 胜败 CG，用户需求）：走 bridge 转发，避免 ComfyUI CORS
+ */
+export const CgGenerator = {
+  /** 发起异步生成，返回 job id；bridge 轮询 ComfyUI 出图后经 /cg-image 提供 */
+  async generate(prompt) {
+    const resp = await fetch(`${AiClient.endpoint}/cg-generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: prompt }),
+    });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.message || 'CG 生成请求失败');
+    return data.id;
+  },
+
+  /** 成图地址（未就绪时返回 404，前端以 onerror 重试轮询） */
+  imageUrl(id) {
+    return `${AiClient.endpoint}/cg-image?id=${id}`;
+  },
 };
 
 export const BattleBridge = {

@@ -53,6 +53,13 @@ except Exception as e:
     print(f"[bridge] FATAL: cannot load data files — run import_cards.py first\n  {e}")
     sys.exit(1)
 
+# ─── CG 生成（ComfyUI 胜败 CG，用户需求）───
+CG_WORKFLOW = load_json("cg_workflow.json") if os.path.exists(os.path.join(DATA, "cg_workflow.json")) else {}
+COMFY_URL = config.get("comfyui_url", "http://127.0.0.1:8188")
+CG_OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cg_out")
+os.makedirs(CG_OUT_DIR, exist_ok=True)
+_cg_jobs = {}  # id -> {status: generating|done|error, prompt, image_path, message}
+
 FIRST_MES = worldbook["first_mes"]
 AI_POOL = config["ai_pool"]
 CHARACTER_DECKS = config.get("character_decks", {})
@@ -588,6 +595,33 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 "battle_running": _battle_running,
                 "result": result
             })
+        elif self.path.startswith("/cg-status"):
+            from urllib.parse import parse_qs, urlparse
+            qs = parse_qs(urlparse(self.path).query)
+            job = _cg_jobs.get(qs.get("id", [""])[0])
+            if not job:
+                self.reply(404, {"ok": False, "error": "unknown_job"})
+            else:
+                self.reply(200, {"ok": True, "status": job["status"], "message": job.get("message", "")})
+        elif self.path.startswith("/cg-image"):
+            from urllib.parse import parse_qs, urlparse
+            qs = parse_qs(urlparse(self.path).query)
+            job = _cg_jobs.get(qs.get("id", [""])[0])
+            if not job or job["status"] != "done" or not os.path.exists(job["image_path"]):
+                self.reply(404, {"ok": False, "error": "not_ready"})
+                return
+            try:
+                with open(job["image_path"], "rb") as f:
+                    data = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "image/png")
+                self.send_header("Content-Length", str(len(data)))
+                self.send_header("Cache-Control", "no-store")
+                self.cors()
+                self.end_headers()
+                self.wfile.write(data)
+            except Exception as e:
+                self.reply(500, {"ok": False, "error": str(e)})
         else:
             self.reply(404, {"ok": False, "error": "not_found"})
 
@@ -622,8 +656,26 @@ class BridgeHandler(BaseHTTPRequestHandler):
             self.handle_models(body)
         elif self.path == "/duel-result":
             self.handle_duel_result(body)
+        elif self.path == "/cg-generate":
+            self.handle_cg_generate(body)
         else:
             self.reply(404, {"ok": False, "error": "not_found"})
+
+    def handle_cg_generate(self, body):
+        """胜败 CG 生成：接 ComfyUI 文生图（异步后台线程 + 轮询 /cg-status、/cg-image）"""
+        import threading, uuid
+        if not CG_WORKFLOW:
+            self.reply(500, {"ok": False, "error": "workflow_missing", "message": "cg_workflow.json 缺失"})
+            return
+        prompt = (body.get("prompt") or "").strip()
+        if not prompt:
+            self.reply(400, {"ok": False, "error": "empty_prompt"})
+            return
+        job_id = uuid.uuid4().hex[:12]
+        _cg_jobs[job_id] = {"status": "generating", "prompt": prompt, "image_path": None, "message": ""}
+        t = threading.Thread(target=_run_cg_generation, args=(job_id, prompt), daemon=True)
+        t.start()
+        self.reply(200, {"ok": True, "id": job_id})
 
     def handle_models(self, body):
         """Fetch available models from user's AI API"""
@@ -753,6 +805,73 @@ class BridgeHandler(BaseHTTPRequestHandler):
             self.reply(400, result)
 
 # ─── Main ───
+def _run_cg_generation(job_id, prompt):
+    """后台线程：注入提示词 → ComfyUI /prompt → 轮询 /history → 下载成图到 cg_out/"""
+    import copy, json as _json, random as _rand
+    from urllib.request import Request as _Req, urlopen as _urlopen
+
+    def _get(url):
+        with _urlopen(_Req(url), timeout=30) as r:
+            return r.read()
+
+    def _post_json(url, payload):
+        req = _Req(url, data=_json.dumps(payload).encode("utf-8"),
+                   headers={"Content-Type": "application/json"})
+        with _urlopen(req, timeout=30) as r:
+            return r.read()
+
+    try:
+        wf = copy.deepcopy(CG_WORKFLOW)
+        wf["18"]["inputs"]["text"] = prompt
+        wf["19"]["inputs"]["seed"] = _rand.randint(0, 2**32)
+        resp = _json.loads(_post_json(COMFY_URL.rstrip("/") + "/prompt", {"prompt": wf}))
+        prompt_id = resp.get("prompt_id")
+        if not prompt_id:
+            raise RuntimeError("ComfyUI 未返回 prompt_id: " + str(resp)[:200])
+        print(f"[cg] job {job_id}: ComfyUI prompt_id={prompt_id}")
+
+        # 轮询直到出图（最长 300s）
+        image_info = None
+        deadline = time.time() + 300
+        while time.time() < deadline:
+            time.sleep(2)
+            hist = _json.loads(_get(COMFY_URL.rstrip("/") + f"/history/{prompt_id}"))
+            entry = hist.get(prompt_id)
+            if entry:
+                outputs = entry.get("outputs", {})
+                node22 = outputs.get("22", {})
+                imgs = node22.get("images") or []
+                if imgs:
+                    image_info = imgs[0]
+                    break
+                if entry.get("status", {}).get("status_str") == "error":
+                    raise RuntimeError("ComfyUI 执行出错")
+        if not image_info:
+            raise RuntimeError("CG 生成超时（300s）")
+
+        # 下载成图
+        fn = image_info["filename"]
+        sub = image_info.get("subfolder", "")
+        itype = image_info.get("type", "output")
+        view_url = f"{COMFY_URL.rstrip('/')}/view?filename={fn}&subfolder={sub}&type={itype}"
+        img_bytes = _get(view_url)
+        out_path = os.path.join(CG_OUT_DIR, f"cg_{job_id}.png")
+        with open(out_path, "wb") as f:
+            f.write(img_bytes)
+        job = _cg_jobs.get(job_id)
+        if job:
+            job["status"] = "done"
+            job["image_path"] = out_path
+            job["message"] = ""
+        print(f"[cg] job {job_id}: done -> {out_path}")
+    except Exception as e:
+        job = _cg_jobs.get(job_id)
+        if job:
+            job["status"] = "error"
+            job["message"] = str(e)[:200]
+        print(f"[cg] job {job_id}: FAILED: {e}")
+
+
 if __name__ == "__main__":
     port = config.get("port", 9999)
     host = config.get("host", "127.0.0.1")

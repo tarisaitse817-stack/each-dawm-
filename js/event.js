@@ -3,13 +3,13 @@
    渲染进近景特写层的对话区（CloseupView.getDialogEl()），对外 API 保持不变
    ========================================================================== */
 
-import { AppState } from './state.js?v=36';
-import { AiClient, BattleBridge } from './ai.js?v=36';
-import { CloseupView, showDuelResultCg } from './closeup.js?v=36';
-import { SceneView } from './scene.js?v=36';
-import { mapEmotion } from './emotion.js?v=36';
-import { CHARACTERS } from './scenes-data.js?v=36';
-import { countPresent, getPresent } from './schedules.js?v=36';
+import { AppState } from './state.js?v=37';
+import { AiClient, BattleBridge } from './ai.js?v=37';
+import { CloseupView, showDuelResultCg } from './closeup.js?v=37';
+import { SceneView } from './scene.js?v=37';
+import { mapEmotion } from './emotion.js?v=37';
+import { CHARACTERS } from './scenes-data.js?v=37';
+import { countPresent, getPresent } from './schedules.js?v=37';
 
 /* ==========================================================================
    常量
@@ -728,11 +728,12 @@ export const EventPanel = {
             btn.disabled = true;
           }
           // 用户新 idea：决斗结束后全屏展示战胜/战败 CG（点击关闭后继续叙事）
+          // 胜利 → 女性受向 NSFW；失败 → 男性受向 NSFW（ComfyUI 动态生成）
           showDuelResultCg(playerWon, function () {
             EventPanel._addNarratorText(fullMsg, null, function () {
               EventPanel.submitAction('决斗结束了，我' + (playerWon ? '赢了' : '输了') + '，生成后续叙事');
             });
-          });
+          }, { genPrompt: EventPanel._buildDuelCgPrompt(playerWon, opp) });
         });
       } else {
         console.error('[EventPanel] Battle launch FAILED:', result.error, result.message);
@@ -751,6 +752,29 @@ export const EventPanel = {
         this._addNarratorText('⚠️ 决斗启动出错，请重试。');
       }
     }
+  },
+
+  /**
+   * 胜败 CG 提示词（用户需求：胜利 → 女性受向 NSFW；失败 → 男性受向 NSFW）
+   * 仅成年配角（世界书设定 ≥18：塞壬/零依/露世/姬丝吉尔/璃拉/彩虹）定制外貌标签；
+   * 其余对手（路人/未成年设定的配角）使用通用成年角色描述。
+   */
+  _buildDuelCgPrompt: function (playerWon, opp) {
+    if (!playerWon) {
+      // 战败：男性受向（玩家被支配）
+      return 'masterpiece, best quality, highres, score_8, 1boy, short black hair, adult man, naked, submissive, on knees, blushing, dominated, nsfw';
+    }
+    var FEATURES = {
+      '塞壬': 'grey hair, twintails, purple eyes, pointed ears, bare shoulders, blue fin feet',
+      '零依': 'yellow hair, long hair, blue eyes, white shirt, black pleated skirt, black thighhighs',
+      '露世': 'black hair, medium hair, black hat, white shirt, black cardigan, pleated skirt, black pantyhose',
+      '姬丝吉尔': 'red hair, twintails, fang, pink jacket, bike shorts',
+      '璃拉': 'blue hair, double buns, half-closed eyes, white dress, sailor hat',
+      '彩虹': 'rainbow hair, very long hair, white shirt'
+    };
+    var feat = (opp && FEATURES[opp.name]) || 'adult woman, mature female';
+    return 'masterpiece, best quality, highres, score_8, 1girl, ' + feat +
+      ', naked, submissive, on knees, blushing, looking at viewer, pleading, presenting, nsfw';
   },
 
   _addRegenerateBtn() {

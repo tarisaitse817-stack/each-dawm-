@@ -6,29 +6,109 @@
   "ygopro_exe": "C:/Users/Administrator/ygopro-server.exe",
   "ygopro_cwd": "C:/Users/Administrator",
   "ygopro_port": 7911,
-  "ygopro_args": ["7911", "0", "2", "0", "5", "T", "F", "8000", "5", "1", "0", "0"],
+  "ygopro_args": [
+    "7911",
+    "0",
+    "2",
+    "0",
+    "5",
+    "T",
+    "F",
+    "8000",
+    "5",
+    "1",
+    "0",
+    "0"
+  ],
   "windbot_exe": "C:/Users/Administrator/IceYGO-windbot/bin/Release/WindBot.exe",
   "windbot_dir": "C:/Users/Administrator/IceYGO-windbot/bin/Release",
   "windbot_server": "koishi.momobako.com",
   "windbot_port": "7210",
   "lan_mode": true,
   "ai_pool": [
-    "牌店常客·黑羽使", "公司后辈·电子龙使", "超市顾客·转生炎兽使",
-    "小吃街食客·淘气仙星使", "商业街路人·斩机使", "城郊少年·相剑使",
-    "路过的决斗者·闪刀姬使", "神秘旅人·雷龙使", "流浪卡牌师·魔女术使",
-    "街头艺人·十二兽使", "退休老伯·帝王使", "高中生·机壳使"
+    "牌店常客·黑羽使",
+    "公司后辈·电子龙使",
+    "超市顾客·转生炎兽使",
+    "小吃街食客·淘气仙星使",
+    "商业街路人·斩机使",
+    "城郊少年·相剑使",
+    "路过的决斗者·闪刀姬使",
+    "神秘旅人·雷龙使",
+    "流浪卡牌师·魔女术使",
+    "街头艺人·十二兽使",
+    "退休老伯·帝王使",
+    "高中生·机壳使"
   ],
   "character_decks": {
-    "塞壬":       { "name": "Siren",    "deck": "AI_Tearlaments", "dialog": "default", "protector": "1073001", "field": "1090001" },
-    "零依":       { "name": "LingYi",   "deck": "AI_SkyStriker",  "dialog": "default", "protector": "1073002", "field": "1090002" },
-    "露世":       { "name": "LuShi",    "deck": "AI_Labrynth",    "dialog": "default", "protector": "1073003", "field": "1090003" },
-    "姬丝吉尔":   { "name": "Kisikil",  "deck": "AI_EvilTwin",    "dialog": "default", "protector": "1073004", "field": "1090004" },
-    "璃拉":       { "name": "Lilla",    "deck": "AI_EvilTwin",    "dialog": "default", "protector": "1073005", "field": "1090005" },
-    "艾克利西亚": { "name": "Ecclesia", "deck": "AI_Albaz",       "dialog": "ecclesia", "protector": "1073006", "field": "1090006" },
-    "天童":       { "name": "TianTong", "deck": "AI_Swordsoul",   "dialog": "default", "protector": "1073007", "field": "1090007" },
-    "理":         { "name": "Li",       "deck": "AI_Exosister",   "dialog": "default", "protector": "1073008", "field": "1090008" },
-    "彩虹":       { "name": "CaiHong",  "deck": "AI_Rainbow",     "dialog": "default", "protector": "1073009", "field": "1090009" },
-    "default":    { "name": "AI",       "deck": "random",         "dialog": "default" }
+    "塞壬": {
+      "name": "Siren",
+      "deck": "AI_Tearlaments",
+      "dialog": "default",
+      "protector": "1073001",
+      "field": "1090001"
+    },
+    "零依": {
+      "name": "LingYi",
+      "deck": "AI_SkyStriker",
+      "dialog": "default",
+      "protector": "1073002",
+      "field": "1090002"
+    },
+    "露世": {
+      "name": "LuShi",
+      "deck": "AI_Labrynth",
+      "dialog": "default",
+      "protector": "1073003",
+      "field": "1090003"
+    },
+    "姬丝吉尔": {
+      "name": "Kisikil",
+      "deck": "AI_EvilTwin",
+      "dialog": "default",
+      "protector": "1073004",
+      "field": "1090004"
+    },
+    "璃拉": {
+      "name": "Lilla",
+      "deck": "AI_EvilTwin",
+      "dialog": "default",
+      "protector": "1073005",
+      "field": "1090005"
+    },
+    "艾克利西亚": {
+      "name": "Ecclesia",
+      "deck": "AI_Albaz",
+      "dialog": "ecclesia",
+      "protector": "1073006",
+      "field": "1090006"
+    },
+    "天童": {
+      "name": "TianTong",
+      "deck": "AI_Swordsoul",
+      "dialog": "default",
+      "protector": "1073007",
+      "field": "1090007"
+    },
+    "理": {
+      "name": "Li",
+      "deck": "AI_Exosister",
+      "dialog": "default",
+      "protector": "1073008",
+      "field": "1090008"
+    },
+    "彩虹": {
+      "name": "CaiHong",
+      "deck": "AI_Rainbow",
+      "dialog": "default",
+      "protector": "1073009",
+      "field": "1090009"
+    },
+    "default": {
+      "name": "AI",
+      "deck": "random",
+      "dialog": "default"
+    }
   },
-  "llm_timeout": 300
+  "llm_timeout": 300,
+  "comfyui_url": "http://127.0.0.1:8188"
 }

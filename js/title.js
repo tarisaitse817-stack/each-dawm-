@@ -2,13 +2,13 @@
    光之回响 (Echoes of Light) — TitleScreen 标题界面
    ========================================================================== */
 
-import { AppState } from './state.js?v=36';
-import { StorageManager } from './storage.js?v=36';
-import { Navigation } from './navigation.js?v=36';
-import { showInitialBackground } from './scene.js?v=36';
-import { TransitionView } from './transition.js?v=36';
-import { EventPanel } from './event.js?v=36';
-import { playOpeningGreeting } from './greeting.js?v=36';
+import { AppState } from './state.js?v=37';
+import { StorageManager } from './storage.js?v=37';
+import { Navigation } from './navigation.js?v=37';
+import { showInitialBackground } from './scene.js?v=37';
+import { TransitionView } from './transition.js?v=37';
+import { EventPanel } from './event.js?v=37';
+import { playOpeningGreeting } from './greeting.js?v=37';
 
 /* 开场字幕（新游戏转场）：世界书 first_mes 前 3 句；失败回退内置默认文本前 3 句 */
 const MAX_OPENING_LINES = 3;
