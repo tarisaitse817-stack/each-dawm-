@@ -3,13 +3,13 @@
    渲染进近景特写层的对话区（CloseupView.getDialogEl()），对外 API 保持不变
    ========================================================================== */
 
-import { AppState } from './state.js?v=21';
-import { AiClient, BattleBridge } from './ai.js?v=21';
-import { CloseupView } from './closeup.js?v=21';
-import { SceneView } from './scene.js?v=21';
-import { mapEmotion } from './emotion.js?v=21';
-import { CHARACTERS } from './scenes-data.js?v=21';
-import { countPresent } from './schedules.js?v=21';
+import { AppState } from './state.js?v=22';
+import { AiClient, BattleBridge } from './ai.js?v=22';
+import { CloseupView } from './closeup.js?v=22';
+import { SceneView } from './scene.js?v=22';
+import { mapEmotion } from './emotion.js?v=22';
+import { CHARACTERS } from './scenes-data.js?v=22';
+import { countPresent } from './schedules.js?v=22';
 
 /* ==========================================================================
    常量
@@ -474,12 +474,13 @@ export const EventPanel = {
   /**
    * 场景旁白：进入场景时请求 AI 描述在场角色反应 / 环境（用户要求）
    * 不在叙事历史中写入玩家行动，AI 失败时静默（不打断输入状态）
-   * @param {{ aiText: string, fallbackText: string }} detail
+   * 兜底文案统一为「api连接错误，检查一下api哦~」（AI 关闭/失败均用此文案）
+   * @param {{ aiText: string }} detail
    */
   requestSceneNarration: function (detail) {
     var self = this;
     var aiText = detail.aiText;
-    var fallbackText = detail.fallbackText;
+    var fallbackText = 'api连接错误，检查一下api哦~';
     if (!aiText) return;
     // 有请求在途/正在提交时不叠加旁白
     if (this._pendingResponses > 0 || this._isSubmitting) return;

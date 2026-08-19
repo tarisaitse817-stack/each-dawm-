@@ -1,7 +1,7 @@
 // 场景视图：背景层 + 出口 + 物件热点 + 旁白字幕 + 立绘层（在场由行程表派生）
-import { AppState } from './state.js?v=21';
-import { SCENES, CHARACTERS, getScene } from './scenes-data.js?v=21';
-import { getPresent, loadSchedules } from './schedules.js?v=21';
+import { AppState } from './state.js?v=22';
+import { SCENES, CHARACTERS, getScene } from './scenes-data.js?v=22';
+import { getPresent, loadSchedules } from './schedules.js?v=22';
 
 // 头像图片版本号：换图/重裁后 bump 刷新浏览器缓存（图片本身无 hash）
 const ASSET_V = '13';
@@ -209,24 +209,22 @@ export const SceneView = {
     }));
 
     // AI 旁白文案：有人 → 角色反应（可带 NPC 背景音）；无人 → 环境/NPC 描写
+    // 兜底文案统一由 event.js 处理（"api连接错误，检查一下api哦~"）
     const npcNote = NPC_AMBIENCE[scene.id] || '';
-    var aiText, fallbackText;
+    var aiText;
     if (present.length > 0) {
       var names = present.map((p) => ((CHARACTERS[p.charId] || {}).name || p.charId)).join('、');
       var bgNote = npcNote ? `（背景：${npcNote}）` : '';
       aiText = `（系统提示：你刚进入${scene.name}。在场角色：${names}。${bgNote}请以旁白视角、用2-3句话描述她们注意到你到来时的反应，不要输出角色对话，不要输出任何标签。）`;
-      fallbackText = `你来到${scene.name}，${names}都在。${npcNote}`.trim();
     } else if (npcNote) {
       aiText = `（系统提示：你刚进入${scene.name}。${npcNote}。请以旁白视角、用2-3句话描述这里的环境与NPC们的活动，不要输出任何标签。）`;
-      fallbackText = `你来到${scene.name}。${npcNote}`;
     } else {
       aiText = `（系统提示：你刚进入${scene.name}，这里空无一人。请以旁白视角、用2-3句话描述这个环境，不要输出任何标签。）`;
-      fallbackText = `你来到${scene.name}。${scene.description || ''}`.trim();
     }
 
     setTimeout(function () {
       window.dispatchEvent(new CustomEvent('scene-narration-request', {
-        detail: { aiText: aiText, fallbackText: fallbackText },
+        detail: { aiText: aiText },
       }));
     }, 900); // 翻页动画(~700ms)结束后
   },
