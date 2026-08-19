@@ -3,13 +3,13 @@
    渲染进近景特写层的对话区（CloseupView.getDialogEl()），对外 API 保持不变
    ========================================================================== */
 
-import { AppState } from './state.js?v=33';
-import { AiClient, BattleBridge } from './ai.js?v=33';
-import { CloseupView } from './closeup.js?v=33';
-import { SceneView } from './scene.js?v=33';
-import { mapEmotion } from './emotion.js?v=33';
-import { CHARACTERS } from './scenes-data.js?v=33';
-import { countPresent } from './schedules.js?v=33';
+import { AppState } from './state.js?v=34';
+import { AiClient, BattleBridge } from './ai.js?v=34';
+import { CloseupView } from './closeup.js?v=34';
+import { SceneView } from './scene.js?v=34';
+import { mapEmotion } from './emotion.js?v=34';
+import { CHARACTERS } from './scenes-data.js?v=34';
+import { countPresent, getPresent } from './schedules.js?v=34';
 
 /* ==========================================================================
    常量
@@ -295,6 +295,12 @@ export const EventPanel = {
     window.addEventListener('scene-narration-request', function (e) {
       self.requestSceneNarration(e.detail || {});
     });
+
+    // 配角主动发起黑暗决斗（scene.js 醋意值触发派发）：直接弹出对决卡片
+    window.addEventListener('proactive-duel-request', function (e) {
+      var name = (e.detail || {}).name;
+      if (name) self._showBattleTrigger(name);
+    });
   },
 
   /**
@@ -423,8 +429,36 @@ export const EventPanel = {
     this._isInternalUpdate = false;
     this._addPlayerActionText(text);
     if (this._suggestionsOpen) { this.toggleSuggestions(); }
+    this._growJealousy(text);
     if (aiOn) { this._callAI(text); }
     else { this._callFallback(text); }
+  },
+
+  /**
+   * 醋意值增长（简版，驱动配角主动挑战）：亲密类行动会让在场配角吃醋
+   * （+1~3），被点名角色好感度 +2；上限 100。
+   */
+  _growJealousy: function (text) {
+    if (!text) return;
+    var INTIMACY_RE = /(抱|吻|亲|贴|搂|摸|撩|调戏|色诱|撒娇|贴贴|亲亲|牵手|耳边)/;
+    if (!INTIMACY_RE.test(text)) return;
+    var state = AppState.get();
+    var companions = (state.companions || []).slice();
+    if (!companions.length) return;
+    var presentIds = getPresent(state.currentSceneId, state.gameTime)
+      .map(function (p) { return p.charId; });
+    var touched = false;
+    companions.forEach(function (c) {
+      if (text.indexOf(c.name) !== -1) {
+        c.affection = Math.min(100, (c.affection || 0) + 2); // 被点名的角色好感上升
+        touched = true;
+      }
+      if (presentIds.indexOf(c.id) !== -1 && text.indexOf(c.name) === -1) {
+        c.jealousy = Math.min(100, (c.jealousy || 0) + 1 + Math.floor(Math.random() * 3)); // 在场的其他人吃醋
+        touched = true;
+      }
+    });
+    if (touched) AppState.set('companions', companions);
   },
 
   async _callAI(text) {
@@ -675,6 +709,16 @@ export const EventPanel = {
           var charLine = '';
           if (opp && opp.battleLines) {
             charLine = playerWon ? opp.battleLines.defeat : opp.battleLines.victory;
+          }
+          // 配角决斗结束 → 醋意值发泄归零（主动挑战/黑暗决斗的闭环）
+          if (opp && opp.isHeroine) {
+            var comps = (AppState.get('companions') || []).slice();
+            var target = comps.find(function (c) { return c.name === opp.name; });
+            if (target && (target.jealousy || 0) > 0) {
+              target.jealousy = 0;
+              AppState.set('companions', comps);
+              console.log('[EventPanel] ' + target.name + ' 醋意值已归零（决斗结束）');
+            }
           }
           var fullMsg = '⚔️ 决斗结束 — ' + resultMsg;
           if (charLine) fullMsg += '\n\n「' + charLine + '」';

@@ -1,7 +1,7 @@
 // 场景视图：背景层 + 出口 + 物件热点 + 旁白字幕 + 立绘层（在场由行程表派生）
-import { AppState } from './state.js?v=33';
-import { SCENES, CHARACTERS, getScene, isSceneOpen } from './scenes-data.js?v=33';
-import { getPresent, loadSchedules } from './schedules.js?v=33';
+import { AppState } from './state.js?v=34';
+import { SCENES, CHARACTERS, getScene, isSceneOpen } from './scenes-data.js?v=34';
+import { getPresent, loadSchedules } from './schedules.js?v=34';
 
 /** 打烊提示文案（用户要求） */
 const CLOSED_MSG = '已经到了非营业时间了，明天再来吧';
@@ -227,6 +227,26 @@ export const SceneView = {
     window.dispatchEvent(new CustomEvent('closeup-open', {
       detail: { characterId: firstChar, sceneName: scene.name },
     }));
+
+    // 醋意值触发（用户要求）：在场配角醋意值 ≥40 时，35% 概率主动发起黑暗决斗，
+    // 挑战卡片代替普通场景旁白
+    var challengerName = null;
+    present.forEach(function (p) {
+      if (challengerName) return;
+      var comp = (AppState.get('companions') || []).find(function (c) { return c.id === p.charId; });
+      if (comp && (comp.jealousy || 0) >= 40 && Math.random() < 0.35) {
+        challengerName = comp.name;
+      }
+    });
+    if (challengerName) {
+      console.log('[SceneView] ' + challengerName + ' 醋意值触发主动挑战');
+      setTimeout(function () {
+        window.dispatchEvent(new CustomEvent('proactive-duel-request', {
+          detail: { name: challengerName },
+        }));
+      }, 900); // 翻页动画(~700ms)结束后
+      return;
+    }
 
     // AI 旁白文案：有人 → 角色反应（可带 NPC 背景音）；无人 → 环境/NPC 描写
     // 兜底文案统一由 event.js 处理（"api连接错误，检查一下api哦~"）
