@@ -71,3 +71,22 @@
   font-size: 11px;
   font-weight: 700;
 }
+
+/* --------------------------------------------------------------------------
+   选图缩放入场（用户要求）：选中的缩略图从原位置迅速放大占满全屏
+   FLIP 起点由 JS 内联 transform 设定，.zooming 过渡回全屏
+   -------------------------------------------------------------------------- */
+#map-zoom {
+  position: fixed;
+  inset: 0;
+  z-index: 1150;
+  background-size: cover;
+  background-position: center;
+  pointer-events: none;
+  will-change: transform, border-radius;
+  transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.25, 1), border-radius 0.55s ease;
+}
+#map-zoom.zooming {
+  transform: translate(0, 0) scale(1) !important;
+  border-radius: 0;
+}

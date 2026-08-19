@@ -2,8 +2,8 @@
    光之回响 (Echoes of Light) — 背包界面模块
    ========================================================================== */
 
-import { AppState } from './state.js?v=25';
-import { Notifications } from './notifications.js?v=25';
+import { AppState } from './state.js?v=26';
+import { Notifications } from './notifications.js?v=26';
 
 /* ==========================================================================
    常量

@@ -1,7 +1,7 @@
 // 场景视图：背景层 + 出口 + 物件热点 + 旁白字幕 + 立绘层（在场由行程表派生）
-import { AppState } from './state.js?v=25';
-import { SCENES, CHARACTERS, getScene } from './scenes-data.js?v=25';
-import { getPresent, loadSchedules } from './schedules.js?v=25';
+import { AppState } from './state.js?v=26';
+import { SCENES, CHARACTERS, getScene } from './scenes-data.js?v=26';
+import { getPresent, loadSchedules } from './schedules.js?v=26';
 
 // 头像图片版本号：换图/重裁后 bump 刷新浏览器缓存（图片本身无 hash）
 const ASSET_V = '13';
@@ -135,11 +135,21 @@ export const SceneView = {
     AppState.set('currentSceneId', sceneId);
     const bg = document.getElementById('location-bg');
     if (bg) {
-      bg.classList.remove('active');
-      requestAnimationFrame(() => {
+      if (opts && opts.instantBg) {
+        // 地图缩放入场：背景瞬间切换（禁过渡），与缩放遮罩无缝衔接
+        bg.style.transition = 'none';
+        bg.classList.remove('active');
         bg.style.backgroundImage = _bgUrl(scene);
+        void bg.offsetHeight;
         bg.classList.add('active');
-      });
+        requestAnimationFrame(() => { bg.style.transition = ''; });
+      } else {
+        bg.classList.remove('active');
+        requestAnimationFrame(() => {
+          bg.style.backgroundImage = _bgUrl(scene);
+          bg.classList.add('active');
+        });
+      }
     }
     _renderExits(scene);
     _renderObjects(scene);
@@ -184,12 +194,12 @@ export const SceneView = {
     overlay._flipTimer = setTimeout(finish, 1200);
   },
 
-  travelTo(sceneId, dir) {
+  travelTo(sceneId, dir, opts) {
     const from = getScene(_currentSceneId);
     const to = getScene(sceneId);
     if (!to) return;
     if (window.App && typeof window.App.advanceTime === 'function') window.App.advanceTime();
-    this.showScene(sceneId, { flipFrom: dir || null });
+    this.showScene(sceneId, Object.assign({ flipFrom: dir || null }, opts || {}));
     this._enterScene(to);
   },
 
