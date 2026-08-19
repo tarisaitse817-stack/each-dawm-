@@ -3,8 +3,8 @@
    数据源：data/characters.json（静态图鉴） + AppState companions（运行时好感/状态）
    ========================================================================== */
 
-import { AppState } from './state.js?v=23';
-import { Notifications } from './notifications.js?v=23';
+import { AppState } from './state.js?v=25';
+import { Notifications } from './notifications.js?v=25';
 
 /* ==========================================================================
    常量
@@ -256,6 +256,10 @@ export var CompanionsPanel = {
       '</div>';
     _detailBodyEl.innerHTML = body;
 
+    // 过渡动画：先强制渲染隐藏态（首次打开时元素同帧插入+激活会跳过过渡），
+    // 再切 active 让淡入/缩放/上滑动画生效
+    _detailEl.classList.remove('active');
+    void _detailEl.offsetHeight;
     _detailEl.classList.add('active');
   },
 

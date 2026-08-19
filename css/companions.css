@@ -375,16 +375,27 @@
 
 .companion-empty { padding: 40px 20px; text-align: center; color: rgba(224,224,224,.55); font-size: 14px; }
 
-#companion-detail { position: fixed; inset: 0; z-index: 85; display: none; }
-#companion-detail.active { display: block; }
-.companion-detail-backdrop { position: absolute; inset: 0; background: #0a0c1c; }
-.companion-detail-close { position: absolute; top: 18px; right: 22px; z-index: 4; background: rgba(18,20,42,.7); color: #F5ECD7; border: 1px solid rgba(212,165,116,.4); border-radius: 8px; padding: 6px 14px; cursor: pointer; }
+/* 详情弹层过渡动画（用户要求）：整层淡入淡出，
+   背景 CG 由 1.06 缩放回落 + 淡入，文案区自下而上滑入（错峰延迟） */
+#companion-detail {
+  position: fixed; inset: 0; z-index: 85;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.32s ease, visibility 0.32s;
+}
+#companion-detail.active { opacity: 1; visibility: visible; }
+.companion-detail-backdrop { position: absolute; inset: 0; background: #0a0c1c; opacity: 0; transition: opacity 0.35s ease; }
+#companion-detail.active .companion-detail-backdrop { opacity: 1; }
+.companion-detail-close { position: absolute; top: 18px; right: 22px; z-index: 4; background: rgba(18,20,42,.7); color: #F5ECD7; border: 1px solid rgba(212,165,116,.4); border-radius: 8px; padding: 6px 14px; cursor: pointer; opacity: 0; transform: translateY(-8px); transition: opacity 0.3s ease 0.2s, transform 0.3s ease 0.2s; }
+#companion-detail.active .companion-detail-close { opacity: 1; transform: none; }
 /* 修复「CG 显示不全」：图片区域改为顶部 54% 整块（不再用 padding 挤压 + 52vh 上限），
    底部 46% 完全让给文案区，CG 在自身区域内完整居中显示、不被文案遮挡 */
-.companion-detail-portrait { position: absolute; left: 0; right: 0; top: 0; bottom: 46%; display: flex; align-items: center; justify-content: center; }
+.companion-detail-portrait { position: absolute; left: 0; right: 0; top: 0; bottom: 46%; display: flex; align-items: center; justify-content: center; opacity: 0; transform: scale(1.06); transition: opacity 0.45s ease, transform 0.6s cubic-bezier(0.22, 0.8, 0.3, 1); }
+#companion-detail.active .companion-detail-portrait { opacity: 1; transform: scale(1); }
 .companion-detail-portrait .detail-intro-img { max-width: 94%; max-height: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 8px 40px rgba(0,0,0,.6); display: block; }
 .companion-detail-portrait.detail-img-missing { color: #F5ECD7; font-size: 14px; border: 1px dashed #D4A574; border-radius: 10px; margin: auto; width: 300px; height: 200px; }
-.companion-detail-body { position: absolute; left: 0; right: 0; bottom: 0; height: 46%; background: linear-gradient(transparent, rgba(10,12,28,.88) 22%, rgba(10,12,28,.97)); padding: 16px 6% 22px; overflow-y: auto; z-index: 3; }
+.companion-detail-body { position: absolute; left: 0; right: 0; bottom: 0; height: 46%; background: linear-gradient(transparent, rgba(10,12,28,.88) 22%, rgba(10,12,28,.97)); padding: 16px 6% 22px; overflow-y: auto; z-index: 3; opacity: 0; transform: translateY(30px); transition: opacity 0.4s ease 0.12s, transform 0.5s cubic-bezier(0.22, 0.8, 0.3, 1) 0.12s; }
+#companion-detail.active .companion-detail-body { opacity: 1; transform: none; }
 .companion-detail-body .detail-name { margin: 0 0 4px; font-size: 24px; color: #F5ECD7; }
 .companion-detail-body .detail-nicknames { margin-bottom: 10px; font-size: 13px; color: rgba(212,165,116,.85); }
 .companion-detail-body .detail-section { margin-bottom: 10px; font-size: 14px; line-height: 1.75; color: rgba(240,236,215,.92); }
