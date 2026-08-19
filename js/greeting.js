@@ -5,10 +5,10 @@
    CG 沿用特写层规则（对话开始 2 秒后播放首个角色的 CG）。
    ========================================================================== */
 
-import { AppState } from './state.js?v=26';
-import { CHARACTERS, getScene } from './scenes-data.js?v=26';
-import { getPresent } from './schedules.js?v=26';
-import { CloseupView } from './closeup.js?v=26';
+import { AppState } from './state.js?v=27';
+import { CHARACTERS, getScene } from './scenes-data.js?v=27';
+import { getPresent } from './schedules.js?v=27';
+import { CloseupView } from './closeup.js?v=27';
 
 /** 各角色开场问候池（[第 1 句, 第 2 句]） */
 const GREETING_LINES = {
