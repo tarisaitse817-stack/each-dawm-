@@ -1,7 +1,7 @@
 // 场景视图：背景层 + 出口 + 物件热点 + 旁白字幕 + 立绘层（在场由行程表派生）
-import { AppState } from './state.js?v=13';
-import { SCENES, CHARACTERS, getScene, avatarAnchor } from './scenes-data.js?v=13';
-import { getPresent, loadSchedules } from './schedules.js?v=13';
+import { AppState } from './state.js?v=14';
+import { SCENES, CHARACTERS, getScene } from './scenes-data.js?v=14';
+import { getPresent, loadSchedules } from './schedules.js?v=14';
 
 // 头像图片版本号：换图/重裁后 bump 刷新浏览器缓存（图片本身无 hash）
 const ASSET_V = '12';
@@ -51,19 +51,21 @@ function _renderAvatars(scene) {
   present.forEach(function (p) { sc[p.charId] = { present: true, emotion: 'neutral' }; });
   AppState.set('sceneCharacters', sc);
 
-  present.forEach(function (p) {
+  present.forEach(function (p, i) {
     const meta = CHARACTERS[p.charId];
     if (!meta) return;
-    // 基准点 ±3% 随机偏移
-    const jx = p.spot.x + (Math.random() * 2 - 1) * 0.03;
-    const jy = p.spot.y + (Math.random() * 2 - 1) * 0.03;
-    const spot = { x: Math.min(1, Math.max(0, jx)), y: Math.min(1, Math.max(0, jy)), scale: p.spot.scale };
-    const anchor = avatarAnchor(spot);
+    // 用户要求：当前场景人物集体竖向排列在右侧。
+    // 横向固定 84%（避开右缘出口按钮），纵向在 25%–75% 区间均匀分布（单人居中），
+    // 仅保留 ±1% 纵向微抖动；行程表 spot 坐标不再决定位置（数据层原样保留），
+    // spot.scale 仍控制头像大小。
+    const count = present.length;
+    const colX = 0.84;
+    const colY = count <= 1 ? 0.5 : 0.25 + (i / (count - 1)) * 0.5 + (Math.random() * 2 - 1) * 0.01;
     const div = document.createElement('div');
     div.className = 'scene-avatar';
-    div.style.left = `${anchor.x * 100}%`;
-    div.style.top = `${anchor.y * 100}%`;
-    div.style.setProperty('--avatar-size', `${15 * (spot.scale || 0.85)}vh`);
+    div.style.left = `${colX * 100}%`;
+    div.style.top = `${colY * 100}%`;
+    div.style.setProperty('--avatar-size', `${14 * (p.spot.scale || 0.85)}vh`);
     const img = new Image();
     img.className = 'avatar-img';
     img.alt = meta.name;
