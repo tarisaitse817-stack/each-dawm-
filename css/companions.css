@@ -391,6 +391,40 @@
 .companion-detail-body .detail-label { display: inline-block; margin-right: 8px; padding: 1px 8px; border: 1px solid rgba(212,165,116,.45); border-radius: 999px; color: #D4A574; font-size: 12px; }
 .companion-detail-body .detail-affection { margin-top: 6px; font-size: 13px; color: rgba(212,165,116,.9); }
 
+/* --------------------------------------------------------------------------
+   好感度 / 醋意值 长条（用户要求：好感度粉红、醋意值紫）
+   -------------------------------------------------------------------------- */
+.stat-bar { margin: 12px 0; }
+.stat-bar-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+.stat-bar-label { font-size: 12px; color: #9a978d; letter-spacing: 1px; }
+.stat-bar-value { font-size: 12px; color: #c9b187; font-variant-numeric: tabular-nums; }
+.stat-bar-track {
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(10, 12, 28, 0.75);
+  border: 1px solid rgba(212, 165, 116, 0.22);
+  overflow: hidden;
+}
+.stat-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.6s ease;
+  min-width: 2px;
+}
+.fill-affection {
+  background: linear-gradient(90deg, #FF8FB2, #FF5C8A);
+  box-shadow: 0 0 12px rgba(255, 92, 138, 0.55);
+}
+.fill-jealousy {
+  background: linear-gradient(90deg, #B388FF, #7C4DFF);
+  box-shadow: 0 0 12px rgba(124, 77, 255, 0.55);
+}
+
 /* 点击背景关闭：全屏 portrait 容器不拦截点击（图片本身保留指针事件） */
 .companion-detail-portrait { pointer-events: none; }
 .companion-detail-portrait .detail-intro-img { pointer-events: auto; }

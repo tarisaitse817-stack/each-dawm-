@@ -3,12 +3,12 @@
  * 标签页：采样 / Prompt 文本 / 自定义 Prompts / 排序
  */
 
-import { sillytavernStore } from '../store.js?v=22';
-import { savePreset, deletePreset } from '../database.js?v=22';
-import { createDefaultPreset } from '../types.js?v=22';
-import { clampNumber } from '../editor-utils.js?v=22';
-import { el, makeOverlay, fieldRow } from './dom.js?v=22';
-import { renderPromptOrderEditor } from './prompt-order-editor.js?v=22';
+import { sillytavernStore } from '../store.js?v=23';
+import { savePreset, deletePreset } from '../database.js?v=23';
+import { createDefaultPreset } from '../types.js?v=23';
+import { clampNumber } from '../editor-utils.js?v=23';
+import { el, makeOverlay, fieldRow } from './dom.js?v=23';
+import { renderPromptOrderEditor } from './prompt-order-editor.js?v=23';
 
 const TABS = [
   { id: 'sampling', label: '采样' },

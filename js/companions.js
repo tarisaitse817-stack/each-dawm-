@@ -3,8 +3,8 @@
    数据源：data/characters.json（静态图鉴） + AppState companions（运行时好感/状态）
    ========================================================================== */
 
-import { AppState } from './state.js?v=22';
-import { Notifications } from './notifications.js?v=22';
+import { AppState } from './state.js?v=23';
+import { Notifications } from './notifications.js?v=23';
 
 /* ==========================================================================
    常量
@@ -218,6 +218,9 @@ export var CompanionsPanel = {
     var companion = (AppState.get('companions') || []).find(function (c) { return c.id === companionId; });
     if (companion && companion.unlocked === false) return; // 未解锁角色不展示详情
     var affection = companion ? companion.affection : meta.affection;
+    var jealousy = companion ? (companion.jealousy || 0) : 0;
+    var affectionPct = Math.min(100, Math.max(0, Number(affection) || 0));
+    var jealousyPct = Math.min(100, Math.max(0, Number(jealousy) || 0));
 
     if (!_detailEl) this._buildDetailEl();
     if (!_detailEl) return;
@@ -242,7 +245,15 @@ export var CompanionsPanel = {
       '<div class="detail-section"><span class="detail-label">背景</span>' + this._escapeHtml(meta.background) + '</div>' +
       '<div class="detail-section"><span class="detail-label">性格</span>' + this._escapeHtml(meta.personality) + '</div>' +
       '<div class="detail-section"><span class="detail-label">外貌</span>' + this._escapeHtml(meta.appearance) + '</div>' +
-      '<div class="detail-affection">当前好感度：' + affection + ' / 100</div>';
+      // 好感度（粉红长条）/ 醋意值（紫色长条）
+      '<div class="stat-bar">' +
+        '<div class="stat-bar-head"><span class="stat-bar-label">好感度</span><span class="stat-bar-value">' + affectionPct + ' / 100</span></div>' +
+        '<div class="stat-bar-track"><div class="stat-bar-fill fill-affection" style="width:' + affectionPct + '%"></div></div>' +
+      '</div>' +
+      '<div class="stat-bar">' +
+        '<div class="stat-bar-head"><span class="stat-bar-label">醋意值</span><span class="stat-bar-value">' + jealousyPct + ' / 100</span></div>' +
+        '<div class="stat-bar-track"><div class="stat-bar-fill fill-jealousy" style="width:' + jealousyPct + '%"></div></div>' +
+      '</div>';
     _detailBodyEl.innerHTML = body;
 
     _detailEl.classList.add('active');
