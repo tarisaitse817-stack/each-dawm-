@@ -124,6 +124,63 @@ export const App = {
     // 20. 初始化时间显示
     this._timeEl = document.getElementById('time-display');
     this.updateTimeDisplay();
+
+    // 21. SillyTavern AI 聊天集成（异步，不阻塞启动）
+    this._initSillytavern();
+  },
+
+  /* ======================================================================
+     _initSillytavern — SillyTavern Web 集成
+     初始化 IndexedDB 数据层 → 继承游戏 AI 设置 → 世界书种子导入 →
+     侧边栏追加「AI 聊天」入口
+     ====================================================================== */
+  async _initSillytavern() {
+    try {
+      var storeMod = await import('./sillytavern/store.js?v=11');
+      var uiMod = await import('./sillytavern/ui/index.js?v=11');
+      var seedMod = await import('./sillytavern/seed.js?v=11');
+      var store = storeMod.sillytavernStore;
+      await store.loadAll();
+
+      // 继承游戏 AI 设置（ST 未配置 API Key 时）
+      var gameSettings = AppState.get().settings || {};
+      var stSettings = store.settings;
+      if (stSettings && !stSettings.api.apiKey && gameSettings.aiApiKey) {
+        await store.updateSettings({
+          api: {
+            ...stSettings.api,
+            apiKey: gameSettings.aiApiKey,
+            baseUrl: gameSettings.aiEndpoint || stSettings.api.baseUrl,
+            model: gameSettings.aiModel || stSettings.api.model
+          }
+        });
+      }
+
+      // 首次启动导入世界书种子（data/worldbook.json → IndexedDB）
+      var seeded = await seedMod.seedWorldbookIfEmpty();
+      if (seeded) await store.loadAll(); // 刷新 lorebooks 列表
+
+      // 侧边栏入口：插到设置按钮上方
+      var sidebar = document.getElementById('sidebar');
+      var settingsItem = document.getElementById('nav-settings');
+      if (sidebar && settingsItem) {
+        var chatItem = document.createElement('div');
+        chatItem.className = 'nav-item';
+        chatItem.id = 'nav-st-chat';
+        chatItem.innerHTML =
+          '<i data-lucide="message-circle" class="nav-icon"></i>' +
+          '<span class="nav-label">AI 聊天</span>';
+        chatItem.addEventListener('click', function () {
+          uiMod.openChatModal();
+        });
+        sidebar.insertBefore(chatItem, settingsItem);
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+          lucide.createIcons();
+        }
+      }
+    } catch (err) {
+      console.error('[sillytavern] 初始化失败:', err);
+    }
   },
 
   /* ======================================================================

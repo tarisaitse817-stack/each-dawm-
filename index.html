@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="css/closeup.css">
   <link rel="stylesheet" href="css/transition.css">
   <link rel="stylesheet" href="css/settings.css">
+  <link rel="stylesheet" href="css/sillytavern.css">
 </head>
 <body>
   <!-- ==================================================================
@@ -109,6 +110,8 @@
     })();
   </script>
 
+  <!-- SillyTavern 集成：Dexie (IndexedDB 封装) 先行加载，暴露全局 window.Dexie -->
+  <script src="lib/dexie.min.js"></script>
   <!-- JS 模块 -->
   <script type="module" src="js/app.js?v=11"></script>
 </body>
