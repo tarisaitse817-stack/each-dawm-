@@ -13,6 +13,8 @@ export const CHARACTERS = {
   tiantong: { name: '天童',       portrait: 'assets/characters/tiantong/neutral.png' },
   li:       { name: '理',         portrait: 'assets/characters/li/neutral.png' },
   caihong:  { name: '彩虹',       portrait: 'assets/characters/caihong/neutral.png' },
+  sera:     { name: '塞拉',       portrait: 'assets/characters/sera/neutral.png' },
+  winda:    { name: '米德拉什',   portrait: 'assets/characters/winda/neutral.png' },
 };
 
 /** 头像锚点：站位坐标上抬 12%（头部位置），y 下界夹 0；纯函数供 scene.js 与校验脚本复用 */
@@ -63,6 +65,7 @@ export const SCENES = {
       { dir: 'left',   to: 'home_bed',  label: '卧室' },
       { dir: 'right',  to: 'home_door', label: '家门' },
       { dir: 'bottom', to: 'suburb_st', label: '出门' },
+      { dir: 'top',    to: 'balcony',   label: '阳台' },
     ],
     characters: [],
     characterSpots: {},
@@ -74,7 +77,10 @@ export const SCENES = {
   home_bed: {
     id: 'home_bed', name: '卧室', bg: 'assets/scenes/home_bed.png',
     description: '你的卧室，全城唯一能隔绝催眠 APP 信号的净土。',
-    exits: [{ dir: 'right', to: 'home_living', label: '客厅' }],
+    exits: [
+      { dir: 'right', to: 'home_living', label: '客厅' },
+      { dir: 'top',   to: 'winda_room',  label: '米德拉什的房间' },
+    ],
     characters: [],
     characterSpots: {},
     objects: [
@@ -266,6 +272,32 @@ export const SCENES = {
     objects: [
       { id: 'tree', label: '古树', x: 0.35, y: 0.55, desc: '一棵参天古树，树皮上长着青苔。' },
       { id: 'trail', label: '小径', x: 0.65, y: 0.7, desc: '蜿蜒的林间小径，通往更深处。' },
+    ],
+  },
+
+  // ===== 阳台（1，塞拉的领地）=====
+  balcony: {
+    id: 'balcony', name: '阳台', bg: 'assets/scenes/balcony.jpg',
+    description: '塞拉霸占的阳台花园，摆满了她心爱的花花草草。',
+    exits: [{ dir: 'bottom', to: 'home_living', label: '回客厅' }],
+    characters: [],
+    characterSpots: {},
+    objects: [
+      { id: 'flowerpot', label: '花盆', x: 0.4, y: 0.6, desc: '一排排长势喜人的盆栽，被精心修剪过。' },
+      { id: 'watering', label: '洒水壶', x: 0.62, y: 0.66, desc: '塞拉的专用洒水壶，壶身贴着可爱贴纸。' },
+    ],
+  },
+
+  // ===== 米德拉什的房间（1）=====
+  winda_room: {
+    id: 'winda_room', name: '米德拉什的房间', bg: 'assets/scenes/winda_room.png',
+    description: '拉着厚重窗帘的昏暗房间，墙上贴满了从各个角度拍下的照片。',
+    exits: [{ dir: 'bottom', to: 'home_bed', label: '回卧室' }],
+    characters: [],
+    characterSpots: {},
+    objects: [
+      { id: 'photos', label: '照片墙', x: 0.42, y: 0.5, desc: '整面墙贴满了偷拍的照片，令人毛骨悚然。' },
+      { id: 'curtain', label: '窗帘', x: 0.68, y: 0.42, desc: '厚重的窗帘拉得严严实实，透不进一丝阳光。' },
     ],
   },
 };

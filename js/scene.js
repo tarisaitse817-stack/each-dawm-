@@ -1,13 +1,13 @@
 // 场景视图：背景层 + 出口 + 物件热点 + 旁白字幕 + 立绘层（在场由行程表派生）
-import { AppState } from './state.js?v=42';
-import { SCENES, CHARACTERS, getScene, isSceneOpen } from './scenes-data.js?v=42';
-import { getPresent, loadSchedules } from './schedules.js?v=42';
+import { AppState } from './state.js?v=43';
+import { SCENES, CHARACTERS, getScene, isSceneOpen } from './scenes-data.js?v=43';
+import { getPresent, loadSchedules } from './schedules.js?v=43';
 
 /** 打烊提示文案（用户要求） */
 const CLOSED_MSG = '已经到了非营业时间了，明天再来吧';
 
 // 头像图片版本号：换图/重裁后 bump 刷新浏览器缓存（图片本身无 hash）
-const ASSET_V = '15';
+const ASSET_V = '16';
 
 const _subtitleTimer = null;
 let _currentSceneId = 'home_living';
@@ -33,6 +33,8 @@ const NPC_AMBIENCE = {
   twins_room: '对门静悄悄的，双子的直播设备还亮着待机灯',
   home_living: '家里静悄悄的，只有时钟的滴答声',
   home_bed: '卧室里静悄悄的，被子还保持着起床后的褶皱',
+  balcony: '阳台上的花花草草长得正旺，微风吹来一阵草木清香',
+  winda_room: '房间里拉着厚厚的窗帘，光线昏暗，安静得有些压抑',
 };
 
 function _bgUrl(scene) {

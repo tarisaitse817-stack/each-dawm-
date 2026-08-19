@@ -3,13 +3,13 @@
    渲染进近景特写层的对话区（CloseupView.getDialogEl()），对外 API 保持不变
    ========================================================================== */
 
-import { AppState } from './state.js?v=42';
-import { AiClient, BattleBridge } from './ai.js?v=42';
-import { CloseupView, showDuelResultCg } from './closeup.js?v=42';
-import { SceneView } from './scene.js?v=42';
-import { mapEmotion } from './emotion.js?v=42';
-import { CHARACTERS } from './scenes-data.js?v=42';
-import { countPresent, getPresent, getPeriod } from './schedules.js?v=42';
+import { AppState } from './state.js?v=43';
+import { AiClient, BattleBridge } from './ai.js?v=43';
+import { CloseupView, showDuelResultCg } from './closeup.js?v=43';
+import { SceneView } from './scene.js?v=43';
+import { mapEmotion } from './emotion.js?v=43';
+import { CHARACTERS } from './scenes-data.js?v=43';
+import { countPresent, getPresent, getPeriod } from './schedules.js?v=43';
 
 /** 场景 → Danbooru 背景标签（用户需求：胜败 CG 背景随当前场景自动变化） */
 var SCENE_BG_TAGS = {
@@ -29,6 +29,8 @@ var SCENE_BG_TAGS = {
   suburb_st:       'suburban street, road, trees, outdoors',
   suburb_station:  'train platform, station, railway, outdoors',
   forest:          'forest, trees, grass, outdoors',
+  balcony:         'balcony, flower pots, plants, outdoors',
+  winda_room:      'dark room, closed curtains, photos on wall, indoors',
 };
 
 /** 时段 → 光线/时间标签 */
@@ -822,27 +824,34 @@ export const EventPanel = {
    */
   _buildDuelCgPrompt: function (playerWon, opp) {
     var bg = this._buildCgBackgroundTags();
+    var oppName = opp && opp.name;
 
-    // 随机姿势：每次胜负从姿势池随机抽一条
+    // SFW-only 角色（如塞拉）：胜负两侧都走 SFW 姿势池，不生成任何成人内容
+    var sfwOnly = CG_PROMPTS && CG_PROMPTS.sfw_only &&
+      CG_PROMPTS.sfw_only.indexOf(oppName) !== -1;
+
+    // 随机姿势：SFW-only 角色走 sfw 池，其余按胜负走 NSFW 池
     var pose = '';
     if (CG_POSES) {
-      var pool = playerWon ? CG_POSES.win : CG_POSES.lose;
+      var pool = sfwOnly ? CG_POSES.sfw
+        : (playerWon ? CG_POSES.win : CG_POSES.lose);
       if (pool && pool.length) pose = pool[Math.floor(Math.random() * pool.length)];
     }
     if (!pose) {
-      pose = playerWon
-        ? 'naked, submissive, on knees, blushing, looking at viewer, pleading, presenting'
-        : 'naked, submissive, on knees, blushing, dominated';
+      pose = sfwOnly ? 'smug grin, arms crossed'
+        : (playerWon
+          ? 'naked, submissive, on knees, blushing, looking at viewer, pleading, presenting'
+          : 'naked, submissive, on knees, blushing, dominated');
     }
 
-    if (!playerWon) {
+    if (!playerWon && !sfwOnly) {
       // 战败：男性受向（玩家被支配）
       var male = (CG_PROMPTS && CG_PROMPTS.generic_male) || '1boy, short black hair, adult man';
       return 'masterpiece, best quality, highres, score_8, ' + male + ', ' + pose + ', ' + bg + ', nsfw';
     }
 
-    // 胜利：女性受向 —— 用户 JSON 优先，内置仅成年配角兜底，最后通用成年女性
-    var feat = (CG_PROMPTS && CG_PROMPTS.characters && CG_PROMPTS.characters[opp && opp.name]) || null;
+    // 女性角色（胜利方 / SFW-only 角色）—— 用户 JSON 优先，内置兜底，最后通用成年女性
+    var feat = (CG_PROMPTS && CG_PROMPTS.characters && CG_PROMPTS.characters[oppName]) || null;
     if (!feat) {
       var BUILTIN = {
         '塞壬': 'grey hair, twintails, purple eyes, pointed ears, bare shoulders, blue fin feet',
@@ -853,12 +862,15 @@ export const EventPanel = {
         '彩虹': 'rainbow hair, very long hair, white shirt',
         '艾克利西亚': 'blonde hair, long hair, silver eyes, white dress, x-shaped mark on forehead',
         '理': 'red hooded robe, blue eyes, petite woman',
-        '天童': 'white kimono, red hakama, white thighhighs, gold headdress, shy expression'
+        '天童': 'white kimono, red hakama, white thighhighs, gold headdress, shy expression',
+        '塞拉': 'green twintails, green ahoge, green eyes, flower hair ornament, tank top, shorts',
+        '米德拉什': 'teal green ponytail, long bangs, green eyes, dark circles under eyes, pale skin'
       };
-      feat = BUILTIN[opp && opp.name] || null;
+      feat = BUILTIN[oppName] || null;
     }
     if (!feat) feat = (CG_PROMPTS && CG_PROMPTS.generic_female) || 'adult woman, mature female';
-    return 'masterpiece, best quality, highres, score_8, 1girl, ' + feat + ', ' + pose + ', ' + bg + ', nsfw';
+    var tail = sfwOnly ? '' : ', nsfw';
+    return 'masterpiece, best quality, highres, score_8, 1girl, ' + feat + ', ' + pose + ', ' + bg + tail;
   },
 
   _addRegenerateBtn() {

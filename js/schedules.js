@@ -4,7 +4,7 @@
    时段：morning 6-12 / afternoon 12-18 / evening 18-24 / night 0-6
    ========================================================================== */
 
-import { CHARACTERS } from './scenes-data.js?v=42';
+import { CHARACTERS } from './scenes-data.js?v=43';
 
 /** 行程表数据（data/schedules.json，构建期 fetch 后缓存） */
 export var SCHEDULE_DATA = { periods: [], schedule: {}, cg: {} };
@@ -17,8 +17,8 @@ var _periodStart = {};
    ========================================================================== */
 export async function loadSchedules() {
   try {
-    // ?v=42 版本号：数据 JSON 无 hash，改表后必须 bump 刷新浏览器缓存
-    var resp = await fetch('data/schedules.json?v=42');
+    // ?v=43 版本号：数据 JSON 无 hash，改表后必须 bump 刷新浏览器缓存
+    var resp = await fetch('data/schedules.json?v=43');
     if (resp.ok) {
       var data = await resp.json();
       SCHEDULE_DATA = data;

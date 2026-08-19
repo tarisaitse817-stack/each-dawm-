@@ -13,7 +13,8 @@ try {
 
 const WANT = [
   ['siren', 40], ['lingyi', 30], ['lushi', 30], ['kisikil', 20], ['lilla', 20],
-  ['ecclesia', 20], ['tiantong', 30], ['li', 20], ['caihong', 20]
+  ['ecclesia', 20], ['tiantong', 30], ['li', 20], ['caihong', 20],
+  ['sera', 20], ['winda', 20]
 ];
 
 const chars = data.characters;

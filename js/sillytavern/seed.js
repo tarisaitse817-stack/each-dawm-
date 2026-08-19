@@ -6,7 +6,7 @@
  * ST 条目格式：{ id(uuid), keys, secondaryKeys, content, comment, order, position, selective, selectiveLogic, constant, probability, useProbability, addMemo }
  */
 
-import { getLorebooks, saveLorebook } from './database.js?v=42';
+import { getLorebooks, saveLorebook } from './database.js?v=43';
 
 /** 从内容 YAML 提取角色名（"name: 塞壬"）作为关键词 */
 function extractNameFromContent(content) {
@@ -41,6 +41,26 @@ function convertEntry(e) {
 
 export async function seedWorldbookIfEmpty() {
   const existing = await getLorebooks();
+  // 世界书源更新（如新增角色）时刷新种子库：条目数不同则重导（保留原 id/名称）
+  const seeded = existing.find((l) => l.name === '光之回响世界书');
+  if (seeded) {
+    try {
+      const resp = await fetch('data/worldbook.json');
+      if (resp.ok) {
+        const data = await resp.json();
+        const srcCount = (data.entries || []).filter((e) => e.enabled !== false).length;
+        if (srcCount !== seeded.entries.length) {
+          const entries = (data.entries || []).map(convertEntry).filter(Boolean);
+          await saveLorebook({ ...seeded, entries, updatedAt: Date.now() });
+          console.log('[sillytavern] 世界书种子已刷新: ' + seeded.entries.length + ' -> ' + entries.length + ' 条');
+          return true;
+        }
+      }
+    } catch (e) {
+      console.warn('[sillytavern] 世界书种子刷新失败:', e);
+    }
+    return false;
+  }
   if (existing.length > 0) return false; // 已有数据（含用户自建/导入），不覆盖
 
   try {

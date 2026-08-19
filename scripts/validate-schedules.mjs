@@ -5,7 +5,7 @@ import { SCHEDULE_DATA, getPeriod, getPresent, getActivity, getCgPath } from '..
 
 const errors = [];
 const PERIODS = ['morning', 'afternoon', 'evening', 'night'];
-const WANT_CHARS = ['siren', 'lingyi', 'lushi', 'kisikil', 'lilla', 'ecclesia', 'tiantong', 'li', 'caihong'];
+const WANT_CHARS = ['siren', 'lingyi', 'lushi', 'kisikil', 'lilla', 'ecclesia', 'tiantong', 'li', 'caihong', 'sera', 'winda'];
 
 const sched = SCHEDULE_DATA.schedule || {};
 if (Object.keys(sched).length !== WANT_CHARS.length) errors.push(`行程表角色数应为 ${WANT_CHARS.length}，实际 ${Object.keys(sched).length}`);
@@ -68,4 +68,4 @@ if (errors.length) {
   for (const e of errors) console.error(' -', e);
   process.exit(1);
 }
-console.log('PASS: 行程表 9 角色 × 4 时段完整、场景/坐标/文案合规、CG 路径与时段切换正确');
+console.log('PASS: 行程表 11 角色 × 4 时段完整、场景/坐标/文案合规、CG 路径与时段切换正确');

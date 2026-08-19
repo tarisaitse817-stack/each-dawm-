@@ -9,8 +9,11 @@
     "caihong": "rainbow hair, very long hair, white shirt",
     "ecclesia": "blonde hair, long hair, silver eyes, white dress, x-shaped mark on forehead",
     "li": "red hooded robe, blue eyes, petite woman",
-    "tiantong": "white kimono, red hakama, white thighhighs, gold headdress, shy expression"
+    "tiantong": "white kimono, red hakama, white thighhighs, gold headdress, shy expression",
+    "sera": "green twintails, green ahoge, green eyes, flower hair ornament, tank top, shorts",
+    "winda": "teal green ponytail, long bangs, green eyes, dark circles under eyes, pale skin"
   },
   "generic_female": "adult woman, mature female",
-  "generic_male": "1boy, short black hair, adult man"
+  "generic_male": "1boy, short black hair, adult man",
+  "sfw_only": ["塞拉"]
 }

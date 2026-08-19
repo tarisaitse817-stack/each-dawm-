@@ -3,13 +3,14 @@ import { SCENES, CHARACTERS, EMOTION_LIST, getScene, emotionFile, avatarAnchor }
 
 let errors = [];
 const ids = Object.keys(SCENES);
-if (ids.length !== 16) errors.push(`场景数应为 16，实际 ${ids.length}`);
+if (ids.length !== 18) errors.push(`场景数应为 18，实际 ${ids.length}`);
 
-// 场景集合：必须恰为新 16 场景（公司 3 场景已删除，新增 twins_room/church/forest）
+// 场景集合：必须恰为新 18 场景（公司 3 场景已删除，新增 twins_room/church/forest/balcony/winda_room）
 const WANT_SCENES = ['home_living', 'home_bed', 'home_door', 'twins_room',
   'food_bunshop', 'food_st', 'market_hall', 'market_door',
   'cardshop_inside', 'cardshop_door', 'mall_st', 'mall_dessert',
-  'church', 'forest', 'suburb_st', 'suburb_station'];
+  'church', 'forest', 'suburb_st', 'suburb_station',
+  'balcony', 'winda_room'];
 for (const sid of WANT_SCENES) {
   if (!SCENES[sid]) errors.push(`缺少场景 ${sid}`);
 }
@@ -39,8 +40,8 @@ for (const [id, s] of Object.entries(SCENES)) {
     if (o.x < 0 || o.x > 1 || o.y < 0 || o.y > 1) errors.push(`${id}: 物件 ${o.id} 坐标越界`);
   }
 }
-// roster：必须恰为世界书 9 人
-const WANT_CHARS = ['siren', 'lingyi', 'lushi', 'kisikil', 'lilla', 'ecclesia', 'tiantong', 'li', 'caihong'];
+// roster：必须恰为世界书 11 人
+const WANT_CHARS = ['siren', 'lingyi', 'lushi', 'kisikil', 'lilla', 'ecclesia', 'tiantong', 'li', 'caihong', 'sera', 'winda'];
 for (const cid of WANT_CHARS) {
   if (!CHARACTERS[cid]) errors.push(`CHARACTERS 缺少角色 ${cid}`);
 }
@@ -65,7 +66,7 @@ for (const e of EMOTION_LIST) {
 }
 if (!getScene('home_living') || getScene('nonexistent')) errors.push('getScene 行为错误');
 
-// 连通性：从 home_living 出发 BFS，断言 16 节点全可达
+// 连通性：从 home_living 出发 BFS，断言 18 节点全可达
 const reachable = new Set(['home_living']);
 const queue = ['home_living'];
 while (queue.length) {
@@ -87,4 +88,4 @@ if (errors.length) {
   for (const e of errors) console.error(' -', e);
   process.exit(1);
 }
-console.log('PASS: 16 场景（新集合）、出口引用、角色/物件坐标、表情路径全部有效、16 节点全连通');
+console.log('PASS: 18 场景（新集合）、出口引用、角色/物件坐标、表情路径全部有效、18 节点全连通');

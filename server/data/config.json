@@ -107,6 +107,16 @@
       "name": "AI",
       "deck": "random",
       "dialog": "default"
+    },
+    "塞拉": {
+      "name": "Sera",
+      "deck": "AI_Apophis",
+      "dialog": "default"
+    },
+    "米德拉什": {
+      "name": "Winda",
+      "deck": "AI_LightswornShaddoldinosour",
+      "dialog": "default"
     }
   },
   "llm_timeout": 300,

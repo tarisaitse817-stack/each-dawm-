@@ -59,6 +59,18 @@
       "afternoon": { "scene": "forest",      "activity": "在森林里安静写生",     "spot": { "x": 0.50, "y": 0.55, "scale": 0.85 } },
       "evening":   { "scene": "suburb_st",   "activity": "在晚霞里安静地速写",   "spot": { "x": 0.52, "y": 0.52, "scale": 0.85 } },
       "night":     { "scene": "home_bed",    "activity": "抱着速写本睡着了",     "spot": { "x": 0.52, "y": 0.55, "scale": 0.85 } }
+    },
+    "sera": {
+      "morning":   { "scene": "balcony",     "activity": "在阳台打理她的花草王国", "spot": { "x": 0.45, "y": 0.55, "scale": 0.85 } },
+      "afternoon": { "scene": "balcony",     "activity": "给花花草草浇水施肥",     "spot": { "x": 0.48, "y": 0.55, "scale": 0.85 } },
+      "evening":   { "scene": "forest",      "activity": "硬拉着你到森林公园遛弯", "spot": { "x": 0.50, "y": 0.52, "scale": 0.85 } },
+      "night":     { "scene": "home_living", "activity": "蜷在沙发上睡得不省人事", "spot": { "x": 0.42, "y": 0.55, "scale": 0.85 } }
+    },
+    "winda": {
+      "morning":   { "scene": "winda_room",  "activity": "反锁在房间里窥视着门缝", "spot": { "x": 0.50, "y": 0.55, "scale": 0.85 } },
+      "afternoon": { "scene": "winda_room",  "activity": "拉着窗帘整理偷拍照片",   "spot": { "x": 0.50, "y": 0.55, "scale": 0.85 } },
+      "evening":   { "scene": "winda_room",  "activity": "悄无声息地躲在门后偷听", "spot": { "x": 0.50, "y": 0.55, "scale": 0.85 } },
+      "night":     { "scene": "winda_room",  "activity": "抱着偷拍相册睡去",       "spot": { "x": 0.50, "y": 0.55, "scale": 0.85 } }
     }
   },
   "cg": {

@@ -50,7 +50,9 @@ function createDefaultState() {
       { id: 'ecclesia', name: '艾克利西亚', affection: 20, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/ecclesia.png', deck: 'Albaz',          background: '跨越次元来到现世的羁绊精灵，彻底暴露了吃货本性，靠在小吃街帮忙换取零食，每天最期待回家讨要抱抱和投喂。' },
       { id: 'tiantong', name: '天童',       affection: 30, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/tiantong.png', deck: 'Swordsoul',      background: '带着一身华丽日式装扮来到现世，生性胆小怯懦，总在精灵们吵架时硬着头皮劝架，心里最渴望躲在主角怀里被安全感包围。' },
       { id: 'li',       name: '理',         affection: 20, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/li.png',       deck: 'Exosister',      background: '降临现世的圣洁精灵，对现代社会的运作充满好奇，总用悲天悯人的目光观察人类。' },
-      { id: 'caihong',  name: '彩虹',       affection: 20, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/caihong.png',  deck: 'Rainbow',        background: '暂住主角家的异次元画师，被收留后怀着极大的感激包揽了家里的许多家务，逐渐融入了这个修罗场。' }
+      { id: 'caihong',  name: '彩虹',       affection: 20, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/caihong.png',  deck: 'Rainbow',        background: '暂住主角家的异次元画师，被收留后怀着极大的感激包揽了家里的许多家务，逐渐融入了这个修罗场。' },
+      { id: 'sera',     name: '塞拉',       affection: 20, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/sera.png',     deck: 'Traptrix',      background: '沉迷阳台园艺的森系精灵，用最嚣张的「雌小鬼」人设博取关注，背地里却偷偷闻主角换下来的脏衣服。' },
+      { id: 'winda',    name: '米德拉什',   affection: 20, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/winda.png',    deck: 'Shaddoll',      background: '终日反锁在房里的阴郁家里蹲，对主角有着病态的迷恋，房间里贴满了偷拍主角的照片。' }
     ],
 
     /* --- MDPro3 卡组由玩家在 MDPro3 中自行设定 --- */
@@ -124,7 +126,9 @@ export const DEFAULT_COMPANION_IDS = [
   'ecclesia',
   'tiantong',
   'li',
-  'caihong'
+  'caihong',
+  'sera',
+  'winda'
 ];
 
 /**
