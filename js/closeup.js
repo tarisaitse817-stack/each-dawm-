@@ -1,9 +1,9 @@
 // 全屏特写视图（v2 流程）：点击头像 → 立绘居中（standing）→ 对话开始 2 秒后 → CG 3 秒（如有）
 // → 回到立绘继续对话常驻。无 CG 时全程立绘。
 // 降级链：standing.png → neutral.png（emotionFile）→ fullbody.png → 「立绘缺失」占位
-import { AppState } from './state.js?v=35';
-import { CHARACTERS, emotionFile } from './scenes-data.js?v=35';
-import { getCgPath } from './schedules.js?v=35';
+import { AppState } from './state.js?v=36';
+import { CHARACTERS, emotionFile } from './scenes-data.js?v=36';
+import { getCgPath } from './schedules.js?v=36';
 
 // 素材版本号：头像/CG/立绘图片 URL 统一加 v 参数（图片本身无 hash，
 // 重裁/换图后必须 bump 才能刷新用户浏览器缓存；JS 模块走 import 的 v 参数）
@@ -230,14 +230,11 @@ export function showDuelResultCg(playerWon, onDone) {
   const img = new Image();
   img.className = 'duel-cg-img';
   img.alt = playerWon ? '胜利' : '败北';
-  const textEl = document.createElement('div');
-  textEl.className = 'duel-cg-text ' + (playerWon ? 'win' : 'lose');
-  textEl.textContent = playerWon ? '胜 利' : '败 北';
   const hint = document.createElement('div');
   hint.className = 'duel-cg-hint';
   hint.textContent = '点击继续 ▸';
 
-  overlay.append(img, textEl, hint);
+  overlay.append(img, hint);
   document.body.appendChild(overlay);
 
   var done = false;
@@ -254,11 +251,10 @@ export function showDuelResultCg(playerWon, onDone) {
   overlay.addEventListener('click', finish);
   document.addEventListener('keydown', onKey);
 
-  // 素材加载：失败降级为纯文字版
+  // 素材加载：失败降级为纯暗场 + 提示（用户要求：不显示大字）
   img.onerror = function () {
     if (done) return;
     img.remove();
-    overlay.classList.add('text-only');
   };
   img.src = (playerWon ? 'assets/cg/victory.png' : 'assets/cg/defeat.png') + '?v=' + ASSET_V;
 }

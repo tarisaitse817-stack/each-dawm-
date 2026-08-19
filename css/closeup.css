@@ -68,20 +68,6 @@
   height: 100%;
   object-fit: cover;
 }
-#duel-cg-overlay .duel-cg-text {
-  position: relative;
-  font-family: var(--font-title, 'Cinzel', serif);
-  font-size: clamp(64px, 14vw, 160px);
-  font-weight: 700;
-  letter-spacing: 0.35em;
-  text-indent: 0.35em;
-  text-shadow: 0 0 40px currentColor;
-  animation: duel-cg-pop 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.2);
-}
-@keyframes duel-cg-pop { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-#duel-cg-overlay .duel-cg-text.win { color: #FFD54F; }
-#duel-cg-overlay .duel-cg-text.lose { color: #C0392B; }
-#duel-cg-overlay.text-only .duel-cg-text { text-shadow: 0 0 60px currentColor, 0 0 120px currentColor; }
 #duel-cg-overlay .duel-cg-hint {
   position: absolute;
   bottom: 42px;
