@@ -29,7 +29,14 @@
 }
 @keyframes closeup-cg-in { from { opacity: 0; } to { opacity: 1; } }
 .closeup-portrait .closeup-standing {
-  width: auto; height: 78vh; max-width: 60vw; object-fit: contain;
+  /* 用户要求：立绘固定占据屏幕高度五分之三（60vh），位置移动到屏幕左侧；
+     素材已统一规范化（角色高度 1900px、脚底同一基线），高度驱动宽度自适应 */
+  position: absolute;
+  left: 6%;
+  bottom: 3%;
+  height: 60vh;
+  width: auto;
+  object-fit: contain;
   animation: closeup-standing-in .4s ease;
   filter: drop-shadow(0 10px 30px rgba(0,0,0,.55));
 }

@@ -1,10 +1,10 @@
 // 场景视图：背景层 + 出口 + 物件热点 + 旁白字幕 + 立绘层（在场由行程表派生）
-import { AppState } from './state.js?v=17';
-import { SCENES, CHARACTERS, getScene } from './scenes-data.js?v=17';
-import { getPresent, loadSchedules } from './schedules.js?v=17';
+import { AppState } from './state.js?v=18';
+import { SCENES, CHARACTERS, getScene } from './scenes-data.js?v=18';
+import { getPresent, loadSchedules } from './schedules.js?v=18';
 
 // 头像图片版本号：换图/重裁后 bump 刷新浏览器缓存（图片本身无 hash）
-const ASSET_V = '12';
+const ASSET_V = '13';
 
 const _subtitleTimer = null;
 let _currentSceneId = 'home_living';
