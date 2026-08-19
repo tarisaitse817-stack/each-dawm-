@@ -3,7 +3,7 @@
  * 依赖：lib/dexie.min.js（script 标签先行加载，暴露全局 window.Dexie）
  */
 
-import { DEFAULT_SETTINGS, createDefaultPreset } from './types.js?v=31';
+import { DEFAULT_SETTINGS, createDefaultPreset } from './types.js?v=32';
 
 const Dexie = window.Dexie;
 if (!Dexie) {

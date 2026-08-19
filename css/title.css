@@ -132,9 +132,13 @@
 }
 
 /* 图片标题 logo（标题.png，2048×2048 透明底） */
+/* 用户要求：标题 logo 更新后放在左上角（按钮仍居中） */
 .title-logo-img {
-  max-width: min(60vw, 520px);
-  max-height: 36vh;
+  position: absolute;
+  top: 26px;
+  left: 30px;
+  max-width: min(34vw, 380px);
+  max-height: 22vh;
   object-fit: contain;
   user-select: none;
   animation: title-bounce 2.5s ease-in-out infinite;

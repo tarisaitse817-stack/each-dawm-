@@ -2,13 +2,13 @@
    光之回响 (Echoes of Light) — TitleScreen 标题界面
    ========================================================================== */
 
-import { AppState } from './state.js?v=31';
-import { StorageManager } from './storage.js?v=31';
-import { Navigation } from './navigation.js?v=31';
-import { showInitialBackground } from './scene.js?v=31';
-import { TransitionView } from './transition.js?v=31';
-import { EventPanel } from './event.js?v=31';
-import { playOpeningGreeting } from './greeting.js?v=31';
+import { AppState } from './state.js?v=32';
+import { StorageManager } from './storage.js?v=32';
+import { Navigation } from './navigation.js?v=32';
+import { showInitialBackground } from './scene.js?v=32';
+import { TransitionView } from './transition.js?v=32';
+import { EventPanel } from './event.js?v=32';
+import { playOpeningGreeting } from './greeting.js?v=32';
 
 /* 开场字幕（新游戏转场）：世界书 first_mes 前 3 句；失败回退内置默认文本前 3 句 */
 const MAX_OPENING_LINES = 3;
@@ -91,7 +91,7 @@ export const TitleScreen = {
 
     this._el.innerHTML =
       '<div class="title-content">' +
-        '<img class="title-logo-img" id="title-logo-text" src="assets/covers/标题.png" alt="当妹卡降临到我身边">' +
+        '<img class="title-logo-img" id="title-logo-text" src="assets/covers/标题.png?v=14" alt="当妹卡降临到我身边">' +
         '<div class="title-btn-container">' +
           (hasSave
             ? '<button class="title-btn card-btn" id="btn-continue" aria-label="继续冒险" title="继续冒险">' +
