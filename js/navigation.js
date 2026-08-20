@@ -2,8 +2,9 @@
    光之回响 (Echoes of Light) — Navigation 导航系统
    ========================================================================== */
 
-import { AppState } from './state.js?v=51';
-import { openMap } from './map.js?v=51';
+import { AppState } from './state.js?v=62';
+import { openMap } from './map.js?v=62';
+import { CloseupView } from './closeup.js?v=62';
 
 /**
  * 视图路由配置
@@ -126,6 +127,12 @@ export const Navigation = {
     if (!viewId || viewId === _currentViewId || _isNavigating) return;
 
     _isNavigating = true;
+
+    // 离开场景视图时关闭全屏特写层：否则特写覆盖层（z-index 90）会盖住
+    // 伙伴等面板，表现为「点了没反应」
+    if (viewId !== 'scene') {
+      try { CloseupView.close(); } catch (e) { console.warn('[Navigation] 关闭特写失败:', e); }
+    }
 
     // 更新全局状态
     AppState.set('currentView', viewId);

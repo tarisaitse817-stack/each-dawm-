@@ -1,16 +1,17 @@
 // 场景视图：背景层 + 出口 + 物件热点 + 旁白字幕 + 立绘层（在场由行程表派生）
-import { AppState } from './state.js?v=51';
-import { SCENES, CHARACTERS, getScene, isSceneOpen } from './scenes-data.js?v=51';
-import { getPresent, loadSchedules } from './schedules.js?v=51';
+import { AppState } from './state.js?v=62';
+import { SCENES, CHARACTERS, getScene, isSceneOpen, sceneName } from './scenes-data.js?v=62';
+import { getPresent, loadSchedules } from './schedules.js?v=62';
 
 /** 打烊提示文案（用户要求） */
 const CLOSED_MSG = '已经到了非营业时间了，明天再来吧';
 
 // 头像图片版本号：换图/重裁后 bump 刷新浏览器缓存（图片本身无 hash）
-const ASSET_V = '18';
+const ASSET_V = '20';
 
 const _subtitleTimer = null;
 let _currentSceneId = 'home_living';
+let _duelBgOverride = null; // 决斗结束后的 CG 背景覆盖（切场景时清除）
 
 /**
  * NPC 氛围文案（用户要求：NPC 密集的地点进入时描述 NPC 行为）。
@@ -35,6 +36,7 @@ const NPC_AMBIENCE = {
   home_bed: '卧室里静悄悄的，被子还保持着起床后的褶皱',
   balcony: '阳台上的花花草草长得正旺，微风吹来一阵草木清香',
   winda_room: '房间里拉着厚厚的窗帘，光线昏暗，安静得有些压抑',
+  riverside: '河边很安静，只有潺潺的水声与偶尔的鸟鸣',
 };
 
 function _bgUrl(scene) {
@@ -47,7 +49,8 @@ function _renderExits(scene) {
   for (const e of scene.exits) {
     const div = document.createElement('div');
     div.className = `scene-exit exit-${e.dir}`;
-    div.innerHTML = `<span class="exit-label">${e.label}</span>`;
+    // 出口标签走动态场景名（米德拉什房间初见前显示「新邻居的房间」）
+    div.innerHTML = `<span class="exit-label">${sceneName(e.to)}</span>`;
     div.addEventListener('click', () => SceneView.travelTo(e.to, e.dir));
     layer.appendChild(div);
   }
@@ -138,6 +141,8 @@ export const SceneView = {
     if (!scene) return;
     _currentSceneId = sceneId;
     AppState.set('currentSceneId', sceneId);
+    // 场景切换：清除决斗 CG 背景覆盖（用户要求：CG 背景持续到更换场景为止）
+    _duelBgOverride = null;
     const bg = document.getElementById('location-bg');
     if (bg) {
       if (opts && opts.instantBg) {
@@ -159,7 +164,7 @@ export const SceneView = {
     _renderExits(scene);
     _renderObjects(scene);
     _renderAvatars(scene);
-    this.showSubtitle(`${scene.name} · ${scene.description}`);
+    this.showSubtitle(`${sceneName(scene.id)} · ${scene.description}`);
     // 出口翻页动画：新场景如书页从点击方向翻开盖住旧场景
     if (opts && opts.flipFrom) this._playFlip(scene, opts.flipFrom);
   },
@@ -253,6 +258,33 @@ export const SceneView = {
       return;
     }
 
+    // 初见系统（世界观 V4）：在场角色中有未解锁精灵
+    // 主动挑战名单（塞壬/塞拉/米德拉什/理/柴郡猫）→ 初见旁白 + 黑暗决斗卡片；
+    // 其余未解锁精灵（白兔/王后/白后/红心）→ 仅初见旁白，等待玩家主动挑战
+    var ACTIVE_CHALLENGERS = ['塞壬', '塞拉', '米德拉什', '理', '柴郡猫'];
+    var encounterName = null;
+    present.forEach(function (p) {
+      if (encounterName) return;
+      var comp = (AppState.get('companions') || []).find(function (c) { return c.id === p.charId; });
+      if (comp && comp.unlocked === false) {
+        encounterName = comp.name;
+      }
+    });
+    var isActive = encounterName && ACTIVE_CHALLENGERS.indexOf(encounterName) >= 0;
+    // 首见剧情事件：河边塞壬 / 森林塞拉陷阱 / 教堂理 / 新邻居房间米德拉什
+    var sceneEv = AppState.get('sceneEvents') || {};
+    var firstEvent = '';
+    if (encounterName === '塞壬' && !sceneEv.riverside_seen) firstEvent = 'riverside';
+    else if (encounterName === '塞拉' && !sceneEv.forest_seen) firstEvent = 'forest';
+    else if (encounterName === '理' && !sceneEv.church_seen) firstEvent = 'church';
+    else if (encounterName === '米德拉什' && !sceneEv.winda_met) firstEvent = 'winda';
+    // 标记首次触发（winda 的标记由决斗结束后 event.js 写入，用于房间改名）
+    if (firstEvent && firstEvent !== 'winda') {
+      var ev2 = JSON.parse(JSON.stringify(sceneEv));
+      ev2[firstEvent + '_seen'] = true;
+      AppState.set('sceneEvents', ev2);
+    }
+
     // 离场规则（用户要求）：离开时有人在场 → 提示 AI 按角色性格描述离场行为
     // （如「看见你离开，XX也亦步亦趋地跟随着你」「微笑着祝你一路顺风」）；
     // 只有路人 NPC → 提示 AI 简单描述（如「你逆着人流，离开了XX」）
@@ -268,11 +300,25 @@ export const SceneView = {
       leavePart = `离开${fromName}时没有其他角色在场，可简单带过（例如「你逆着人流，离开了${fromName}」）；`;
     }
 
-    // AI 旁白文案：有人 → 角色反应（可带 NPC 背景音）；无人 → 环境/NPC 描写
+    // AI 旁白文案：首见剧情事件 → 事件专属描写 + 黑暗决斗；
+    // 主动型初见 → 惊讶触发黑暗决斗；被动型初见 → 仅旁白（等玩家主动）；
+    // 有人 → 角色反应（可带 NPC 背景音）；无人 → 环境/NPC 描写。
     // 兜底文案统一由 event.js 处理（"api连接错误，检查一下api哦~"）
     const npcNote = NPC_AMBIENCE[scene.id] || '';
     var aiText;
-    if (present.length > 0) {
+    if (firstEvent === 'riverside') {
+      aiText = `（系统提示：${movePart}。你在河边看见了一个泡在河水里的少女。周围的游人似乎完全看不见她的身影，更看不见她的鱼尾——只有你，惊讶地注视着她那不属于人类的部分。她察觉了你的目光，认定你就是导致她穿越而来的元凶，向你发起了黑暗决斗。请以旁白视角、用2-3句话描述这场河边初见，不要输出角色对话，不要输出任何标签。）`;
+    } else if (firstEvent === 'forest') {
+      aiText = `（系统提示：${movePart}。你在森林里一脚踩空，掉进了一个伪装成落叶堆的陷阱。一个绿色双马尾的少女从树后跳了出来，得意洋洋地宣告这是她的地盘，随即向你发起了黑暗决斗。请以旁白视角、用2-3句话描述这场森林邂逅，不要输出角色对话，不要输出任何标签。）`;
+    } else if (firstEvent === 'church') {
+      aiText = `（系统提示：${movePart}。你在教堂里祷告时不知不觉睡着了。醒来时，一个披着红色长袍的少女正安静地注视着你——她发现你能看见她的本体，认定你就是一切的源头，主动向你发起了黑暗决斗。请以旁白视角、用2-3句话描述这场教堂初见，不要输出角色对话，不要输出任何标签。）`;
+    } else if (firstEvent === 'winda') {
+      aiText = `（系统提示：${movePart}。你好奇地推开了这间从未进去过的房间——窗帘紧闭，光线昏暗，墙上贴满了你的照片。黑暗深处，一个青绿色头发的少女缓缓转过头，低语着「终于等到你了」，随即向你发起了黑暗决斗。请以旁白视角、用2-3句话描述这场惊悚的初见，不要输出角色对话，不要输出任何标签。）`;
+    } else if (isActive) {
+      aiText = `（系统提示：${movePart}。你在${scene.name}遇见了从未见过的精灵${encounterName}——只有你能看见她的本体。你表现出的惊讶让她认定你就是一切的源头，她向你发起了黑暗决斗。请以旁白视角、用2-3句话描述这场突如其来的初见，不要输出角色对话，不要输出任何标签。）`;
+    } else if (encounterName) {
+      aiText = `（系统提示：${movePart}。你在${scene.name}看见了从未见过的精灵${encounterName}——只有你能看见她的本体。她注意到了你的视线，却没有主动出手的迹象。请以旁白视角、用2-3句话描述这场初见，不要输出角色对话，不要输出任何标签。）`;
+    } else if (present.length > 0) {
       var names = present.map((p) => ((CHARACTERS[p.charId] || {}).name || p.charId)).join('、');
       var bgNote = npcNote ? `（背景：${npcNote}）` : '';
       aiText = `（系统提示：${movePart}。${leavePart}在场角色：${names}。${bgNote}请以旁白视角、用2-3句话描述她们注意到你到来时的反应，不要输出角色对话，不要输出任何标签。）`;
@@ -284,9 +330,24 @@ export const SceneView = {
 
     setTimeout(function () {
       window.dispatchEvent(new CustomEvent('scene-narration-request', {
-        detail: { aiText: aiText },
+        detail: { aiText: aiText, encounterName: (firstEvent || isActive) ? encounterName : '' },
       }));
     }, 900); // 翻页动画(~700ms)结束后
+  },
+
+  /**
+   * 决斗结束 CG 背景（用户要求）：战胜/战败后把背景替换为对应 CG，
+   * 直到下次更换场景（showScene 自动恢复原场景背景）
+   * @param {string} url - CG 图片路径
+   */
+  setDuelBackground(url) {
+    if (!url) return;
+    _duelBgOverride = url;
+    const bg = document.getElementById('location-bg');
+    if (bg) {
+      bg.classList.add('active');
+      bg.style.backgroundImage = `url('${url}')`;
+    }
   },
 
   showSubtitle(text) {

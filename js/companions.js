@@ -5,16 +5,16 @@
    数据源：data/characters.json（静态图鉴） + AppState companions（运行时好感/状态）
    ========================================================================== */
 
-import { AppState } from './state.js?v=51';
-import { AiClient } from './ai.js?v=51';
-import { EventPanel } from './event.js?v=51';
+import { AppState } from './state.js?v=62';
+import { AiClient } from './ai.js?v=62';
+import { EventPanel } from './event.js?v=62';
 
 /* ==========================================================================
    常量
    ========================================================================== */
 
 /** 图片版本号：换图/重裁后 bump 刷新浏览器缓存 */
-const COMPANION_ASSET_V = '1';
+const COMPANION_ASSET_V = '2';
 
 /** 默认主题（characters.json 缺 theme 时兜底） */
 var DEFAULT_THEME = { glow: 'rgba(212, 165, 116, 0.15)', accent: '#D4A574' };

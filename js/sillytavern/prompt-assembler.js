@@ -2,8 +2,8 @@
  * Prompt Assembler (vanilla JS port)
  */
 
-import { createLorebookEngine } from './lorebook-engine.js?v=51';
-import { formatVariablesForPrompt } from './variables.js?v=51';
+import { createLorebookEngine } from './lorebook-engine.js?v=62';
+import { formatVariablesForPrompt } from './variables.js?v=62';
 
 export function assemblePrompt(options) {
   const { userInput, history, preset, lorebooks, userName, characterName, variables, extraVariables, formatPrompt } = options;

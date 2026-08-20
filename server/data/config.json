@@ -117,6 +117,36 @@
       "name": "Winda",
       "deck": "AI_LightswornShaddoldinosour",
       "dialog": "Winda.zh-CN"
+    },
+    "白兔": {
+      "name": "WhiteRabbit",
+      "deck": "AI_Maliss",
+      "dialog": "WhiteRabbit.zh-CN"
+    },
+    "柴郡猫": {
+      "name": "CheshireCat",
+      "deck": "AI_Maliss",
+      "dialog": "CheshireCat.zh-CN"
+    },
+    "睡鼠": {
+      "name": "Dormouse",
+      "deck": "AI_Maliss",
+      "dialog": "Dormouse.zh-CN"
+    },
+    "王后": {
+      "name": "Queen",
+      "deck": "AI_Maliss",
+      "dialog": "Queen.zh-CN"
+    },
+    "白后": {
+      "name": "WhiteQueen",
+      "deck": "AI_Maliss",
+      "dialog": "WhiteQueen.zh-CN"
+    },
+    "红心": {
+      "name": "RedQueen",
+      "deck": "AI_Maliss",
+      "dialog": "RedQueen.zh-CN"
     }
   },
   "llm_timeout": 300,

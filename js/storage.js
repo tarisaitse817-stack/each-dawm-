@@ -2,8 +2,8 @@
    光之回响 (Echoes of Light) — StorageManager localStorage 持久化
    ========================================================================== */
 
-import { DEFAULT_COMPANION_IDS, getDefaultCompanions } from './state.js?v=51';
-import { SCENES } from './scenes-data.js?v=51';
+import { DEFAULT_COMPANION_IDS, getDefaultCompanions } from './state.js?v=62';
+import { SCENES } from './scenes-data.js?v=62';
 
 /** localStorage 存储键名 */
 const STORAGE_KEY = 'light-echoes-save';

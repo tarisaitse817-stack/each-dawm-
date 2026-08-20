@@ -1,5 +1,7 @@
-// 场景图静态数据：16 节点（13 旧 + 3 新） + 角色 + 表情约定
+// 场景图静态数据：19 节点 + 角色 + 表情约定
 // 坐标一律百分比（0~1）；dir 取值 left/right/top/bottom
+
+import { AppState } from './state.js?v=62';
 
 export const EMOTION_LIST = ['neutral', 'smile', 'happy', 'blushing', 'angry', 'sad', 'surprised', 'desire'];
 
@@ -93,7 +95,7 @@ export const SCENES = {
     description: '家门前的小路，不远处能听见小河的水声。',
     exits: [
       { dir: 'left',  to: 'home_living', label: '客厅' },
-      { dir: 'right', to: 'suburb_st',   label: '小河方向' },
+      { dir: 'right', to: 'riverside',   label: '河边' },
       { dir: 'top',   to: 'twins_room',  label: '双子房间' },
     ],
     characters: [],
@@ -275,6 +277,22 @@ export const SCENES = {
     ],
   },
 
+  // ===== 河边（1，塞壬的领地）=====
+  riverside: {
+    id: 'riverside', name: '河边', bg: 'assets/scenes/riverside.jpg',
+    description: '家门附近的小河，清澈的河水缓缓流淌。',
+    exits: [
+      { dir: 'left',  to: 'home_door', label: '家门前' },
+      { dir: 'right', to: 'suburb_st', label: '城郊街道' },
+    ],
+    characters: [],
+    characterSpots: {},
+    objects: [
+      { id: 'river', label: '小河', x: 0.5, y: 0.62, desc: '清澈见底的小河，水面上泛着细碎的光。' },
+      { id: 'bank', label: '河岸', x: 0.28, y: 0.72, desc: '长满青草的河岸，适合发呆。' },
+    ],
+  },
+
   // ===== 阳台（1，塞拉的领地）=====
   balcony: {
     id: 'balcony', name: '阳台', bg: 'assets/scenes/balcony.jpg',
@@ -304,4 +322,17 @@ export const SCENES = {
 
 export function getScene(id) {
   return SCENES[id] || null;
+}
+
+/**
+ * 场景显示名（用户要求：米德拉什房间初见前显示「素未谋面的新邻居的房间」，
+ * 初见决斗事件结束后（sceneEvents.winda_met）改为「米德拉什的房间」）
+ */
+export function sceneName(sceneId) {
+  if (sceneId === 'winda_room') {
+    var ev = AppState.get('sceneEvents') || {};
+    return ev.winda_met ? '米德拉什的房间' : '素未谋面的新邻居的房间';
+  }
+  var s = SCENES[sceneId];
+  return s ? s.name : String(sceneId);
 }

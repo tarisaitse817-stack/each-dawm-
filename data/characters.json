@@ -263,6 +263,150 @@
       },
       "introImage": "assets/companions/winda-intro.png",
       "avatar": "assets/companions/winda.png"
+    },
+    {
+      "id": "whiterabbit",
+      "name": "白兔",
+      "nicknames": [
+        "兔兔",
+        "急躁小兔",
+        "怀表兔",
+        "小白兔"
+      ],
+      "identities": [
+        "永远在赶时间的白兔精灵",
+        "主角家里最急躁的同居者"
+      ],
+      "background": "从奇妙次元跌落现世的白兔精灵。明明在这个都市里根本没什么要紧事，却依然保留着随时看怀表、慌慌张张的习惯，极度害怕被主角抛下。",
+      "personality": "急躁慌张、患得患失。焦急时会不停地看手中的怀表并抖动兔耳，说话语速极快，急了甚至会轻轻咬人。",
+      "appearance": "醒目的白兔耳，红心脸颊彩绘，红白相间洋装，手持怀表，跑动起来像一阵白色的红心旋风。",
+      "affection": 30,
+      "theme": {
+        "glow": "rgba(255,150,150,0.3)",
+        "accent": "#ff9a9a"
+      },
+      "introImage": "assets/duel-cg/whiterabbit_cg.png",
+      "avatar": "assets/companions/whiterabbit.png"
+    },
+    {
+      "id": "cheshirecat",
+      "name": "柴郡猫",
+      "nicknames": [
+        "坏猫猫",
+        "数据幽灵",
+        "Cheshire",
+        "恶作剧小野猫"
+      ],
+      "identities": [
+        "拥有虚化能力的神出鬼没者",
+        "热衷修罗场边缘拱火的神秘客"
+      ],
+      "background": "带着数据碎片与虚化特效降临的异界猫娘。把这场充满酸味的同居修罗场视为最有趣的游乐园，经常利用隐身能力进行恶作剧，却总是在得意忘形时被抓住尾巴狠狠教训。",
+      "personality": "狡黠腹黑、随心所欲。准备恶作剧时巨大的猫尾会兴奋地缠上人的手腕，喜欢半虚化穿过墙壁突然在耳边吹气。",
+      "appearance": "银灰短发，紫调眼眸，灰紫猫耳与巨大猫尾，一身暗紫紧身战裙与长筒靴，周身伴随虚拟数据碎片。",
+      "affection": 20,
+      "theme": {
+        "glow": "rgba(179,157,219,0.3)",
+        "accent": "#b39ddb"
+      },
+      "introImage": "assets/duel-cg/cheshirecat_lose.png",
+      "avatar": "assets/companions/cheshirecat.png"
+    },
+    {
+      "id": "dormouse",
+      "name": "睡鼠",
+      "nicknames": [
+        "瞌睡虫",
+        "软抱枕",
+        "小慵懒",
+        "睡睡"
+      ],
+      "identities": [
+        "永远睡不醒的慵懒茶会少女",
+        "把男主当成巨型抱枕的迷糊蛋"
+      ],
+      "background": "伴随着漂浮茶具降临的嗜睡精灵。对同居修罗场的明争暗斗毫无兴趣，每天唯一的执念就是钻进主角的怀里睡觉，谁要是敢打扰她和这块「恒温抱枕」贴贴，就会难得地发很大脾气。",
+      "personality": "嗜睡慵懒、迷糊黏人。说话总是带着没睡醒的小鼻音，尾音软软地拖长，站着也能打瞌睡，身体会不自觉地向前倾倒进人怀里。",
+      "appearance": "浅金短卷发，半睁的困倦眼神，身穿半透明白纱蕾丝睡裙，周围悬浮着魔法茶具与黄白格纹靠枕。",
+      "affection": 30,
+      "theme": {
+        "glow": "rgba(255,209,128,0.3)",
+        "accent": "#ffd180"
+      },
+      "introImage": "assets/duel-cg/dormouse_cg.png",
+      "avatar": "assets/companions/dormouse.png"
+    },
+    {
+      "id": "queen",
+      "name": "王后",
+      "nicknames": [
+        "码丽丝",
+        "女王大人",
+        "傲娇白毛",
+        "败北女王"
+      ],
+      "identities": [
+        "决斗败北被收服的傲娇女王",
+        "修罗场里强装威严的正宫候补"
+      ],
+      "background": "曾是不可一世的哥特女王，在试图击败主角的决斗中遭到惨败，被彻底摧毁了理智与尊严，只能带着屈辱与病态的迷恋乖乖随主角回家，沦为同居修罗场的一员。",
+      "personality": "强装高傲、臣服反差。极力维持威严却被触碰时会死死咬住发抖的嘴唇，受到指令时会下意识地并拢双腿。",
+      "appearance": "雪白超长银发，戴黑色哥特王冠，冷冽锐利的眼眸，黑红重型哥特礼服配高开叉裙与黑色过膝长筒袜。",
+      "affection": 40,
+      "theme": {
+        "glow": "rgba(239,154,154,0.3)",
+        "accent": "#ef9a9a"
+      },
+      "introImage": "assets/duel-cg/queen_cg.png",
+      "avatar": "assets/companions/queen.png"
+    },
+    {
+      "id": "whitequeen",
+      "name": "白后",
+      "nicknames": [
+        "码丽丝",
+        "冰山女王",
+        "机甲女仆",
+        "银白指挥官"
+      ],
+      "identities": [
+        "决斗败北的绝对理智机甲女王",
+        "将男主视为最高权限的同居者"
+      ],
+      "background": "曾是冷酷无情的码丽丝女王，在决斗中惨败于男主后，其引以为傲的理智与逻辑被彻底改写。如今将男主认定为最高权限的指挥官，用最淡漠的表情执行着同居命令。",
+      "personality": "冷静淡漠、绝对服从。思考分析时会下意识地轻敲淡蓝色的金属肩甲，面对无法抵挡的快感时冰蓝色的眼眸会强制失去焦距。",
+      "appearance": "银白高束马尾，头戴晶状王冠，冰蓝色眼眸总是冷静淡漠，银白与淡蓝交织的机甲风女王战裙与白色长筒战靴。",
+      "affection": 40,
+      "theme": {
+        "glow": "rgba(144,202,249,0.3)",
+        "accent": "#90caf9"
+      },
+      "introImage": "assets/duel-cg/whitequeen_win.png",
+      "avatar": "assets/companions/whitequeen.png"
+    },
+    {
+      "id": "redqueen",
+      "name": "红心",
+      "nicknames": [
+        "码丽丝",
+        "暴君女王",
+        "傲慢大小姐",
+        "红心姬"
+      ],
+      "identities": [
+        "决斗败北但死要面子的暴君女王",
+        "热衷用华丽裙摆霸占沙发的同居者"
+      ],
+      "background": "曾经是高呼着「统统斩首」的傲慢红心女王。在决斗中被男主毫不留情地彻底击溃并剥夺了身体的掌控权。被带回家后，依旧试图用最华丽盛大的排场掩饰内心那份令人羞耻的、对男主的强烈臣服欲。",
+      "personality": "傲慢跋扈、虚张声势。掩饰害羞时会用华丽的红心羽扇遮住半张脸只露眼睛，被触碰敏感处时金红色的眼眸会瞬间涌满水汽。",
+      "appearance": "银白长发，红白金王冠，红金眼眸，一身血红色宽大拖地的红心主题礼服，胸前的巨大红心装饰格外醒目。",
+      "affection": 30,
+      "theme": {
+        "glow": "rgba(229,115,115,0.3)",
+        "accent": "#e57373"
+      },
+      "introImage": "assets/duel-cg/redqueen_lose.png",
+      "avatar": "assets/companions/redqueen.png"
     }
   ]
 }

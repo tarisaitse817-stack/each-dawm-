@@ -12,6 +12,30 @@ function deepClone(value) {
 }
 
 /**
+ * 默认伙伴列表（世界观 V4：全员初始锁定，包括彩虹——
+ * 玩家探索地图初见黑暗决斗获胜后逐一收服解锁）
+ */
+export const DEFAULT_COMPANIONS = [
+  { id: 'siren',    name: '塞壬',       affection: 40, jealousy: 0, location: '未知', status: '休整', unlocked: false, avatar: 'assets/companions/siren.png',    deck: 'Tearlaments',    background: '伴随奇异现象降临在主角出租屋里的妹卡精灵，天性慵懒，喜欢缩在鱼缸里享受安逸，并暗自贪恋着主人的气味。' },
+  { id: 'lingyi',   name: '零依',       affection: 30, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/lingyi.png',   deck: 'Sky Striker',    background: '穿越到现实的元气卡片精灵，主角家里活跃气氛的开心果，每天用元气满满的笑容和偶尔的小调皮试图霸占主人的注意力。' },
+  { id: 'lushi',    name: '露世',       affection: 30, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/lushi.png',    deck: 'Labrynth',       background: '穿越而来的高冷型羁绊精灵，外表冷淡生人勿近，实则内心极度渴望主人的关爱。' },
+  { id: 'kisikil',  name: '姬丝吉尔',   affection: 20, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/kisikil.png',  deck: 'Evil Twin',      background: '白天是对门的人气主播邻居，夜晚是潜入房间的魅魔怪盗，最大的目标是不择手段地偷走主角的身体和心。' },
+  { id: 'lilla',    name: '璃拉',       affection: 20, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/lilla.png',    deck: 'Evil Twin',      background: '姬丝吉尔的搭档，白天直播总是一副半梦半醒的样子，夜晚的怪盗行动中一旦发现姬丝吉尔想偷跑就会吃醋暴走。' },
+  { id: 'ecclesia', name: '艾克利西亚', affection: 20, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/ecclesia.png', deck: 'Albaz',          background: '跨越次元来到现世的羁绊精灵，彻底暴露了吃货本性，靠在小吃街帮忙换取零食，每天最期待回家讨要抱抱和投喂。' },
+  { id: 'tiantong', name: '天童',       affection: 30, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/tiantong.png', deck: 'Swordsoul',      background: '带着一身华丽日式装扮来到现世，生性胆小怯懦，总在精灵们吵架时硬着头皮劝架，心里最渴望躲在主角怀里被安全感包围。' },
+  { id: 'li',       name: '理',         affection: 20, jealousy: 0, location: '未知', status: '休整', unlocked: false, avatar: 'assets/companions/li.png',       deck: 'Exosister',      background: '降临现世的圣洁精灵，对现代社会的运作充满好奇，总用悲天悯人的目光观察人类。' },
+  { id: 'caihong',  name: '彩虹',       affection: 20, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/caihong.png',  deck: 'Rainbow',        background: '暂住主角家的异次元画师，被收留后怀着极大的感激包揽了家里的许多家务，逐渐融入了这个修罗场。' },
+  { id: 'sera',     name: '塞拉',       affection: 20, jealousy: 0, location: '未知', status: '休整', unlocked: false, avatar: 'assets/companions/sera.png',     deck: 'Traptrix',      background: '沉迷阳台园艺的森系精灵，用最嚣张的「雌小鬼」人设博取关注，背地里却偷偷闻主角换下来的脏衣服。' },
+  { id: 'winda',    name: '米德拉什',   affection: 20, jealousy: 0, location: '未知', status: '休整', unlocked: false, avatar: 'assets/companions/winda.png',    deck: 'Shaddoll',      background: '终日反锁在房里的阴郁家里蹲，对主角有着病态的迷恋，房间里贴满了偷拍主角的照片。' },
+  { id: 'whiterabbit', name: '白兔',     affection: 30, jealousy: 0, location: '未知', status: '休整', unlocked: false, avatar: 'assets/companions/whiterabbit.png', deck: 'Maliss',    background: '从奇妙次元跌落现世的白兔精灵，明明没什么要紧事却依然随时看怀表、慌慌张张，极度害怕被主角抛下。' },
+  { id: 'cheshirecat', name: '柴郡猫',   affection: 20, jealousy: 0, location: '未知', status: '休整', unlocked: false, avatar: 'assets/companions/cheshirecat.png', deck: 'Maliss',    background: '带着数据碎片与虚化特效降临的异界猫娘，把同居修罗场视为最有趣的游乐园，经常隐身进行恶作剧。' },
+  { id: 'dormouse',    name: '睡鼠',     affection: 30, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/dormouse.png',    deck: 'Maliss',    background: '伴随漂浮茶具降临的嗜睡精灵，每天唯一的执念就是钻进主角怀里睡觉，被吵醒会难得地发脾气。' },
+  { id: 'queen',       name: '王后',     affection: 40, jealousy: 0, location: '未知', status: '休整', unlocked: false, avatar: 'assets/companions/queen.png',       deck: 'Maliss',    background: '曾是不可一世的哥特女王，决斗惨败被收服后带着屈辱与迷恋住进主角家，强装威严的正宫候补。' },
+  { id: 'whitequeen',  name: '白后',     affection: 40, jealousy: 0, location: '未知', status: '休整', unlocked: false, avatar: 'assets/companions/whitequeen.png',  deck: 'Maliss',    background: '决斗败北的机甲女王，将主角认定为最高权限指挥官，用最淡漠的表情执行着同居命令。' },
+  { id: 'redqueen',    name: '红心',     affection: 30, jealousy: 0, location: '未知', status: '休整', unlocked: false, avatar: 'assets/companions/redqueen.png',    deck: 'Maliss',    background: '决斗败北的死要面子暴君女王，用华丽排场掩饰对男主的臣服欲，热衷霸占沙发。' }
+];
+
+/**
  * 生成默认初始状态
  * @returns {Object}
  */
@@ -41,19 +65,7 @@ function createDefaultState() {
     narrativeHistory: [],
 
     /* --- 伙伴列表 --- */
-    companions: [
-      { id: 'siren',    name: '塞壬',       affection: 40, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/siren.png',    deck: 'Tearlaments',    background: '伴随奇异现象降临在主角出租屋里的妹卡精灵，天性慵懒，喜欢缩在鱼缸里享受安逸，并暗自贪恋着主人的气味。' },
-      { id: 'lingyi',   name: '零依',       affection: 30, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/lingyi.png',   deck: 'Sky Striker',    background: '穿越到现实的元气卡片精灵，主角家里活跃气氛的开心果，每天用元气满满的笑容和偶尔的小调皮试图霸占主人的注意力。' },
-      { id: 'lushi',    name: '露世',       affection: 30, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/lushi.png',    deck: 'Labrynth',       background: '穿越而来的高冷型羁绊精灵，外表冷淡生人勿近，实则内心极度渴望主人的关爱。' },
-      { id: 'kisikil',  name: '姬丝吉尔',   affection: 20, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/kisikil.png',  deck: 'Evil Twin',      background: '白天是对门的人气主播邻居，夜晚是潜入房间的魅魔怪盗，最大的目标是不择手段地偷走主角的身体和心。' },
-      { id: 'lilla',    name: '璃拉',       affection: 20, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/lilla.png',    deck: 'Evil Twin',      background: '姬丝吉尔的搭档，白天直播总是一副半梦半醒的样子，夜晚的怪盗行动中一旦发现姬丝吉尔想偷跑就会吃醋暴走。' },
-      { id: 'ecclesia', name: '艾克利西亚', affection: 20, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/ecclesia.png', deck: 'Albaz',          background: '跨越次元来到现世的羁绊精灵，彻底暴露了吃货本性，靠在小吃街帮忙换取零食，每天最期待回家讨要抱抱和投喂。' },
-      { id: 'tiantong', name: '天童',       affection: 30, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/tiantong.png', deck: 'Swordsoul',      background: '带着一身华丽日式装扮来到现世，生性胆小怯懦，总在精灵们吵架时硬着头皮劝架，心里最渴望躲在主角怀里被安全感包围。' },
-      { id: 'li',       name: '理',         affection: 20, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/li.png',       deck: 'Exosister',      background: '降临现世的圣洁精灵，对现代社会的运作充满好奇，总用悲天悯人的目光观察人类。' },
-      { id: 'caihong',  name: '彩虹',       affection: 20, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/caihong.png',  deck: 'Rainbow',        background: '暂住主角家的异次元画师，被收留后怀着极大的感激包揽了家里的许多家务，逐渐融入了这个修罗场。' },
-      { id: 'sera',     name: '塞拉',       affection: 20, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/sera.png',     deck: 'Traptrix',      background: '沉迷阳台园艺的森系精灵，用最嚣张的「雌小鬼」人设博取关注，背地里却偷偷闻主角换下来的脏衣服。' },
-      { id: 'winda',    name: '米德拉什',   affection: 20, jealousy: 0, location: '未知', status: '休整', unlocked: true, avatar: 'assets/companions/winda.png',    deck: 'Shaddoll',      background: '终日反锁在房里的阴郁家里蹲，对主角有着病态的迷恋，房间里贴满了偷拍主角的照片。' }
-    ],
+    companions: deepClone(DEFAULT_COMPANIONS),
 
     /* --- MDPro3 卡组由玩家在 MDPro3 中自行设定 --- */
 
@@ -83,6 +95,20 @@ function createDefaultState() {
       aiModel: 'deepseek-chat',
       mdpro3Deck: 'PlayerInsect'
     },
+
+    /* --- 伙伴名册迁移版本（旧存档一次性迁移标记；0 = 未迁移） --- */
+    companionRosterVersion: 0,
+
+    /* --- 场景事件旗标（初见剧情：首次触发标记） --- */
+    sceneEvents: {
+      riverside_seen: false, // 河边塞壬初见（人鱼身份被看穿）
+      forest_seen: false,    // 森林塞拉初见（掉入陷阱）
+      church_seen: false,    // 教堂理初见（祷告睡着被发现）
+      winda_met: false       // 新邻居房间初见（决定房间名显示：素未谋面的新邻居 → 米德拉什）
+    },
+
+    /* --- 行程覆盖（收服后常驻家中等动态改行程） --- */
+    scheduleOverrides: {},
 
     /* --- 时间系统 --- */
     gameTime: {

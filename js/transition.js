@@ -31,10 +31,54 @@ export const TransitionView = {
     this._overlay.id = 'transition-overlay';
     this._overlay.className = 'hidden';
     this._overlay.innerHTML =
+      '<div class="transition-cg" id="transition-cg"></div>' +
       '<div class="transition-subtitle" id="transition-subtitle"></div>' +
       '<div class="transition-halo"></div>';
     document.body.appendChild(this._overlay);
     this._subtitleEl = document.getElementById('transition-subtitle');
+  },
+
+  /**
+   * 开场 CG 轮切（用户要求）：黑屏阶段轮播已解锁角色的 CG
+   * 双图交叉淡入淡出，每 2.5s 切换；halo 开始时停止
+   * @param {string[]} slides - CG 图片 URL 列表
+   */
+  _startCgSlideshow(slides) {
+    this._stopCgSlideshow();
+    if (!slides || slides.length === 0) return;
+    var el = this._overlay && this._overlay.querySelector('.transition-cg');
+    if (!el) return;
+
+    var imgs = [];
+    for (var i = 0; i < 2; i++) {
+      var img = document.createElement('img');
+      img.className = 'transition-cg-img';
+      el.appendChild(img);
+      imgs.push(img);
+    }
+    var idx = 0;
+    imgs[0].src = slides[0];
+    imgs[0].style.opacity = '1';
+    idx = 1;
+
+    this._cgTimer = setInterval(function () {
+      if (!slides.length) return;
+      var cur = imgs[idx % 2];
+      var next = imgs[(idx + 1) % 2];
+      next.src = slides[idx % slides.length];
+      next.style.opacity = '1';
+      cur.style.opacity = '0';
+      idx++;
+    }, 2500);
+  },
+
+  _stopCgSlideshow() {
+    if (this._cgTimer) {
+      clearInterval(this._cgTimer);
+      this._cgTimer = null;
+    }
+    var el = this._overlay && this._overlay.querySelector('.transition-cg');
+    if (el) el.innerHTML = '';
   },
 
   /**
@@ -67,7 +111,11 @@ export const TransitionView = {
     this._subtitleEl.classList.remove('show');
     this._subtitleEl.textContent = '';
 
+    // 开场 CG 轮切（用户要求）：黑屏阶段轮播已解锁角色 CG
+    this._startCgSlideshow((opts && opts.cgSlides) || null);
+
     var startHalo = function () {
+      self._stopCgSlideshow();
       self._overlay.classList.add('halo');
       setTimeout(function () {
         self._overlay.classList.add('fade-out');

@@ -5,7 +5,8 @@ import { SCHEDULE_DATA, getPeriod, getPresent, getActivity, getCgPath } from '..
 
 const errors = [];
 const PERIODS = ['morning', 'afternoon', 'evening', 'night'];
-const WANT_CHARS = ['siren', 'lingyi', 'lushi', 'kisikil', 'lilla', 'ecclesia', 'tiantong', 'li', 'caihong', 'sera', 'winda'];
+const WANT_CHARS = ['siren', 'lingyi', 'lushi', 'kisikil', 'lilla', 'ecclesia', 'tiantong', 'li', 'caihong', 'sera', 'winda',
+  'whiterabbit', 'cheshirecat', 'dormouse', 'queen', 'whitequeen', 'redqueen'];
 
 const sched = SCHEDULE_DATA.schedule || {};
 if (Object.keys(sched).length !== WANT_CHARS.length) errors.push(`行程表角色数应为 ${WANT_CHARS.length}，实际 ${Object.keys(sched).length}`);
@@ -36,14 +37,17 @@ if (getPeriod(0) !== 'night' || getPeriod(5) !== 'night') errors.push('getPeriod
 if (getPeriod(6) !== 'morning' || getPeriod(11) !== 'morning') errors.push('getPeriod 上午边界错误');
 if (getPeriod(12) !== 'afternoon' || getPeriod(17) !== 'afternoon') errors.push('getPeriod 下午边界错误');
 if (getPeriod(18) !== 'evening' || getPeriod(23) !== 'evening') errors.push('getPeriod 晚上边界错误');
-// 查询函数冒烟：上午客厅 2 人（塞壬/彩虹——分散后阵容）；深夜双子不在任何场景
+// 查询函数冒烟：上午客厅含彩虹（塞壬已迁至河边，世界观 V4）；深夜双子不在任何场景
 const tMorning = { day: 1, hour: 9, minute: 0 };
 const tNight = { day: 1, hour: 1, minute: 0 };
 const livingIds = getPresent('home_living', tMorning).map(x => x.charId);
-for (const cid of ['siren', 'caihong']) {
+for (const cid of ['caihong']) {
   if (!livingIds.includes(cid)) errors.push(`上午客厅应含 ${cid}`);
 }
 if (livingIds.length > 2) errors.push(`上午客厅人数应 ≤2（当前 ${livingIds.length}）`);
+if (!getPresent('riverside', tMorning).some(x => x.charId === 'siren')) {
+  errors.push('上午河边应含塞壬');
+}
 const allScenes = Object.values(SCENES);
 // 白天时段（morning/afternoon/evening）每场景每时段 ≤2 人
 for (const hour of [9, 15, 20]) {
@@ -68,4 +72,4 @@ if (errors.length) {
   for (const e of errors) console.error(' -', e);
   process.exit(1);
 }
-console.log('PASS: 行程表 11 角色 × 4 时段完整、场景/坐标/文案合规、CG 路径与时段切换正确');
+console.log(`PASS: 行程表 ${WANT_CHARS.length} 角色 × 4 时段完整、场景/坐标/文案合规、CG 路径与时段切换正确`);

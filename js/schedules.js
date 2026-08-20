@@ -4,7 +4,8 @@
    时段：morning 6-12 / afternoon 12-18 / evening 18-24 / night 0-6
    ========================================================================== */
 
-import { CHARACTERS } from './scenes-data.js?v=51';
+import { CHARACTERS } from './scenes-data.js?v=62';
+import { AppState } from './state.js?v=62';
 
 /** 行程表数据（data/schedules.json，构建期 fetch 后缓存） */
 export var SCHEDULE_DATA = { periods: [], schedule: {}, cg: {} };
@@ -17,8 +18,8 @@ var _periodStart = {};
    ========================================================================== */
 export async function loadSchedules() {
   try {
-    // ?v=51 版本号：数据 JSON 无 hash，改表后必须 bump 刷新浏览器缓存
-    var resp = await fetch('data/schedules.json?v=51');
+    // ?v=62 版本号：数据 JSON 无 hash，改表后必须 bump 刷新浏览器缓存
+    var resp = await fetch('data/schedules.json?v=62');
     if (resp.ok) {
       var data = await resp.json();
       SCHEDULE_DATA = data;
@@ -43,14 +44,39 @@ export function getPeriod(hour) {
 }
 
 /* ==========================================================================
+   行程覆盖（用户要求：收服后迁居——如塞壬回鱼缸、塞拉常驻家中）
+   存于 AppState.scheduleOverrides，随存档持久化
+   ========================================================================== */
+export function setScheduleOverride(charId, periods) {
+  var overrides = JSON.parse(JSON.stringify(AppState.get('scheduleOverrides') || {}));
+  overrides[charId] = periods;
+  AppState.set('scheduleOverrides', overrides);
+}
+
+/** 取某角色某时段行程条目：先查运行时覆盖，再查静态表 */
+export function getScheduleEntry(charId, period) {
+  var overrides = AppState.get('scheduleOverrides') || {};
+  var ov = overrides[charId];
+  if (ov && ov[period]) return ov[period];
+  var sched = SCHEDULE_DATA.schedule || {};
+  return (sched[charId] && sched[charId][period]) || null;
+}
+
+/* ==========================================================================
    getPresent — 某场景当前时段在场角色列表
    ========================================================================== */
 export function getPresent(sceneId, gameTime) {
   var period = getPeriod(gameTime && gameTime.hour != null ? gameTime.hour : 8);
   var result = [];
   var sched = SCHEDULE_DATA.schedule || {};
-  Object.keys(sched).forEach(function (charId) {
-    var entry = sched[charId] && sched[charId][period];
+  var ids = Object.keys(sched);
+  // 行程覆盖可能引入不在静态表中的场景，合并键
+  var overrides = AppState.get('scheduleOverrides') || {};
+  Object.keys(overrides).forEach(function (cid) {
+    if (ids.indexOf(cid) === -1) ids.push(cid);
+  });
+  ids.forEach(function (charId) {
+    var entry = getScheduleEntry(charId, period);
     if (entry && entry.scene === sceneId) {
       result.push({
         charId: charId,
@@ -76,8 +102,7 @@ export function getActivity(charId, gameTime) {
   var meta = CHARACTERS[charId];
   if (!meta) return null;
   var period = getPeriod(gameTime && gameTime.hour != null ? gameTime.hour : 8);
-  var entry = SCHEDULE_DATA.schedule && SCHEDULE_DATA.schedule[charId]
-    && SCHEDULE_DATA.schedule[charId][period];
+  var entry = getScheduleEntry(charId, period);
   if (!entry) return meta.name + ' · 行踪不明';
   return meta.name + ' · ' + entry.activity;
 }

@@ -32,6 +32,7 @@ for d in [SOURCE_DIR] + DEPLOY_DIRS:
         if os.path.basename(f).replace(".zh-CN.json", "") in {
             "Siren", "LingYi", "LuShi", "Kisikil", "Lilla", "ecclesia",
             "TianTong", "Li", "CaiHong", "Sera", "Winda",
+            "WhiteRabbit", "CheshireCat", "Dormouse", "Queen", "WhiteQueen", "RedQueen",
         }:
             path = os.path.join(d, f)
             checked += 1

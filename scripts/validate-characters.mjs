@@ -14,7 +14,9 @@ try {
 const WANT = [
   ['siren', 40], ['lingyi', 30], ['lushi', 30], ['kisikil', 20], ['lilla', 20],
   ['ecclesia', 20], ['tiantong', 30], ['li', 20], ['caihong', 20],
-  ['sera', 20], ['winda', 20]
+  ['sera', 20], ['winda', 20],
+  ['whiterabbit', 30], ['cheshirecat', 20], ['dormouse', 30],
+  ['queen', 40], ['whitequeen', 40], ['redqueen', 30]
 ];
 
 const chars = data.characters;
@@ -34,7 +36,8 @@ else {
     }
     if (c.affection !== aff) errors.push(`${id}: 初始好感应为 ${aff}，实际 ${c.affection}`);
     if (!c.theme || !c.theme.glow || !c.theme.accent) errors.push(`${id}: theme 缺 glow/accent`);
-    if (!c.introImage || !c.introImage.startsWith('assets/companions/')) errors.push(`${id}: introImage 路径非法`);
+    // intro CG 允许来源：companions 图鉴图 / characters 立绘兜底 / duel-cg 胜负CG（用户素材）
+    if (!c.introImage || !(c.introImage.startsWith('assets/companions/') || c.introImage.startsWith('assets/characters/') || c.introImage.startsWith('assets/duel-cg/'))) errors.push(`${id}: introImage 路径非法`);
     if (!c.avatar || !c.avatar.startsWith('assets/companions/')) errors.push(`${id}: avatar 路径非法`);
     for (const f of ['background', 'personality', 'appearance']) {
       if (/NSFW|淫|肏|肉棒|小穴|高潮|发情/i.test(c[f])) errors.push(`${id}: ${f} 含 NSFW 内容`);

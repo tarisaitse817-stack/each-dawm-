@@ -4,10 +4,10 @@
    进入走统一 travelTo 流程：翻页动画 + 自动对话输入态 + AI 旁白。
    ========================================================================== */
 
-import { SCENES, isSceneOpen, openHoursLabel } from './scenes-data.js?v=51';
-import { SceneView } from './scene.js?v=51';
-import { AppState } from './state.js?v=51';
-import { el, makeOverlay, showToast } from './sillytavern/ui/dom.js?v=51';
+import { SCENES, isSceneOpen, openHoursLabel, sceneName } from './scenes-data.js?v=62';
+import { SceneView } from './scene.js?v=62';
+import { AppState } from './state.js?v=62';
+import { el, makeOverlay, showToast } from './sillytavern/ui/dom.js?v=62';
 
 /** 打烊提示文案（用户要求） */
 const CLOSED_MSG = '已经到了非营业时间了，明天再来吧';
@@ -47,7 +47,7 @@ export function openMap() {
       },
     }, [
       el('div', { class: 'map-card-bg', style: { backgroundImage: `url('${scene.bg}')` } }),
-      el('div', { class: 'map-card-name' }, scene.name),
+      el('div', { class: 'map-card-name' }, sceneName(scene.id)),
       isCurrent && el('div', { class: 'map-card-here' }, '当前'),
       !open && el('div', { class: 'map-card-closed' }, '已打烊'),
     ]);

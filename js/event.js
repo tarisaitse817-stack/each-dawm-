@@ -3,13 +3,13 @@
    渲染进近景特写层的对话区（CloseupView.getDialogEl()），对外 API 保持不变
    ========================================================================== */
 
-import { AppState } from './state.js?v=51';
-import { AiClient, BattleBridge } from './ai.js?v=51';
-import { CloseupView, showDuelResultCg } from './closeup.js?v=51';
-import { SceneView } from './scene.js?v=51';
-import { mapEmotion } from './emotion.js?v=51';
-import { CHARACTERS } from './scenes-data.js?v=51';
-import { countPresent, getPresent, getPeriod } from './schedules.js?v=51';
+import { AppState } from './state.js?v=62';
+import { AiClient, BattleBridge } from './ai.js?v=62';
+import { CloseupView, showDuelResultCg } from './closeup.js?v=62';
+import { SceneView } from './scene.js?v=62';
+import { mapEmotion } from './emotion.js?v=62';
+import { CHARACTERS } from './scenes-data.js?v=62';
+import { countPresent, getPresent, getPeriod, setScheduleOverride } from './schedules.js?v=62';
 
 /** 场景 → Danbooru 背景标签（用户需求：胜败 CG 背景随当前场景自动变化） */
 var SCENE_BG_TAGS = {
@@ -39,6 +39,21 @@ var PERIOD_BG_TAGS = {
   afternoon: 'day, daylight',
   evening:   'evening, sunset, warm light',
   night:     'night, moonlight, dim light',
+};
+
+/** ComfyUI 文生图 CG：一期暂用用户手绘 CG 背景，二期再启用全屏动态生成 */
+var COMFYUI_CG_ENABLED = false;
+
+/** 决斗胜负 CG 背景（用户素材 assets/duel-cg/）：战胜/战败后背景替换，直到更换场景 */
+var DUEL_CG_MAP = {
+  '塞拉':     { win: 'assets/duel-cg/sera_win.png',          lose: 'assets/duel-cg/sera_lose.png' },
+  '米德拉什': { win: 'assets/duel-cg/winda_win.png',         lose: 'assets/duel-cg/winda_lose.png' },
+  '柴郡猫':   { win: 'assets/duel-cg/cheshirecat_win.png',   lose: 'assets/duel-cg/cheshirecat_lose.png' },
+  '红心':     { win: 'assets/duel-cg/redqueen_win.png',      lose: 'assets/duel-cg/redqueen_lose.png' },
+  '白后':     { win: 'assets/duel-cg/whitequeen_win.png' },
+  '王后':     { universal: 'assets/duel-cg/queen_cg.png' },
+  '睡鼠':     { universal: 'assets/duel-cg/dormouse_cg.png' },
+  '白兔':     { universal: 'assets/duel-cg/whiterabbit_cg.png' }
 };
 
 /** 用户可编辑的 CG 数据（data/cg_prompts.json / cg_poses.json） */
@@ -500,6 +515,7 @@ export const EventPanel = {
       .map(function (p) { return p.charId; });
     var touched = false;
     companions.forEach(function (c) {
+      if (c.unlocked === false) return; // 未收服精灵不参与修罗场（世界观 V4）
       if (text.indexOf(c.name) !== -1) {
         c.affection = Math.min(100, (c.affection || 0) + 2); // 被点名的角色好感上升
         touched = true;
@@ -585,6 +601,7 @@ export const EventPanel = {
     var aiOn = state.settings && state.settings.aiEnabled !== false;
     if (!aiOn) {
       if (fallbackText) this._addNarratorText(fallbackText);
+      this._maybeEncounter(detail);
       return;
     }
 
@@ -603,6 +620,7 @@ export const EventPanel = {
           self.showSuggestions(self._lastAISuggestions.length > 0 ? self._lastAISuggestions : getLocationSuggestions());
           self._addRegenerateBtn();
         }
+        self._maybeEncounter(detail);
       });
     }).catch(function (err) {
       self._hideThinking();
@@ -610,7 +628,19 @@ export const EventPanel = {
       self._isSubmitting = false;
       console.warn('[EventPanel] 场景旁白失败:', err.message);
       if (fallbackText) self._addNarratorText(fallbackText);
+      self._maybeEncounter(detail);
     });
+  },
+
+  /**
+   * 初见黑暗决斗（世界观 V4）：旁白结束后弹出挑战卡片
+   * @param {{encounterName?: string}} detail
+   */
+  _maybeEncounter: function (detail) {
+    var name = detail && detail.encounterName;
+    if (!name) return;
+    var self = this;
+    setTimeout(function () { self._showBattleTrigger(name); }, 600);
   },
 
   /**
@@ -650,7 +680,8 @@ export const EventPanel = {
    */
   _extractOpponentName(narrative) {
     if (!narrative) return null;
-    var chars = ['塞壬', '零依', '露世', '姬丝吉尔', '璃拉', '艾克利西亚', '天童', '理', '彩虹'];
+    var chars = ['塞壬', '零依', '露世', '姬丝吉尔', '璃拉', '艾克利西亚', '天童', '理', '彩虹',
+                 '白兔', '柴郡猫', '睡鼠', '王后', '白后', '红心'];
     for (var i = 0; i < chars.length; i++) {
       if (narrative.indexOf(chars[i]) >= 0) return chars[i];
     }
@@ -836,7 +867,59 @@ export const EventPanel = {
         console.log('[EventPanel] ' + target.name + ' 醋意值已归零（决斗结束）');
       }
     }
+    // 初见收服（世界观 V4）：击败未解锁精灵 → 解锁入队
+    var unlockedNow = false;
+    if (playerWon && opp && opp.isHeroine) {
+      var comps2 = (AppState.get('companions') || []).slice();
+      var target2 = comps2.find(function (c) { return c.name === opp.name && c.unlocked === false; });
+      if (target2) {
+        target2.unlocked = true;
+        AppState.set('companions', comps2);
+        unlockedNow = true;
+        console.log('[EventPanel] 初见收服: ' + opp.name);
+      }
+    }
+    // 初见剧情收尾（用户要求）：与米德拉什的决斗事件结束后，房间改名为「米德拉什的房间」
+    if (opp && opp.name === '米德拉什') {
+      var ev = JSON.parse(JSON.stringify(AppState.get('sceneEvents') || {}));
+      if (!ev.winda_met) {
+        ev.winda_met = true;
+        AppState.set('sceneEvents', ev);
+      }
+    }
+    // 收服迁居（用户要求）：塞壬→跟随回家常驻鱼缸；塞拉→常驻家中
+    if (playerWon && opp) {
+      if (opp.name === '塞壬') {
+        setScheduleOverride('siren', {
+          morning:   { scene: 'home_living', activity: '懒洋洋泡在鱼缸里打盹',   spot: { x: 0.28, y: 0.55, scale: 0.85 } },
+          afternoon: { scene: 'home_living', activity: '泡在水里吐着泡泡',       spot: { x: 0.3,  y: 0.55, scale: 0.85 } },
+          evening:   { scene: 'home_living', activity: '趴在鱼缸边盯着你看',     spot: { x: 0.32, y: 0.55, scale: 0.85 } },
+          night:     { scene: 'home_bed',    activity: '缩在被窝里睡着了',       spot: { x: 0.35, y: 0.55, scale: 0.85 } }
+        });
+      } else if (opp.name === '塞拉') {
+        setScheduleOverride('sera', {
+          morning:   { scene: 'balcony',     activity: '在阳台打理她的花草王国', spot: { x: 0.4,  y: 0.55, scale: 0.85 } },
+          afternoon: { scene: 'balcony',     activity: '给花花草草浇水施肥',     spot: { x: 0.45, y: 0.55, scale: 0.85 } },
+          evening:   { scene: 'home_living', activity: '在客厅里上蹿下跳',       spot: { x: 0.6,  y: 0.55, scale: 0.85 } },
+          night:     { scene: 'home_living', activity: '蜷在沙发上睡得不省人事', spot: { x: 0.55, y: 0.55, scale: 0.85 } }
+        });
+      } else if (opp.name === '理') {
+        setScheduleOverride('li', {
+          morning:   { scene: 'home_living', activity: '在客厅轻声做着晨祷',       spot: { x: 0.45, y: 0.55, scale: 0.85 } },
+          afternoon: { scene: 'home_living', activity: '安静地帮着收拾家务',       spot: { x: 0.5,  y: 0.55, scale: 0.85 } },
+          evening:   { scene: 'home_living', activity: '温柔地与你分享今天的见闻', spot: { x: 0.55, y: 0.55, scale: 0.85 } },
+          night:     { scene: 'home_bed',    activity: '安静地睡下了',             spot: { x: 0.5,  y: 0.55, scale: 0.85 } }
+        });
+      }
+    }
+    // 决斗 CG 背景（用户要求）：战胜/战败后背景替换为对应 CG，直到更换场景
+    var duelCg = DUEL_CG_MAP[opp && opp.name];
+    if (duelCg) {
+      var cgUrl = playerWon ? (duelCg.win || duelCg.universal) : (duelCg.lose || duelCg.universal);
+      if (cgUrl) SceneView.setDuelBackground(cgUrl);
+    }
     var fullMsg = '⚔️ 决斗结束 — ' + resultMsg;
+    if (unlockedNow) fullMsg += '\n\n✨ ' + opp.name + ' 被你击败并收服，加入了同居生活！';
     if (charLine) fullMsg += '\n\n「' + charLine + '」';
     if (isBtnMode && btn) {
       btn.textContent = playerWon ? '胜利！' : '败北…';
@@ -848,8 +931,9 @@ export const EventPanel = {
       var btns = this._battleTriggerEl.querySelectorAll('button');
       for (var i = 0; i < btns.length; i++) { btns[i].disabled = true; }
     }
-    // 用户规则：只有配角决斗触发胜败 CG（路人只是普通决斗，不生成 CG）
-    if (opp && opp.isHeroine) {
+    // 用户规则：只有配角决斗触发胜败 CG（路人只是普通决斗，不生成 CG）；
+    // ComfyUI 文生图一期停用（COMFYUI_CG_ENABLED=false），二期启用后再走动态生成
+    if (opp && opp.isHeroine && COMFYUI_CG_ENABLED) {
       // 胜利 → 女性受向 NSFW；失败 → 女性攻支配（ComfyUI 动态生成）
       showDuelResultCg(playerWon, function () {
         EventPanel._addNarratorText(fullMsg, null, function () {

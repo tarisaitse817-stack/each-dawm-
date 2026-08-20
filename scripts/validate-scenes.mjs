@@ -3,14 +3,14 @@ import { SCENES, CHARACTERS, EMOTION_LIST, getScene, emotionFile, avatarAnchor }
 
 let errors = [];
 const ids = Object.keys(SCENES);
-if (ids.length !== 18) errors.push(`场景数应为 18，实际 ${ids.length}`);
+if (ids.length !== 19) errors.push(`场景数应为 19，实际 ${ids.length}`);
 
-// 场景集合：必须恰为新 18 场景（公司 3 场景已删除，新增 twins_room/church/forest/balcony/winda_room）
+// 场景集合：必须恰为新 19 场景（公司 3 场景已删除，新增 twins_room/church/forest/balcony/winda_room/riverside）
 const WANT_SCENES = ['home_living', 'home_bed', 'home_door', 'twins_room',
   'food_bunshop', 'food_st', 'market_hall', 'market_door',
   'cardshop_inside', 'cardshop_door', 'mall_st', 'mall_dessert',
   'church', 'forest', 'suburb_st', 'suburb_station',
-  'balcony', 'winda_room'];
+  'balcony', 'winda_room', 'riverside'];
 for (const sid of WANT_SCENES) {
   if (!SCENES[sid]) errors.push(`缺少场景 ${sid}`);
 }
@@ -88,4 +88,4 @@ if (errors.length) {
   for (const e of errors) console.error(' -', e);
   process.exit(1);
 }
-console.log('PASS: 18 场景（新集合）、出口引用、角色/物件坐标、表情路径全部有效、18 节点全连通');
+console.log(`PASS: ${WANT_SCENES.length} 场景（新集合）、出口引用、角色/物件坐标、表情路径全部有效、${WANT_SCENES.length} 节点全连通`);

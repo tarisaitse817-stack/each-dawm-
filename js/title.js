@@ -2,14 +2,14 @@
    光之回响 (Echoes of Light) — TitleScreen 标题界面
    ========================================================================== */
 
-import { AppState } from './state.js?v=51';
-import { StorageManager } from './storage.js?v=51';
-import { Navigation } from './navigation.js?v=51';
-import { showInitialBackground } from './scene.js?v=51';
-import { TransitionView } from './transition.js?v=51';
-import { EventPanel } from './event.js?v=51';
+import { AppState } from './state.js?v=62';
+import { StorageManager } from './storage.js?v=62';
+import { Navigation } from './navigation.js?v=62';
+import { showInitialBackground } from './scene.js?v=62';
+import { TransitionView } from './transition.js?v=62';
+import { EventPanel } from './event.js?v=62';
 // 开局寒暄已停用（用户要求）：js/greeting.js 保留，想恢复时重新引入
-// import { playOpeningGreeting } from './greeting.js?v=51';
+// import { playOpeningGreeting } from './greeting.js?v=62';
 
 /* 开场字幕（新游戏转场）：世界书 first_mes 前 3 句；失败回退内置默认文本前 3 句 */
 const MAX_OPENING_LINES = 3;
@@ -248,23 +248,78 @@ export const TitleScreen = {
 
     this.hide();
 
-    // 开场黑屏文本（用户提供文案）：第一句 → 点击 → 第二句 → 点击 → 光晕转场
+    // 开场黑屏文本（用户文档「开场白.txt」）：逐句点击推进
     var OPENING_BLACK_LINES = [
-      '客厅里传来了熟悉的新闻播报声，这时我就知道，我该醒了',
-      '不知道从什么时候开始，越来越多的卡片来到这里，给这栋冷清的房屋带来了不少生气，也带来了不少麻烦。'
+      '客厅里响起了新闻播报声，虽然我刚开始不是很习惯，但这样的日子过了几天后，也逐渐喜欢上了这种更有生气的氛围，',
+      '不知道从什么时候开始，家里住进了一些只有我看得见的房客。',
+      '就好像著名美食家迪奥先生所讲的那样"替身使者之间是会互相吸引的。"我和妹卡之间有着一股若有若无的引力，无论我走到哪里，哪里就会有妹卡刷新到哪里。'
     ];
-    // 进入客厅后的开场白（彩虹立绘登场 + 打字机叙事，结尾引导自由输入）
-    var SCENE_OPENING = '彩虹小姐娴静的坐在沙发上，电视上播放着无聊的早间新闻。在大鱼缸里的塞壬小姐透过玻璃壁出神的看着电视，不知道在想什么。在听到房门的动静之后，两人一齐转过头，看向了你。这时，你决定：';
+    // 进入客厅后的开场白（用户文档「开场白.txt」全文，段落以空行分隔）
+    var SCENE_OPENING = [
+      '彩虹小姐娴静的坐在沙发上，电视上播放着无聊的早间新闻。阳台的方向飘来睡鼠若有若无的鼾声，卧室里的露世似乎早就醒了。听见房门的动静，彩虹转过头，看向了你。她脸上依旧是那副温柔大姐姐的模样，彩虹色的长发柔顺的披散着，真的好像雨后的彩虹。',
+      '"早饭想吃什么？"她大方的发问，看起来好像她才是这间房屋的女主人。',
+      '我凑近她的脸颊，轻声说："想吃你，"',
+      '她的脸颊瞬间就红了，刚才那副知心姐姐的模样荡然无存，像个纯情小女孩一样支支吾吾的说："现在..现在不行~"',
+      '我掐了掐她的脸颊，轻声说:"好了不逗你了，我去做早餐。"',
+      '对方用细微的声音回应了一声，还是害羞的不肯抬起脸。',
+      '在走进厨房时，旁边的露世一脸怨气的看着我，小声说:"刚睡醒就去和别的女人调情，master还是好男孩吗？"',
+      '"还真是~早上想吃什么？"',
+      '"气饱了！"',
+      '露世还是那一脸怨气的模样。',
+      '"下午带你和零依去逛街怎么样？"',
+      '露世别过脸，看起来是不太满意。',
+      '"那你有什么愿望吗？"',
+      '过了一会儿，她才小声说:"我不想睡沙发。"',
+      '"这个啊"我尴尬的摸了摸头，"家里经费有限嘛，那要不今晚我睡沙发？"',
+      '对方还是不回应，一脸怨气的看着我。',
+      '我试探性的说:"那咱们一起睡？"',
+      '这时候对方才收起了那埋怨的目光。',
+      '我做了一顿还算丰盛的早饭，掐了掐睡鼠还在熟睡的脸颊，但很可惜没有要醒来的意思，只好给他预留一份早餐了。',
+      '在饭桌上，我给天童多加了一点菜，嘱咐道:"不要饿到自己，其他几个姐姐很和善的，不要总是躲着她们。"',
+      '天童怯生生的看了我一眼，轻轻的点了点头。',
+      '"master~"',
+      '零依高兴的举起手，一脸期待的问："下午要不要去逛街啊？"',
+      '"不行哦~master已经答应和我去森林写生了。"彩虹对我眨了眨眼，优雅的神情里带着些意义不明的味道。',
+      '正当我头疼的时候，天童举起了她白嫩的小手，小声:"master昨天不是说今天下午要带我玩电子游戏...."',
+      '这时，你决定：'
+    ].join('\n\n');
 
-    TransitionView.play({
-      lines: OPENING_BLACK_LINES,
-      clickAdvance: true,
-      onDone: function () {
-        // 彩虹立绘登场（对话层随之初始化），开场白入叙事队列
-        window.dispatchEvent(new CustomEvent('closeup-open', { detail: { characterId: 'caihong' } }));
-        AppState.push('narrativeHistory', SCENE_OPENING);
-      }
-    });
+    // 开场 CG 轮切（用户要求）：黑屏阶段轮播已解锁角色的 CG 图
+    var self = this;
+    fetch('data/characters.json?v=1')
+      .then(function (r) { return r.ok ? r.json() : { characters: [] }; })
+      .catch(function () { return { characters: [] }; })
+      .then(function (data) {
+        var unlockedIds = {};
+        (AppState.get('companions') || []).forEach(function (c) {
+          if (c.unlocked !== false) unlockedIds[c.id] = true;
+        });
+        var slides = (data.characters || []).filter(function (ch) {
+          return unlockedIds[ch.id] && ch.introImage;
+        }).map(function (ch) { return ch.introImage + '?v=1'; });
+
+        TransitionView.play({
+          lines: OPENING_BLACK_LINES,
+          clickAdvance: true,
+          cgSlides: slides,
+          onDone: function () {
+            // 彩虹立绘登场（对话层随之初始化），开场白入叙事队列
+            window.dispatchEvent(new CustomEvent('closeup-open', { detail: { characterId: 'caihong' } }));
+            AppState.push('narrativeHistory', SCENE_OPENING);
+            // 世界观 V4：彩虹为初始同伴（已解锁，不会对主角抱有抵触）——
+            // 仅当她的解锁状态异常（未解锁）时才触发初见黑暗决斗兜底
+            var caihongComp = (AppState.get('companions') || []).find(function (c) { return c.id === 'caihong'; });
+            if (!caihongComp || caihongComp.unlocked === false) {
+              var encounterAiText = '（系统提示：你在自家客厅遇见了从未见过的精灵彩虹——只有你能看见她的本体。你表现出的惊讶让她认定你就是一切的源头，她向你发起了黑暗决斗。请以旁白视角、用2-3句话描述这场突如其来的初见，不要输出角色对话，不要输出任何标签。）';
+              setTimeout(function () {
+                window.dispatchEvent(new CustomEvent('scene-narration-request', {
+                  detail: { aiText: encounterAiText, encounterName: '彩虹' },
+                }));
+              }, 4000);
+            }
+          }
+        });
+      });
   },
 
   /**

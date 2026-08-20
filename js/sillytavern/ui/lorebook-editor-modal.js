@@ -2,10 +2,10 @@
  * 单本世界书条目编辑器（LorebookEditorModal 的 vanilla 移植）
  */
 
-import { createDefaultEntry, updateEntry, removeEntry } from '../editor-utils.js?v=51';
-import { saveLorebook } from '../database.js?v=51';
-import { el, makeOverlay } from './dom.js?v=51';
-import { renderEntryForm } from './entry-form.js?v=51';
+import { createDefaultEntry, updateEntry, removeEntry } from '../editor-utils.js?v=62';
+import { saveLorebook } from '../database.js?v=62';
+import { el, makeOverlay } from './dom.js?v=62';
+import { renderEntryForm } from './entry-form.js?v=62';
 
 function entryLabel(e) {
   if (e.comment?.trim()) return e.comment;

@@ -3,18 +3,18 @@
    设置面板 + 键盘快捷键 + 全模块集成
    ========================================================================== */
 
-import { AppState } from './state.js?v=51';
-import { StorageManager } from './storage.js?v=51';
-import { Navigation } from './navigation.js?v=51';
-import { Particles } from './particles.js?v=51';
-import { TitleScreen } from './title.js?v=51';
-import { EventPanel } from './event.js?v=51';
-import { AiClient, BattleBridge } from './ai.js?v=51';
-import { CompanionsPanel } from './companions.js?v=51';
-import { InventoryPanel } from './inventory.js?v=51';
-import { SceneView } from './scene.js?v=51';
-import { CloseupView } from './closeup.js?v=51';
-import { Notifications } from './notifications.js?v=51';
+import { AppState, DEFAULT_COMPANIONS } from './state.js?v=62';
+import { StorageManager } from './storage.js?v=62';
+import { Navigation } from './navigation.js?v=62';
+import { Particles } from './particles.js?v=62';
+import { TitleScreen } from './title.js?v=62';
+import { EventPanel } from './event.js?v=62';
+import { AiClient, BattleBridge } from './ai.js?v=62';
+import { CompanionsPanel } from './companions.js?v=62';
+import { InventoryPanel } from './inventory.js?v=62';
+import { SceneView } from './scene.js?v=62';
+import { CloseupView } from './closeup.js?v=62';
+import { Notifications } from './notifications.js?v=62';
 
 export const App = {
 
@@ -58,6 +58,10 @@ export const App = {
         });
       }
     }
+
+    // 1.5 世界观 V4 隐藏系统迁移（只跑一次，版本标记 companionRosterVersion=2）：
+    // 旧存档 → 全员锁定（含彩虹）+ 补齐 6 位新角色；新存档/新游戏 → 默认值已正确，跳过
+    this._migrateCompanionRoster();
 
     // 2. 初始化粒子系统
     this.initParticlesCanvas();
@@ -140,15 +144,52 @@ export const App = {
   },
 
   /* ======================================================================
+     _migrateCompanionRoster — 世界观 V4 隐藏系统迁移（旧存档一次性处理）
+     v3：初始解锁 8 人（睡鼠/零依/露世/天童/艾克利西亚/彩虹/姬丝吉尔/璃拉）；
+     其余锁定；保留已通过决斗收服的角色；补齐缺失的新角色
+     ====================================================================== */
+  _migrateCompanionRoster: function () {
+    var state = AppState.get();
+    if (state.companionRosterVersion && state.companionRosterVersion >= 3) return;
+
+    var comps = (state.companions || []).slice();
+    var byId = {};
+    comps.forEach(function (c) { byId[c.id] = c; });
+    var changed = false;
+
+    // 初始解锁名单按默认表；已收服（unlocked=true）不降级
+    comps.forEach(function (c) {
+      var dc = DEFAULT_COMPANIONS.find(function (x) { return x.id === c.id; });
+      var target = (dc && dc.unlocked) ? true : (c.unlocked === true);
+      if (!!c.unlocked !== !!target) {
+        c.unlocked = !!target;
+        changed = true;
+      }
+    });
+
+    // 补齐缺失角色（默认状态）
+    DEFAULT_COMPANIONS.forEach(function (dc) {
+      if (!byId[dc.id]) {
+        comps.push(JSON.parse(JSON.stringify(dc)));
+        changed = true;
+      }
+    });
+
+    if (changed) AppState.set('companions', comps);
+    AppState.set('companionRosterVersion', 3);
+    console.log('[App] 伙伴名册迁移完成（v3 初始解锁 8 人），共 ' + comps.length + ' 人');
+  },
+
+  /* ======================================================================
      _initSillytavern — SillyTavern Web 集成
      初始化 IndexedDB 数据层 → 继承游戏 AI 设置 → 世界书种子导入 →
      侧边栏追加「AI 聊天」入口
      ====================================================================== */
   async _initSillytavern() {
     try {
-      var storeMod = await import('./sillytavern/store.js?v=51');
-      var uiMod = await import('./sillytavern/ui/index.js?v=51');
-      var seedMod = await import('./sillytavern/seed.js?v=51');
+      var storeMod = await import('./sillytavern/store.js?v=62');
+      var uiMod = await import('./sillytavern/ui/index.js?v=62');
+      var seedMod = await import('./sillytavern/seed.js?v=62');
       var store = storeMod.sillytavernStore;
       await store.loadAll();
 
