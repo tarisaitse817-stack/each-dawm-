@@ -63,7 +63,17 @@ _cg_jobs = {}  # id -> {status: generating|done|error, prompt, image_path, messa
 FIRST_MES = worldbook["first_mes"]
 AI_POOL = config["ai_pool"]
 CHARACTER_DECKS = config.get("character_decks", {})
-DECK_DIR = os.path.join(config["mdpro3_dir"], "Deck")
+
+def resolve_local_path(p):
+    """相对路径以 bridge.py 所在目录为基准解析（测试包可移植：解压到任意位置可用）；
+    绝对路径原样返回（本地开发配置不受影响）"""
+    if not p:
+        return ""
+    if os.path.isabs(p):
+        return p
+    return os.path.normpath(os.path.join(BASE, p))
+
+DECK_DIR = os.path.join(resolve_local_path(config.get("mdpro3_dir", "")), "Deck")
 
 # ─── Helpers ───
 def get_decks():
@@ -445,11 +455,6 @@ def launch_battle(deck, opponent=None):
     # Reset previous result
     _duel_result = None
 
-    deck_path = os.path.join(DECK_DIR, f"{deck}.ydk")
-    if not os.path.exists(deck_path):
-        available = get_decks()[:10]
-        return {"ok": False, "error": "deck_not_found", "message": f"Deck '{deck}' not found", "available": available}
-
     # Resolve opponent from config
     char_info = CHARACTER_DECKS.get(opponent, CHARACTER_DECKS.get("default", {"name": "AI", "deck": "Blue-Eyes", "dialog": "default"}))
     display_name = opponent or char_info.get("name", "路人")
@@ -467,17 +472,27 @@ def launch_battle(deck, opponent=None):
             char_info = dict(char_info)
             char_info["deck"] = "BlueEyes"
 
-    ygopro_exe = config.get("ygopro_exe", "C:/Users/Administrator/ygopro-server.exe")
-    ygopro_cwd = config.get("ygopro_cwd", "C:/Users/Administrator")
+    ygopro_exe = resolve_local_path(config.get("ygopro_exe", "C:/Users/Administrator/ygopro-server.exe"))
+    ygopro_cwd = resolve_local_path(config.get("ygopro_cwd", "C:/Users/Administrator"))
     ygopro_port = config.get("ygopro_port", 7911)
     ygopro_args = config.get("ygopro_args", ["7911", "0", "2", "0", "5", "T", "F", "8000", "5", "1", "180", "0"])
-    windbot_exe = config.get("windbot_exe")
-    windbot_dir = config.get("windbot_dir")
-    mdpro3_exe = config["mdpro3_exe"]
-    mdpro3_dir = config["mdpro3_dir"]
+    windbot_exe = resolve_local_path(config.get("windbot_exe") or "")
+    windbot_dir = resolve_local_path(config.get("windbot_dir") or "")
+    mdpro3_exe = resolve_local_path(config.get("mdpro3_exe") or "")
+    mdpro3_dir = resolve_local_path(config.get("mdpro3_dir") or "")
 
-    if not os.path.exists(windbot_exe):
+    if not windbot_exe or not os.path.exists(windbot_exe):
         return {"ok": False, "error": "windbot_missing", "message": f"WindBot.exe not found: {windbot_exe}"}
+    # MDPro3 由测试者自行安装：路径未配置时给出明确指引（测试包不附带 MDPro3）
+    if not mdpro3_exe or not os.path.exists(mdpro3_exe):
+        return {"ok": False, "error": "mdpro3_missing",
+                "message": "MDPro3 未安装或路径未配置：请安装 MDPro3 后，在 server/data/config.json 中把 mdpro3_exe 与 mdpro3_dir 填为你的 MDPro3.exe 所在路径"}
+
+    # 玩家卡组校验（卡组文件来自 MDPro3 的 Deck 目录，路径就绪后再查）
+    deck_path = os.path.join(DECK_DIR, f"{deck}.ydk")
+    if not os.path.exists(deck_path):
+        available = get_decks()[:10]
+        return {"ok": False, "error": "deck_not_found", "message": f"Deck '{deck}' not found", "available": available}
 
     try:
         procs = []
