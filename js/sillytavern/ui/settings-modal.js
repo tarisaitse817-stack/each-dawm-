@@ -3,11 +3,11 @@
  * 标签页：主 API / 次 API / 标签 / 格式提示词 / 显示 / 备份
  */
 
-import { sillytavernStore } from '../store.js?v=49';
-import { DEFAULT_FORMAT_PROMPT } from '../types.js?v=49';
-import { fetchModels, testConnection } from '../api-tools.js?v=49';
-import { exportAllData, importAllData, clearAllData } from '../database.js?v=49';
-import { el, makeOverlay, fieldRow, radioGroup, showToast } from './dom.js?v=49';
+import { sillytavernStore } from '../store.js?v=51';
+import { DEFAULT_FORMAT_PROMPT } from '../types.js?v=51';
+import { fetchModels, testConnection } from '../api-tools.js?v=51';
+import { exportAllData, importAllData, clearAllData } from '../database.js?v=51';
+import { el, makeOverlay, fieldRow, radioGroup, showToast } from './dom.js?v=51';
 
 const TABS = [
   { id: 'primary', label: '主 API' },

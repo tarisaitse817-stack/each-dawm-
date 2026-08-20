@@ -18,7 +18,8 @@
   background-size: cover; background-position: center;
   opacity: 0; transition: opacity .6s ease;
 }
-.closeup-scene-bg.visible { opacity: .45; }
+/* 用户要求：背景图不加透明度，全不透明显示（文本框自带半透明底） */
+.closeup-scene-bg.visible { opacity: 1; }
 .closeup-portrait { z-index: 1; }
 /* 注意：现有规则 .closeup-portrait img { width:100vw; height:100vh; object-fit:cover }，
    下面选择器特异性更高，必须显式覆盖宽高，否则立绘会被强行拉满全屏。 */

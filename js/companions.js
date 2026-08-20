@@ -1,45 +1,58 @@
 /* ==========================================================================
-   光之回响 (Echoes of Light) — 伙伴界面模块（图鉴版）
+   光之回响 (Echoes of Light) — 伙伴界面模块（重构版）
+   用户要求：取消头像+简略介绍/详细介绍；每行 = 角色CG(左) + 名称/好感度/醋意值(右)
+   + 「联系」按钮（全屏角色CG + 电话开场白 + AI 根据上下文生成通话内容）
    数据源：data/characters.json（静态图鉴） + AppState companions（运行时好感/状态）
    ========================================================================== */
 
-import { AppState } from './state.js?v=49';
-import { Notifications } from './notifications.js?v=49';
+import { AppState } from './state.js?v=51';
+import { AiClient } from './ai.js?v=51';
+import { EventPanel } from './event.js?v=51';
 
 /* ==========================================================================
    常量
    ========================================================================== */
 
+/** 图片版本号：换图/重裁后 bump 刷新浏览器缓存 */
+const COMPANION_ASSET_V = '1';
+
 /** 默认主题（characters.json 缺 theme 时兜底） */
 var DEFAULT_THEME = { glow: 'rgba(212, 165, 116, 0.15)', accent: '#D4A574' };
-
-/** 状态 → CSS 类名映射 */
-var STATUS_CLASS_MAP = {
-  '休整': 'rest',
-  '外出探索': 'explore',
-  '探索': 'explore',
-  '紧张': 'tense',
-  '暗中窥视': 'stalker',
-  '职场施压': 'pressure',
-  '温柔守望': 'warm',
-  '兄控模式': 'brocon',
-  '未曾谋面': 'stranger'
-};
 
 /** 图鉴静态数据缓存（characters.json） */
 var _characters = null;
 var _charactersById = {};
 
-/** 详情弹层 DOM（惰性创建） */
-var _detailEl = null;
-var _detailPortraitEl = null;
-var _detailBodyEl = null;
+/** 电话浮层 DOM（惰性创建） */
+var _phoneEl = null;
+var _phoneImgEl = null;
+var _phoneTextEl = null;
+var _phoneStatusEl = null;
+var _phoneBusy = false;
 
 /** 上次亲和度快照（用于变化检测） */
 var _lastAffectionMap = {};
 
 /** 前一次 companions 引用，用于 shimmer */
 var _prevCompanions = null;
+
+/* ==========================================================================
+   工具函数
+   ========================================================================== */
+
+/** 好感度/醋意值长条（好感度粉红、醋意值紫） */
+function _statBar(label, value, fillClass) {
+  return '<div class="stat-bar">' +
+    '<div class="stat-bar-head"><span class="stat-bar-label">' + label + '</span><span class="stat-bar-value">' + value + ' / 100</span></div>' +
+    '<div class="stat-bar-track"><div class="stat-bar-fill ' + fillClass + '" style="width:' + value + '%"></div></div>' +
+  '</div>';
+}
+
+function _escapeHtml(str) {
+  var div = document.createElement('div');
+  div.textContent = String(str);
+  return div.innerHTML;
+}
 
 /* ==========================================================================
    CompanionsPanel 单例
@@ -116,7 +129,7 @@ export var CompanionsPanel = {
     }
 
     companions.forEach(function (c, index) {
-      cardsHtml += self._renderCard(c, index);
+      cardsHtml += self._renderRow(c, index);
     });
 
     panel.innerHTML =
@@ -129,12 +142,12 @@ export var CompanionsPanel = {
       '</div>' +
       '<div class="companions-footer">— 在未来旅程中结识新的伙伴…… —</div>';
 
-    // 绑定卡片点击（事件委托）
+    // 绑定「联系」按钮（事件委托）
     var list = panel.querySelector('.companions-list');
     if (list) {
       list.addEventListener('click', function (e) {
-        var card = e.target.closest('.companion-card');
-        if (card) self._openDetail(card.getAttribute('data-companion-id'));
+        var btn = e.target.closest('.contact-btn');
+        if (btn) self._openPhone(btn.getAttribute('data-companion-id'));
       });
     }
 
@@ -144,64 +157,43 @@ export var CompanionsPanel = {
   },
 
   /* ======================================================================
-     _renderCard — 渲染单个伙伴卡片
+     _renderRow — 渲染单个伙伴行：CG 左 + 名称/好感度/醋意值/联系 右
      ====================================================================== */
-  _renderCard: function (companion, index) {
+  _renderRow: function (companion, index) {
     var meta = _charactersById[companion.id] || {};
-    var name = (companion.unlocked !== false) ? (companion.name || '???') : '???';
-    var affection = companion.affection != null ? companion.affection : 0;
-    var location = companion.location || '???';
-    var status = companion.status || '未知';
     var unlocked = companion.unlocked !== false;
-    var background = (meta.background || '').slice(0, 60) + '…';
-    var avatar = companion.avatar || meta.avatar || '';
+    var name = unlocked ? (companion.name || '???') : '???';
+    var affection = Math.min(100, Math.max(0, Number(companion.affection) || 0));
+    var jealousy = Math.min(100, Math.max(0, Number(companion.jealousy) || 0));
 
     var theme = (meta.theme && meta.theme.glow) ? meta.theme : DEFAULT_THEME;
-    var statusClass = STATUS_CLASS_MAP[status] || 'unknown';
-    var cardLockedClass = unlocked ? '' : ' locked';
-    var nameLockedClass = unlocked ? '' : ' locked-name';
-
-    var starsHtml = this._renderStars(companion.id, affection, unlocked);
-
     var animDelay = (0.1 + index * 0.12).toFixed(2) + 's';
 
-    // 头像区：有头像图显示圆形缩略，否则图标占位；未解锁显示剪影
-    var portraitHtml;
-    if (unlocked && avatar) {
-      portraitHtml =
-        '<div class="companion-portrait" style="--companion-glow: ' + theme.glow + '; --companion-accent: ' + theme.accent + ';">' +
-          '<img src="' + avatar + '" alt="' + this._escapeHtml(name) + '" class="portrait-img portrait-round" loading="lazy">' +
-          '<div class="portrait-border"></div>' +
-        '</div>';
-    } else if (unlocked && !avatar) {
-      portraitHtml =
-        '<div class="companion-portrait" style="--companion-glow: ' + theme.glow + '; --companion-accent: ' + theme.accent + ';">' +
-          '<i data-lucide="user" class="portrait-icon"></i>' +
-        '</div>';
+    // CG 区：有 CG 显示全图；未解锁显示剪影
+    var cgHtml;
+    if (unlocked && meta.introImage) {
+      cgHtml = '<img src="' + meta.introImage + '?v=' + COMPANION_ASSET_V + '" alt="' + _escapeHtml(name) + '" class="companion-cg-img" loading="lazy">';
+    } else if (unlocked && !meta.introImage) {
+      cgHtml = '<i data-lucide="image-off" class="companion-cg-icon"></i>';
     } else {
-      portraitHtml =
-        '<div class="companion-portrait portrait-locked">' +
-          '<i data-lucide="help-circle" class="portrait-icon locked-icon"></i>' +
-        '</div>';
+      cgHtml = '<i data-lucide="help-circle" class="companion-cg-icon"></i>';
     }
 
+    // 右侧信息：名称 + 好感度 + 醋意值 + 联系按钮（未解锁不显示）
+    var statsHtml = unlocked
+      ? _statBar('好感度', affection, 'fill-affection') + _statBar('醋意值', jealousy, 'fill-jealousy')
+      : '<div class="companion-desc">尚未解锁</div>';
+    var contactHtml = unlocked
+      ? '<button class="contact-btn" data-companion-id="' + _escapeHtml(companion.id) + '">联系</button>'
+      : '';
+
     var html =
-      '<div class="companion-card' + cardLockedClass + '" data-companion-id="' + this._escapeHtml(companion.id) + '" style="animation-delay: ' + animDelay + ';">' +
-        portraitHtml +
+      '<div class="companion-card' + (unlocked ? '' : ' locked') + '" data-companion-id="' + _escapeHtml(companion.id) + '" style="animation-delay: ' + animDelay + '; --companion-glow: ' + theme.glow + '; --companion-accent: ' + theme.accent + ';">' +
+        '<div class="companion-cg">' + cgHtml + '</div>' +
         '<div class="companion-info">' +
-          '<div class="companion-name' + nameLockedClass + '">' + this._escapeHtml(name) + '</div>' +
-          '<div class="companion-affection">' +
-            starsHtml +
-            (unlocked ? '<span class="affection-label">' + affection + '</span>' : '') +
-          '</div>' +
-          '<div class="companion-meta">' +
-            '<span class="companion-location">' +
-              '<i data-lucide="map-pin" class="location-icon"></i>' +
-              this._escapeHtml(location) +
-            '</span>' +
-            '<span class="status-tag ' + statusClass + '">' + this._escapeHtml(status) + '</span>' +
-          '</div>' +
-          (unlocked ? '<div class="companion-desc">' + this._escapeHtml(background) + '</div>' : '') +
+          '<div class="companion-name' + (unlocked ? '' : ' locked-name') + '">' + _escapeHtml(name) + '</div>' +
+          statsHtml +
+          '<div class="companion-actions">' + contactHtml + '</div>' +
         '</div>' +
       '</div>';
 
@@ -209,128 +201,94 @@ export var CompanionsPanel = {
   },
 
   /* ======================================================================
-     详情弹层 — 点击卡片展示全图 + 详细介绍
+     电话浮层 — 「联系」按钮：全屏角色CG + 固定开场白 + AI 按上下文生成通话
      ====================================================================== */
-  _openDetail: function (companionId) {
+  _openPhone: function (companionId) {
     var meta = _charactersById[companionId];
-    if (!meta) return;
+    if (!meta || _phoneBusy) return;
 
     var companion = (AppState.get('companions') || []).find(function (c) { return c.id === companionId; });
-    if (companion && companion.unlocked === false) return; // 未解锁角色不展示详情
-    var affection = companion ? companion.affection : meta.affection;
-    var jealousy = companion ? (companion.jealousy || 0) : 0;
-    var affectionPct = Math.min(100, Math.max(0, Number(affection) || 0));
-    var jealousyPct = Math.min(100, Math.max(0, Number(jealousy) || 0));
+    if (companion && companion.unlocked === false) return; // 未解锁角色不可联系
+    var name = companion ? companion.name : meta.name;
 
-    if (!_detailEl) this._buildDetailEl();
-    if (!_detailEl) return;
+    if (!_phoneEl) this._buildPhoneEl();
+    if (!_phoneEl) return;
 
-    // 全图
-    _detailPortraitEl.innerHTML = '';
-    var img = new Image();
-    img.className = 'detail-intro-img';
-    img.alt = meta.name;
-    img.src = meta.introImage;
-    img.onerror = function () {
-      _detailPortraitEl.classList.add('detail-img-missing');
-      _detailPortraitEl.textContent = '图片缺失';
-    };
-    _detailPortraitEl.appendChild(img);
+    _phoneImgEl.style.display = '';
+    _phoneImgEl.src = meta.introImage + '?v=' + COMPANION_ASSET_V;
+    _phoneImgEl.onerror = function () { _phoneImgEl.style.display = 'none'; };
+    _phoneTextEl.innerHTML = '';
+    _phoneStatusEl.textContent = '';
 
-    // 文案
-    var body =
-      '<h2 class="detail-name">' + this._escapeHtml(meta.name) + '</h2>' +
-      '<div class="detail-nicknames">' + this._escapeHtml(meta.nicknames.join(' · ')) + '</div>' +
-      '<div class="detail-section"><span class="detail-label">身份</span>' + this._escapeHtml(meta.identities.join('；')) + '</div>' +
-      '<div class="detail-section"><span class="detail-label">背景</span>' + this._escapeHtml(meta.background) + '</div>' +
-      '<div class="detail-section"><span class="detail-label">性格</span>' + this._escapeHtml(meta.personality) + '</div>' +
-      '<div class="detail-section"><span class="detail-label">外貌</span>' + this._escapeHtml(meta.appearance) + '</div>' +
-      // 好感度（粉红长条）/ 醋意值（紫色长条）
-      '<div class="stat-bar">' +
-        '<div class="stat-bar-head"><span class="stat-bar-label">好感度</span><span class="stat-bar-value">' + affectionPct + ' / 100</span></div>' +
-        '<div class="stat-bar-track"><div class="stat-bar-fill fill-affection" style="width:' + affectionPct + '%"></div></div>' +
-      '</div>' +
-      '<div class="stat-bar">' +
-        '<div class="stat-bar-head"><span class="stat-bar-label">醋意值</span><span class="stat-bar-value">' + jealousyPct + ' / 100</span></div>' +
-        '<div class="stat-bar-track"><div class="stat-bar-fill fill-jealousy" style="width:' + jealousyPct + '%"></div></div>' +
-      '</div>';
-    _detailBodyEl.innerHTML = body;
+    // 过渡动画：先强制渲染隐藏态，再切 active
+    _phoneEl.classList.remove('active');
+    void _phoneEl.offsetHeight;
+    _phoneEl.classList.add('active');
 
-    // 过渡动画：先强制渲染隐藏态（首次打开时元素同帧插入+激活会跳过过渡），
-    // 再切 active 让淡入/缩放/上滑动画生效
-    _detailEl.classList.remove('active');
-    void _detailEl.offsetHeight;
-    _detailEl.classList.add('active');
+    // 固定开场白（用户文案）
+    var fixedLine = '你向' + name + '打了个电话，几乎是瞬间般的，电话被接起';
+    _appendPhoneLine(fixedLine, 'phone-line-player');
+    EventPanel.pushNarrativeQuietly('（行动）' + fixedLine);
+
+    _phoneBusy = true;
+    var state = AppState.get();
+    var aiOn = state.settings && state.settings.aiEnabled !== false;
+    if (!aiOn) {
+      _appendPhoneLine('api连接错误，检查一下api哦~', 'phone-line-ai');
+      _phoneBusy = false;
+      return;
+    }
+
+    _phoneStatusEl.textContent = '… 电话接通中';
+    var prompt = '（系统提示：你正在与' + name + '通电话，电话几乎是瞬间就被接起。请完全以' + name + '的口吻，结合她的性格与当前情境，输出她接起电话后说的1-3句话，直接输出对话内容，不要旁白，不要任何标签。）';
+    AiClient.chat(prompt).then(function (result) {
+      _phoneStatusEl.textContent = '';
+      _appendPhoneLine(result.narrative, 'phone-line-ai');
+      EventPanel.pushNarrativeQuietly('（电话）' + name + '：' + result.narrative);
+      _phoneBusy = false;
+    }).catch(function (err) {
+      _phoneStatusEl.textContent = '';
+      _appendPhoneLine('api连接错误，检查一下api哦~', 'phone-line-ai');
+      _phoneBusy = false;
+    });
   },
 
-  _buildDetailEl: function () {
-    _detailEl = document.createElement('div');
-    _detailEl.id = 'companion-detail';
-    _detailEl.innerHTML =
-      '<div class="companion-detail-backdrop"></div>' +
-      '<button class="companion-detail-close" id="companion-detail-close">关闭 ✕</button>' +
-      '<div class="companion-detail-portrait" id="companion-detail-portrait"></div>' +
-      '<div class="companion-detail-body" id="companion-detail-body"></div>';
-    document.body.appendChild(_detailEl);
+  _buildPhoneEl: function () {
+    _phoneEl = document.createElement('div');
+    _phoneEl.id = 'phone-call-overlay';
+    _phoneEl.innerHTML =
+      '<div class="phone-backdrop"></div>' +
+      '<button class="phone-close" id="phone-close">挂断 ✕</button>' +
+      '<img class="phone-cg" id="phone-cg" alt="">' +
+      '<div class="phone-panel">' +
+        '<div class="phone-text" id="phone-text"></div>' +
+        '<div class="phone-status" id="phone-status"></div>' +
+      '</div>';
+    document.body.appendChild(_phoneEl);
 
-    _detailPortraitEl = document.getElementById('companion-detail-portrait');
-    _detailBodyEl = document.getElementById('companion-detail-body');
+    _phoneImgEl = document.getElementById('phone-cg');
+    _phoneTextEl = document.getElementById('phone-text');
+    _phoneStatusEl = document.getElementById('phone-status');
 
-    // 同步到实例属性，供 app.js Esc 分支（CompanionsPanel._detailEl）判断
-    this._detailEl = _detailEl;
-    this._detailPortraitEl = _detailPortraitEl;
-    this._detailBodyEl = _detailBodyEl;
+    // 同步到实例属性，供 app.js Esc 分支（CompanionsPanel._phoneEl）判断
+    this._phoneEl = _phoneEl;
 
     var self = this;
-    document.getElementById('companion-detail-close').addEventListener('click', function () {
-      self._closeDetail();
+    document.getElementById('phone-close').addEventListener('click', function () {
+      self._closePhone();
     });
-    _detailEl.querySelector('.companion-detail-backdrop').addEventListener('click', function () {
-      self._closeDetail();
+    _phoneEl.querySelector('.phone-backdrop').addEventListener('click', function () {
+      self._closePhone();
     });
   },
 
-  _closeDetail: function () {
-    if (!_detailEl) return;
-    _detailEl.classList.remove('active');
-    if (_detailPortraitEl) {
-      _detailPortraitEl.innerHTML = '';
-      _detailPortraitEl.classList.remove('detail-img-missing');
-    }
-    if (_detailBodyEl) _detailBodyEl.innerHTML = '';
-  },
-
-  /* ======================================================================
-     _renderStars — 渲染好感度星星（SVG）
-     5 颗星，每颗 20%，填充率 = affection / 100
-     ====================================================================== */
-  _renderStars: function (companionId, affection, unlocked) {
-    var maxStars = 5;
-    var totalFilled = (affection / 100) * maxStars;
-    var html = '<div class="affection-stars">';
-
-    for (var i = 0; i < maxStars; i++) {
-      var fillPercent = Math.max(0, Math.min(100, Math.round((totalFilled - i) / 1 * 100)));
-      var gradId = 'star-' + companionId + '-' + i;
-      var fillColor = unlocked ? '#D4A574' : '#555';
-      var emptyColor = unlocked ? 'rgba(85,85,85,0.4)' : 'rgba(50,50,50,0.3)';
-
-      html +=
-        '<svg class="affection-star" width="18" height="18" viewBox="0 0 24 24">' +
-          '<defs>' +
-            '<linearGradient id="' + gradId + '" x1="0" y1="0" x2="1" y2="0">' +
-              '<stop offset="0%" stop-color="' + fillColor + '"/>' +
-              '<stop offset="' + fillPercent + '%" stop-color="' + fillColor + '"/>' +
-              '<stop offset="' + fillPercent + '%" stop-color="' + emptyColor + '"/>' +
-              '<stop offset="100%" stop-color="' + emptyColor + '"/>' +
-            '</linearGradient>' +
-          '</defs>' +
-          '<polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="url(#' + gradId + ')" stroke="' + (unlocked ? '#D4A574' : '#444') + '" stroke-width="0.5"/>' +
-        '</svg>';
-    }
-
-    html += '</div>';
-    return html;
+  _closePhone: function () {
+    if (!_phoneEl) return;
+    _phoneEl.classList.remove('active');
+    if (_phoneImgEl) { _phoneImgEl.src = ''; }
+    if (_phoneTextEl) _phoneTextEl.innerHTML = '';
+    if (_phoneStatusEl) _phoneStatusEl.textContent = '';
+    _phoneBusy = false;
   },
 
   /* ======================================================================
@@ -348,14 +306,18 @@ export var CompanionsPanel = {
     setTimeout(function () {
       card.classList.remove('affection-shimmer');
     }, 2000);
-  },
-
-  /* ======================================================================
-     _escapeHtml — HTML 转义
-     ====================================================================== */
-  _escapeHtml: function (str) {
-    var div = document.createElement('div');
-    div.textContent = String(str);
-    return div.innerHTML;
   }
 };
+
+/* ==========================================================================
+   电话浮层工具
+   ========================================================================== */
+
+function _appendPhoneLine(text, cls) {
+  if (!_phoneTextEl) return;
+  var el = document.createElement('div');
+  el.className = 'phone-line ' + (cls || '');
+  el.textContent = text;
+  _phoneTextEl.appendChild(el);
+  _phoneTextEl.scrollTop = _phoneTextEl.scrollHeight;
+}

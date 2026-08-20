@@ -1,10 +1,10 @@
 // 全屏特写视图（v2 流程）：点击头像 → 立绘居中（standing）→ 对话开始 2 秒后 → CG 3 秒（如有）
 // → 回到立绘继续对话常驻。无 CG 时全程立绘。
 // 降级链：standing.png → neutral.png（emotionFile）→ fullbody.png → 「立绘缺失」占位
-import { AppState } from './state.js?v=49';
-import { CHARACTERS, emotionFile } from './scenes-data.js?v=49';
-import { getCgPath } from './schedules.js?v=49';
-import { CgGenerator, AiClient } from './ai.js?v=49';
+import { AppState } from './state.js?v=51';
+import { CHARACTERS, emotionFile } from './scenes-data.js?v=51';
+import { getCgPath } from './schedules.js?v=51';
+import { CgGenerator, AiClient } from './ai.js?v=51';
 
 // 素材版本号：头像/CG/立绘图片 URL 统一加 v 参数（图片本身无 hash，
 // 重裁/换图后必须 bump 才能刷新用户浏览器缓存；JS 模块走 import 的 v 参数）
@@ -226,6 +226,16 @@ export const CloseupView = {
  * @param {Function} onDone - 玩家点击关闭后的回调
  */
 export function showDuelResultCg(playerWon, onDone, opts) {
+  // 动态生成路径（用户要求 2026-08-20）：决斗结束立即正常返回，不再显示
+  // 「CG 生成中」阻塞界面；后台生成完成后直接弹出全屏 CG，点击关闭即可。
+  // 生成失败/超时静默放弃（不影响正常游戏）。
+  var genPrompt = opts && opts.genPrompt;
+  if (genPrompt) {
+    if (onDone) onDone();
+    _startBackgroundDuelCg(playerWon, genPrompt);
+    return;
+  }
+
   const overlay = document.createElement('div');
   overlay.id = 'duel-cg-overlay';
   const img = new Image();
@@ -259,53 +269,85 @@ export function showDuelResultCg(playerWon, onDone, opts) {
     hint.textContent = '点击继续 ▸';
   };
 
-  // 用户需求：通过 ComfyUI 动态生成胜败 NSFW CG（bridge 转发 + 轮询）
-  var genPrompt = opts && opts.genPrompt;
-  if (genPrompt) {
-    hint.textContent = 'CG 生成中，请稍候…';
-    var started = Date.now();
-    var retryTimer = null;
-    var poll = function () {
-      if (done) return;
-      if (Date.now() - started > 360000) { // 6 分钟超时 → 暗场兜底
-        img.remove();
-        hint.textContent = '点击继续 ▸';
-        return;
-      }
-      img.src = '';
-      img.src = CgGenerator.imageUrl(cgJobId) + '&t=' + Date.now();
-      retryTimer = setTimeout(poll, 3000);
-    };
-    var cgJobId = null;
-    CgGenerator.generate(genPrompt).then(function (id) {
-      cgJobId = id;
-      poll();
-    }).catch(function (err) {
-      console.warn('[showDuelResultCg] 生成失败，暗场兜底:', err.message);
-      img.remove();
-      hint.textContent = '点击继续 ▸';
-    });
-    img.onload = function () {
-      clearTimeout(retryTimer);
-      hint.textContent = '点击继续 ▸';
-    };
-    img.onerror = function () {
-      if (!cgJobId || done) return; // 生成请求还没返回，先不处理
-      // 404 = 尚未出图（poll 定时器继续重试）；查一次任务状态，error 立即兜底
-      fetch(AiClient.endpoint + '/cg-status?id=' + cgJobId)
-        .then(function (r) { return r.json(); })
-        .then(function (d) {
-          if (d.status === 'error') {
-            clearTimeout(retryTimer);
-            img.remove();
-            hint.textContent = '点击继续 ▸';
-            console.warn('[showDuelResultCg] 生成失败:', d.message);
-          }
-        })
-        .catch(function () {});
-    };
-    return;
+  img.src = (playerWon ? 'assets/cg/victory.png' : 'assets/cg/defeat.png') + '?v=' + ASSET_V;
+}
+
+/**
+ * 后台生成胜败 CG（不阻塞游戏）：生成请求 + 3s 轮询出图；
+ * 出图后直接弹出全屏 CG（点击/Esc/Enter 关闭）；失败或 6 分钟超时静默放弃
+ * @param {boolean} playerWon
+ * @param {string} genPrompt - ComfyUI 提示词
+ */
+function _startBackgroundDuelCg(playerWon, genPrompt) {
+  var started = Date.now();
+  var retryTimer = null;
+  var cgJobId = null;
+  var probe = new Image();
+
+  function cleanup() {
+    clearTimeout(retryTimer);
   }
 
-  img.src = (playerWon ? 'assets/cg/victory.png' : 'assets/cg/defeat.png') + '?v=' + ASSET_V;
+  function poll() {
+    if (!cgJobId) return;
+    if (Date.now() - started > 360000) { cleanup(); return; } // 6 分钟超时 → 静默放弃
+    probe.src = '';
+    probe.src = CgGenerator.imageUrl(cgJobId) + '&t=' + Date.now();
+    retryTimer = setTimeout(poll, 3000);
+  }
+
+  // 出图成功 → 直接弹出全屏 CG
+  probe.onload = function () {
+    cleanup();
+    _showGeneratedDuelCg(playerWon, cgJobId);
+  };
+  probe.onerror = function () {
+    if (!cgJobId) return;
+    // 404 = 尚未出图（poll 定时器继续重试）；查一次任务状态，error 立即放弃
+    fetch(AiClient.endpoint + '/cg-status?id=' + cgJobId)
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.status === 'error') {
+          cleanup();
+          console.warn('[showDuelResultCg] 生成失败，静默跳过:', d.message);
+        }
+      })
+      .catch(function () {});
+  };
+
+  CgGenerator.generate(genPrompt).then(function (id) {
+    cgJobId = id;
+    poll();
+  }).catch(function (err) {
+    console.warn('[showDuelResultCg] 生成请求失败，静默跳过:', err.message);
+  });
+}
+
+/**
+ * 弹出已生成的全屏胜败 CG（无阻塞提示，点击/Esc/Enter 关闭）
+ * @param {boolean} playerWon
+ * @param {string} cgJobId
+ */
+function _showGeneratedDuelCg(playerWon, cgJobId) {
+  var overlay = document.createElement('div');
+  overlay.id = 'duel-cg-overlay';
+  var img = new Image();
+  img.className = 'duel-cg-img';
+  img.alt = playerWon ? '胜利' : '败北';
+  img.src = CgGenerator.imageUrl(cgJobId) + '&t=' + Date.now();
+  var hint = document.createElement('div');
+  hint.className = 'duel-cg-hint';
+  hint.textContent = '点击继续 ▸';
+  overlay.append(img, hint);
+  document.body.appendChild(overlay);
+
+  var close = function () {
+    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    document.removeEventListener('keydown', onKey);
+  };
+  var onKey = function (e) {
+    if (e.key === 'Escape' || e.key === 'Enter') close();
+  };
+  overlay.addEventListener('click', close);
+  document.addEventListener('keydown', onKey);
 }

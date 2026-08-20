@@ -71,6 +71,21 @@
   background: linear-gradient(135deg, #66bb6a, #388e3c);
 }
 
+/* 跳过决斗（用户要求）：直接胜利 / 直接失败 按钮组 */
+.battle-skip-actions {
+  position: relative; z-index: 1;
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  justify-content: center;
+}
+.battle-trigger-btn.skip-win {
+  background: linear-gradient(135deg, #66bb6a, #388e3c);
+}
+.battle-trigger-btn.skip-lose {
+  background: linear-gradient(135deg, #ef5350, #b71c1c);
+}
+
 /* AI 状态灯 */
 .ai-status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
 .ai-status-dot.online { background: #4caf50; box-shadow: 0 0 6px rgba(76,175,80,0.6); }

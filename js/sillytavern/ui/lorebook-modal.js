@@ -2,12 +2,12 @@
  * 世界书管理面板（LorebookModal 的 vanilla 移植）
  */
 
-import { sillytavernStore } from '../store.js?v=49';
-import { getDatabase } from '../database.js?v=49';
-import { importMultipleLorebooks, renameLorebook } from '../importer.js?v=49';
-import { createDefaultLorebook } from '../editor-utils.js?v=49';
-import { el, makeOverlay, showToast } from './dom.js?v=49';
-import { openLorebookEditorModal } from './lorebook-editor-modal.js?v=49';
+import { sillytavernStore } from '../store.js?v=51';
+import { getDatabase } from '../database.js?v=51';
+import { importMultipleLorebooks, renameLorebook } from '../importer.js?v=51';
+import { createDefaultLorebook } from '../editor-utils.js?v=51';
+import { el, makeOverlay, showToast } from './dom.js?v=51';
+import { openLorebookEditorModal } from './lorebook-editor-modal.js?v=51';
 
 export function openLorebookModal() {
   const db = getDatabase();

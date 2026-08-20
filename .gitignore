@@ -2,3 +2,4 @@
 .vercel
 __pycache__/
 server/test_prompt*.txt
+server/cg_out/

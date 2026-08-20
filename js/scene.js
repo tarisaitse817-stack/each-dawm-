@@ -1,13 +1,13 @@
 // 场景视图：背景层 + 出口 + 物件热点 + 旁白字幕 + 立绘层（在场由行程表派生）
-import { AppState } from './state.js?v=49';
-import { SCENES, CHARACTERS, getScene, isSceneOpen } from './scenes-data.js?v=49';
-import { getPresent, loadSchedules } from './schedules.js?v=49';
+import { AppState } from './state.js?v=51';
+import { SCENES, CHARACTERS, getScene, isSceneOpen } from './scenes-data.js?v=51';
+import { getPresent, loadSchedules } from './schedules.js?v=51';
 
 /** 打烊提示文案（用户要求） */
 const CLOSED_MSG = '已经到了非营业时间了，明天再来吧';
 
 // 头像图片版本号：换图/重裁后 bump 刷新浏览器缓存（图片本身无 hash）
-const ASSET_V = '17';
+const ASSET_V = '18';
 
 const _subtitleTimer = null;
 let _currentSceneId = 'home_living';
@@ -209,9 +209,12 @@ export const SceneView = {
       this.showSubtitle(CLOSED_MSG);
       return false;
     }
+    // 离场规则（用户要求）：时间推进前捕获离开场景的在场角色，供进入新场景时描述离场行为
+    const leaving = { fromSceneName: from.name, present: getPresent(from.id, t) };
+
     if (window.App && typeof window.App.advanceTime === 'function') window.App.advanceTime();
     this.showScene(sceneId, Object.assign({ flipFrom: dir || null }, opts || {}));
-    this._enterScene(to);
+    this._enterScene(to, leaving);
     return true;
   },
 
@@ -221,7 +224,7 @@ export const SceneView = {
    * 2. 翻页动画完成后派发旁白请求，AI 描述在场角色反应；
    *    无人场景描述环境，NPC 密集地点额外描述 NPC 活动（店赛/吆喝/排队等）
    */
-  _enterScene(scene) {
+  _enterScene(scene, leaving) {
     const gameTime = AppState.get('gameTime') || { day: 1, hour: 8, minute: 0 };
     const present = getPresent(scene.id, gameTime);
     const firstChar = present.length ? present[0].charId : null;
@@ -250,6 +253,21 @@ export const SceneView = {
       return;
     }
 
+    // 离场规则（用户要求）：离开时有人在场 → 提示 AI 按角色性格描述离场行为
+    // （如「看见你离开，XX也亦步亦趋地跟随着你」「微笑着祝你一路顺风」）；
+    // 只有路人 NPC → 提示 AI 简单描述（如「你逆着人流，离开了XX」）
+    var leaveNames = (leaving && leaving.present)
+      ? leaving.present.map((p) => ((CHARACTERS[p.charId] || {}).name || p.charId))
+      : [];
+    var fromName = (leaving && leaving.fromSceneName) || '';
+    var movePart = fromName ? `你刚离开了${fromName}，来到${scene.name}` : `你刚进入${scene.name}`;
+    var leavePart = '';
+    if (fromName && leaveNames.length > 0) {
+      leavePart = `离开${fromName}时，在场角色：${leaveNames.join('、')}。请先依据她们各自的性格，用1-2句话描述她们看见你离开时的反应（例如：看见你离开，XX也亦步亦趋地跟随着你；或微笑着祝你一路顺风）；`;
+    } else if (fromName) {
+      leavePart = `离开${fromName}时没有其他角色在场，可简单带过（例如「你逆着人流，离开了${fromName}」）；`;
+    }
+
     // AI 旁白文案：有人 → 角色反应（可带 NPC 背景音）；无人 → 环境/NPC 描写
     // 兜底文案统一由 event.js 处理（"api连接错误，检查一下api哦~"）
     const npcNote = NPC_AMBIENCE[scene.id] || '';
@@ -257,11 +275,11 @@ export const SceneView = {
     if (present.length > 0) {
       var names = present.map((p) => ((CHARACTERS[p.charId] || {}).name || p.charId)).join('、');
       var bgNote = npcNote ? `（背景：${npcNote}）` : '';
-      aiText = `（系统提示：你刚进入${scene.name}。在场角色：${names}。${bgNote}请以旁白视角、用2-3句话描述她们注意到你到来时的反应，不要输出角色对话，不要输出任何标签。）`;
+      aiText = `（系统提示：${movePart}。${leavePart}在场角色：${names}。${bgNote}请以旁白视角、用2-3句话描述她们注意到你到来时的反应，不要输出角色对话，不要输出任何标签。）`;
     } else if (npcNote) {
-      aiText = `（系统提示：你刚进入${scene.name}。${npcNote}。请以旁白视角、用2-3句话描述这里的环境与NPC们的活动，不要输出任何标签。）`;
+      aiText = `（系统提示：${movePart}。${leavePart}${npcNote}。请以旁白视角、用2-3句话描述这里的环境与NPC们的活动，不要输出任何标签。）`;
     } else {
-      aiText = `（系统提示：你刚进入${scene.name}，这里空无一人。请以旁白视角、用2-3句话描述这个环境，不要输出任何标签。）`;
+      aiText = `（系统提示：${movePart}。${leavePart}这里空无一人。请以旁白视角、用2-3句话描述这个环境，不要输出任何标签。）`;
     }
 
     setTimeout(function () {

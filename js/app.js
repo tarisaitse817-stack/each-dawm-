@@ -3,18 +3,18 @@
    设置面板 + 键盘快捷键 + 全模块集成
    ========================================================================== */
 
-import { AppState } from './state.js?v=49';
-import { StorageManager } from './storage.js?v=49';
-import { Navigation } from './navigation.js?v=49';
-import { Particles } from './particles.js?v=49';
-import { TitleScreen } from './title.js?v=49';
-import { EventPanel } from './event.js?v=49';
-import { AiClient, BattleBridge } from './ai.js?v=49';
-import { CompanionsPanel } from './companions.js?v=49';
-import { InventoryPanel } from './inventory.js?v=49';
-import { SceneView } from './scene.js?v=49';
-import { CloseupView } from './closeup.js?v=49';
-import { Notifications } from './notifications.js?v=49';
+import { AppState } from './state.js?v=51';
+import { StorageManager } from './storage.js?v=51';
+import { Navigation } from './navigation.js?v=51';
+import { Particles } from './particles.js?v=51';
+import { TitleScreen } from './title.js?v=51';
+import { EventPanel } from './event.js?v=51';
+import { AiClient, BattleBridge } from './ai.js?v=51';
+import { CompanionsPanel } from './companions.js?v=51';
+import { InventoryPanel } from './inventory.js?v=51';
+import { SceneView } from './scene.js?v=51';
+import { CloseupView } from './closeup.js?v=51';
+import { Notifications } from './notifications.js?v=51';
 
 export const App = {
 
@@ -146,9 +146,9 @@ export const App = {
      ====================================================================== */
   async _initSillytavern() {
     try {
-      var storeMod = await import('./sillytavern/store.js?v=49');
-      var uiMod = await import('./sillytavern/ui/index.js?v=49');
-      var seedMod = await import('./sillytavern/seed.js?v=49');
+      var storeMod = await import('./sillytavern/store.js?v=51');
+      var uiMod = await import('./sillytavern/ui/index.js?v=51');
+      var seedMod = await import('./sillytavern/seed.js?v=51');
       var store = storeMod.sillytavernStore;
       await store.loadAll();
 
@@ -541,6 +541,12 @@ export const App = {
             '</select>' +
           '</div>' +
 
+          /* 跳过决斗（用户要求）：触发决斗事件后自由选择胜利或失败 */
+          '<div class="settings-row">' +
+            '<label for="setting-skip-duel">跳过决斗（可选胜负）</label>' +
+            '<input type="checkbox" id="setting-skip-duel" ' + (settings.skipDuel ? 'checked' : '') + '>' +
+          '</div>' +
+
           /* AI 配置 */
           '<div class="settings-section-title">AI 叙事引擎</div>' +
           '<div class="settings-row">' +
@@ -668,6 +674,7 @@ export const App = {
     var bgmEl = document.getElementById('setting-bgm-volume');
     var sfxEl = document.getElementById('setting-sfx-volume');
     var cardAnimEl = document.getElementById('setting-card-anim-speed');
+    var skipDuelEl = document.getElementById('setting-skip-duel');
 
     if (textSpeedEl) textSpeedEl.value = settings.textSpeed || 'normal';
     if (animEl) animEl.value = settings.animationIntensity || 'standard';
@@ -682,6 +689,7 @@ export const App = {
       if (sfxVal) sfxVal.textContent = sfxEl.value;
     }
     if (cardAnimEl) cardAnimEl.value = settings.cardAnimSpeed || 'normal';
+    if (skipDuelEl) skipDuelEl.checked = settings.skipDuel === true;
 
     var aiEnabledEl = document.getElementById('setting-ai-enabled');
     if (aiEnabledEl) aiEnabledEl.checked = settings.aiEnabled !== false;
@@ -783,6 +791,11 @@ export const App = {
         var s = AppState.get('settings');
         s.aiEnabled = e.target.checked;
         AppState.set('settings', s);
+        StorageManager.save(AppState.get());
+      } else if (e.target.id === 'setting-skip-duel') {
+        var s2 = AppState.get('settings');
+        s2.skipDuel = e.target.checked;
+        AppState.set('settings', s2);
         StorageManager.save(AppState.get());
       }
     });
@@ -978,9 +991,9 @@ export const App = {
           return;
         }
 
-        // 关闭角色详情弹层
-        if (CompanionsPanel._detailEl && CompanionsPanel._detailEl.classList.contains('active')) {
-          CompanionsPanel._closeDetail();
+        // 关闭伙伴电话浮层（原角色详情弹层已取消，重构为电话浮层）
+        if (CompanionsPanel._phoneEl && CompanionsPanel._phoneEl.classList.contains('active')) {
+          CompanionsPanel._closePhone();
           return;
         }
 

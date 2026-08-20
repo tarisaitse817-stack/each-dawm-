@@ -1,15 +1,15 @@
-﻿/* ==========================================================================
+/* ==========================================================================
    光之回响 (Echoes of Light) — EventPanel 对话引擎
    渲染进近景特写层的对话区（CloseupView.getDialogEl()），对外 API 保持不变
    ========================================================================== */
 
-import { AppState } from './state.js?v=49';
-import { AiClient, BattleBridge } from './ai.js?v=49';
-import { CloseupView, showDuelResultCg } from './closeup.js?v=49';
-import { SceneView } from './scene.js?v=49';
-import { mapEmotion } from './emotion.js?v=49';
-import { CHARACTERS } from './scenes-data.js?v=49';
-import { countPresent, getPresent, getPeriod } from './schedules.js?v=49';
+import { AppState } from './state.js?v=51';
+import { AiClient, BattleBridge } from './ai.js?v=51';
+import { CloseupView, showDuelResultCg } from './closeup.js?v=51';
+import { SceneView } from './scene.js?v=51';
+import { mapEmotion } from './emotion.js?v=51';
+import { CHARACTERS } from './scenes-data.js?v=51';
+import { countPresent, getPresent, getPeriod } from './schedules.js?v=51';
 
 /** 场景 → Danbooru 背景标签（用户需求：胜败 CG 背景随当前场景自动变化） */
 var SCENE_BG_TAGS = {
@@ -557,6 +557,17 @@ export const EventPanel = {
   },
 
   /**
+   * 静默写入叙事历史（不触发订阅显示）— 供外部模块（如伙伴电话通话）记录剧情
+   * @param {string} text
+   */
+  pushNarrativeQuietly: function (text) {
+    if (!text) return;
+    this._isInternalUpdate = true;
+    AppState.push('narrativeHistory', text);
+    this._isInternalUpdate = false;
+  },
+
+  /**
    * 场景旁白：进入场景时请求 AI 描述在场角色反应 / 环境（用户要求）
    * 不在叙事历史中写入玩家行动，AI 失败时静默（不打断输入状态）
    * 兜底文案统一为「api连接错误，检查一下api哦~」（AI 关闭/失败均用此文案）
@@ -712,6 +723,15 @@ export const EventPanel = {
     var lineHtml = opp.battleLines && opp.battleLines.opening
       ? '<div class="battle-trigger-line">"' + opp.battleLines.opening + '"</div>'
       : '';
+    // 跳过决斗（用户要求）：设置开启后，除正常对战按钮外，可直接选择胜利/失败
+    var state = AppState.get();
+    var skipDuel = state.settings && state.settings.skipDuel === true;
+    var skipHtml = skipDuel
+      ? '<div class="battle-skip-actions">' +
+          '<button class="battle-trigger-btn skip-win" id="battle-skip-win">直接胜利</button>' +
+          '<button class="battle-trigger-btn skip-lose" id="battle-skip-lose">直接失败</button>' +
+        '</div>'
+      : '';
     el.innerHTML =
       '<div class="battle-trigger-card">' +
         '<div class="battle-trigger-glow"></div>' +
@@ -719,13 +739,27 @@ export const EventPanel = {
         '<div class="battle-trigger-text">' + (opp.isHeroine ? '黑暗决斗开启' : '决斗开启') + '</div>' +
         '<div class="battle-trigger-deck">对手: ' + opp.name + ' | 使用卡组: ' + opp.deck + '</div>' +
         lineHtml +
-        '<button class="battle-trigger-btn" id="battle-trigger-btn">开始对战</button>' +
+        skipHtml +
+        '<button class="battle-trigger-btn" id="battle-trigger-btn">' + (skipDuel ? '正常对战' : '开始对战') + '</button>' +
       '</div>';
     c.appendChild(el); this._battleTriggerEl = el;
     c.scrollTop = c.scrollHeight;
     var that = this;
     var btn = el.querySelector('#battle-trigger-btn');
     if (btn) { btn.addEventListener('click', function () { that._launchBattle(btn, opp.name); }); }
+    // 跳过决斗：直接选择胜负（不启动 ygopro / WindBot / MDPro3）
+    var winBtn = el.querySelector('#battle-skip-win');
+    var loseBtn = el.querySelector('#battle-skip-lose');
+    if (winBtn) {
+      winBtn.addEventListener('click', function () {
+        that._handleDuelResult({ winner: 'player', reason: 0, botName: opp.name }, opp.name, null, false, { skip: true });
+      });
+    }
+    if (loseBtn) {
+      loseBtn.addEventListener('click', function () {
+        that._handleDuelResult({ winner: 'bot', reason: 0, botName: opp.name }, opp.name, null, false, { skip: true });
+      });
+    }
   },
 
   async _launchBattle(btn, opponent) {
@@ -749,48 +783,7 @@ export const EventPanel = {
         }
         BattleBridge.startPolling(function(r) {
           console.log('[EventPanel] Duel callback fired:', r);
-          var playerWon = r.winner === 'player';
-          var reasonNames = {0: '认输', 1: '生命值归零', 2: '卡组抽空', 3: '特殊胜利', 4: '连接断开'};
-          var reasonText = reasonNames[r.reason] || ('原因#' + r.reason);
-          var resultMsg = playerWon
-            ? '你击败了' + r.botName + '（' + reasonText + '）'
-            : '你败给了' + r.botName + '（' + reasonText + '）';
-          // 注入角色胜负台词
-          var opp = EventPanel._resolveBattleOpponent(opponent);
-          var charLine = '';
-          if (opp && opp.battleLines) {
-            charLine = playerWon ? opp.battleLines.defeat : opp.battleLines.victory;
-          }
-          // 配角决斗结束 → 醋意值发泄归零（主动挑战/黑暗决斗的闭环）
-          if (opp && opp.isHeroine) {
-            var comps = (AppState.get('companions') || []).slice();
-            var target = comps.find(function (c) { return c.name === opp.name; });
-            if (target && (target.jealousy || 0) > 0) {
-              target.jealousy = 0;
-              AppState.set('companions', comps);
-              console.log('[EventPanel] ' + target.name + ' 醋意值已归零（决斗结束）');
-            }
-          }
-          var fullMsg = '⚔️ 决斗结束 — ' + resultMsg;
-          if (charLine) fullMsg += '\n\n「' + charLine + '」';
-          if (isBtnMode) {
-            btn.textContent = playerWon ? '胜利！' : '败北…';
-            btn.className = 'battle-trigger-btn finished';
-            btn.disabled = true;
-          }
-          // 用户规则：只有配角决斗触发胜败 CG（路人只是普通决斗，不生成 CG）
-          if (opp && opp.isHeroine) {
-            // 胜利 → 女性受向 NSFW；失败 → 女性攻支配（ComfyUI 动态生成）
-            showDuelResultCg(playerWon, function () {
-              EventPanel._addNarratorText(fullMsg, null, function () {
-                EventPanel.submitAction('决斗结束了，我' + (playerWon ? '赢了' : '输了') + '，生成后续叙事');
-              });
-            }, { genPrompt: EventPanel._buildDuelCgPrompt(playerWon, opp) });
-          } else {
-            EventPanel._addNarratorText(fullMsg, null, function () {
-              EventPanel.submitAction('决斗结束了，我' + (playerWon ? '赢了' : '输了') + '，生成后续叙事');
-            });
-          }
+          EventPanel._handleDuelResult(r, opponent, btn, isBtnMode, {});
         });
       } else {
         console.error('[EventPanel] Battle launch FAILED:', result.error, result.message);
@@ -808,6 +801,65 @@ export const EventPanel = {
       } else {
         this._addNarratorText('⚠️ 决斗启动出错，请重试。');
       }
+    }
+  },
+
+  /**
+   * 统一决斗结果处理（正常对战轮询结果 / 跳过决斗直接选择胜负 共用）
+   * @param {{winner:string, reason:number, botName:string}} r
+   * @param {string} opponentName - 对手角色名（配角匹配战配置；路人不匹配）
+   * @param {HTMLElement|null} btn - 触发按钮（无按钮路径为 null）
+   * @param {boolean} isBtnMode
+   * @param {{skip?:boolean}} opts - skip=true 表示跳过决斗（未实际对战）
+   */
+  _handleDuelResult: function (r, opponentName, btn, isBtnMode, opts) {
+    opts = opts || {};
+    var playerWon = r.winner === 'player';
+    var reasonNames = {0: '认输', 1: '生命值归零', 2: '卡组抽空', 3: '特殊胜利', 4: '连接断开'};
+    var reasonText = opts.skip ? '跳过决斗' : (reasonNames[r.reason] || ('原因#' + r.reason));
+    var resultMsg = playerWon
+      ? '你击败了' + r.botName + '（' + reasonText + '）'
+      : '你败给了' + r.botName + '（' + reasonText + '）';
+    // 注入角色胜负台词
+    var opp = this._resolveBattleOpponent(opponentName);
+    var charLine = '';
+    if (opp && opp.battleLines) {
+      charLine = playerWon ? opp.battleLines.defeat : opp.battleLines.victory;
+    }
+    // 配角决斗结束 → 醋意值发泄归零（主动挑战/黑暗决斗的闭环）
+    if (opp && opp.isHeroine) {
+      var comps = (AppState.get('companions') || []).slice();
+      var target = comps.find(function (c) { return c.name === opp.name; });
+      if (target && (target.jealousy || 0) > 0) {
+        target.jealousy = 0;
+        AppState.set('companions', comps);
+        console.log('[EventPanel] ' + target.name + ' 醋意值已归零（决斗结束）');
+      }
+    }
+    var fullMsg = '⚔️ 决斗结束 — ' + resultMsg;
+    if (charLine) fullMsg += '\n\n「' + charLine + '」';
+    if (isBtnMode && btn) {
+      btn.textContent = playerWon ? '胜利！' : '败北…';
+      btn.className = 'battle-trigger-btn finished';
+      btn.disabled = true;
+    }
+    // 跳过决斗：禁用挑战卡片上所有按钮（已做出选择）
+    if (opts.skip && this._battleTriggerEl) {
+      var btns = this._battleTriggerEl.querySelectorAll('button');
+      for (var i = 0; i < btns.length; i++) { btns[i].disabled = true; }
+    }
+    // 用户规则：只有配角决斗触发胜败 CG（路人只是普通决斗，不生成 CG）
+    if (opp && opp.isHeroine) {
+      // 胜利 → 女性受向 NSFW；失败 → 女性攻支配（ComfyUI 动态生成）
+      showDuelResultCg(playerWon, function () {
+        EventPanel._addNarratorText(fullMsg, null, function () {
+          EventPanel.submitAction('决斗结束了，我' + (playerWon ? '赢了' : '输了') + '，生成后续叙事');
+        });
+      }, { genPrompt: EventPanel._buildDuelCgPrompt(playerWon, opp) });
+    } else {
+      EventPanel._addNarratorText(fullMsg, null, function () {
+        EventPanel.submitAction('决斗结束了，我' + (playerWon ? '赢了' : '输了') + '，生成后续叙事');
+      });
     }
   },
 

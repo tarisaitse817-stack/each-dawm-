@@ -89,16 +89,7 @@ body {
   pointer-events: none;
 }
 
-#location-bg::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  /* 修复「背景昏暗」：压暗层从 45-55% 减淡到 ~18%，保留底部微渐变保证字幕/UI 可读性 */
-  background: linear-gradient(160deg,
-    rgba(18, 20, 42, 0.16) 0%,
-    rgba(26, 28, 59, 0.10) 40%,
-    rgba(31, 22, 48, 0.24) 100%);
-}
+/* 用户要求：背景图不加透明度（已移除半透明压暗层）；字幕/对话框自带半透明底保证可读性 */
 
 #location-bg.active {
   opacity: 1;

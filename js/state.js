@@ -76,6 +76,7 @@ function createDefaultState() {
       bgmVolume: 0.7,
       sfxVolume: 0.8,
       cardAnimSpeed: 'normal',
+      skipDuel: false, // 跳过决斗：触发决斗事件后自由选择胜利或失败（不实际启动 MDPro3）
       aiEnabled: true,
       aiEndpoint: 'http://localhost:9999',
       aiApiKey: '',
