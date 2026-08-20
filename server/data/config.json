@@ -43,63 +43,63 @@
     "塞壬": {
       "name": "Siren",
       "deck": "AI_Tearlaments",
-      "dialog": "default",
+      "dialog": "Siren.zh-CN",
       "protector": "1073001",
       "field": "1090001"
     },
     "零依": {
       "name": "LingYi",
       "deck": "AI_SkyStriker",
-      "dialog": "default",
+      "dialog": "LingYi.zh-CN",
       "protector": "1073002",
       "field": "1090002"
     },
     "露世": {
       "name": "LuShi",
       "deck": "AI_Labrynth",
-      "dialog": "default",
+      "dialog": "LuShi.zh-CN",
       "protector": "1073003",
       "field": "1090003"
     },
     "姬丝吉尔": {
       "name": "Kisikil",
       "deck": "AI_EvilTwin",
-      "dialog": "default",
+      "dialog": "Kisikil.zh-CN",
       "protector": "1073004",
       "field": "1090004"
     },
     "璃拉": {
       "name": "Lilla",
       "deck": "AI_EvilTwin",
-      "dialog": "default",
+      "dialog": "Lilla.zh-CN",
       "protector": "1073005",
       "field": "1090005"
     },
     "艾克利西亚": {
       "name": "Ecclesia",
       "deck": "AI_Albaz",
-      "dialog": "ecclesia",
+      "dialog": "ecclesia.zh-CN",
       "protector": "1073006",
       "field": "1090006"
     },
     "天童": {
       "name": "TianTong",
       "deck": "AI_Swordsoul",
-      "dialog": "default",
+      "dialog": "TianTong.zh-CN",
       "protector": "1073007",
       "field": "1090007"
     },
     "理": {
       "name": "Li",
       "deck": "AI_Exosister",
-      "dialog": "default",
+      "dialog": "Li.zh-CN",
       "protector": "1073008",
       "field": "1090008"
     },
     "彩虹": {
       "name": "CaiHong",
       "deck": "AI_Rainbow",
-      "dialog": "default",
+      "dialog": "CaiHong.zh-CN",
       "protector": "1073009",
       "field": "1090009"
     },
@@ -111,12 +111,12 @@
     "塞拉": {
       "name": "Sera",
       "deck": "AI_Apophis",
-      "dialog": "default"
+      "dialog": "Sera.zh-CN"
     },
     "米德拉什": {
       "name": "Winda",
       "deck": "AI_LightswornShaddoldinosour",
-      "dialog": "default"
+      "dialog": "Winda.zh-CN"
     }
   },
   "llm_timeout": 300,
